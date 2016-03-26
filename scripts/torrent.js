@@ -18,7 +18,8 @@ module.exports = function(robot) {
     msg.send('Esperando respuesta de Torrent Project... :clock930:');
 
     var busqueda = msg.match[1];
-    var url = 'https://torrentproject.se/?t=' + busqueda;
+
+    var url = 'https://torrentproject.se/?t=' + busqueda.split(' ').join('+');
 
     msg.robot.http(url).get()(function(err, res, body) {
 

@@ -8,7 +8,7 @@
 #   None
 #
 # Notes:
-#   hear tristeza|triste|aburrido|aburrimiento|fomingo|realidad
+#   respond tristeza|triste|aburrido|aburrimiento|fomingo|realidad
 #
 # Author:
 #   @jorgeepunan
@@ -37,5 +37,5 @@ images = [
 ]
 
 module.exports = (robot) ->
-  robot.hear /tristeza|triste|aburrido|aburrimiento|fomingo/gi, (msg) ->
+  robot.respond /tristeza|triste|aburrido|aburrimiento|fomingo/gi, (msg) ->
     msg.send msg.random images
