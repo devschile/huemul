@@ -22,6 +22,7 @@ images = [
   'http://i.imgur.com/f6iwaCk.gif'
   'http://i.imgur.com/b1YkaV3.gif'
   'http://31.media.tumblr.com/f08f0922da3d090269f5b90c7cea6cbb/tumblr_inline_o4d5eeZRfB1raprkq_500.gif'
+  'https://i.imgur.com/czGiyVX.gif'
 ]
 
 module.exports = (robot) ->
