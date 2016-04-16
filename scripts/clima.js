@@ -25,15 +25,16 @@ module.exports = function(robot) {
     } else {
       ciudad = ciudad + suffix;
     }
+    
+    console.log(ciudad)
 
     var url = 'http://wttr.in/' + ciudad;
 
     msg.robot.http(url).get()(function(err, res, body) {
+
       var $ = cheerio.load(body);
-      if (res.statusCode !== 200 || body === 'ERROR') {
-        return msg.reply('ocurrió un error con la búsqueda');
-      }
       cleanText = S( $('pre').text() ).stripTags().s;
+
       msg.send( '```' + cleanText.split('┌')[0] + '```' ); // split por el primer resultado para no mostrar todo sino seguro se desarma en Slack Mobile App.
 
     });
