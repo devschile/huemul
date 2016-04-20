@@ -36,7 +36,7 @@ function currentDate(){
 module.exports = function(robot) {
   robot.respond(/foto del d[ií]a/i, function(res) {
 
-    var fullURL = url + '?concept_tags=True&api_key=' + apikey + '&date=' + currentDate() + '&format=JSON';
+    var fullURL = url + '?api_key=' + apikey;
 
     request(fullURL, function (error, response, body) {
 

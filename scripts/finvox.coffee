@@ -15,6 +15,7 @@
 #   hubot finvox euro
 #   hubot finvox ipc
 #   hubot finvox utm
+#   hubot finvox huemulcoin
 #
 # Author:
 #   @jorgeepunan
@@ -27,15 +28,18 @@ mensajes = ['Aunque te esfuerces, seguirás siendo pobre. :poop:','Los político
 
 numberWithCommas = (x) ->
   x.toString().replace /\B(?=(\d{3})+(?!\d))/g, '.'
+numberSplitDecimal = (x) ->
+  d = Math.pow 10,2
+  (parseInt(x * d) / d).toFixed x
 
 module.exports = (robot) ->
   robot.respond /finvox (\w+)/i, (msg) ->
     indicador = msg.match[1].toLowerCase()
 
     if indicador == 'help' || !indicador
-      msg.send 'Mis comandos son:\n\n * `finvox dolar|usd`\n * `finvox euro|eur`\n * `finvox bitcoin|btc`\n * `finvox uf`\n * `finvox utm`\n * `finvox ipc`\n * `finvox getonbrd`\n'
+      msg.send 'Mis comandos son:\n\n * `finvox dolar|usd`\n * `finvox euro|eur`\n * `finvox bitcoin|btc`\n * `finvox uf`\n * `finvox utm`\n * `finvox ipc`\n * `finvox getonbrd`\n * `finvox huemulcoin`\n'
       return false
-    if indicador == 'uf' or indicador == 'dolar' or indicador == 'usd' or indicador == 'euro' or indicador == 'eur' or indicador == 'ipc' or indicador == 'utm' or indicador == 'getonbrd'
+    if indicador == 'uf' or indicador == 'dolar' or indicador == 'usd' or indicador == 'euro' or indicador == 'eur' or indicador == 'ipc' or indicador == 'utm' or indicador == 'getonbrd' or indicador == 'huemulcoin'
       url = process.env.API_URL
     else if indicador == 'bitcoin' or indicador == 'btc'
       url = process.env.BIT_API_URL
@@ -63,8 +67,11 @@ module.exports = (robot) ->
         date = ''
         flatNumber = data.CLP.last.toString().split('.')[0]
         data = '$' + numberWithCommas(flatNumber)
+      else if indicador == 'huemulcoin'
+        complexHuemulCoinCalculus = (1000 / parseInt(data.moneda.dolar.split('$')[1]))
+        data = '1ℌℭ = US$' + numberSplitDecimal(complexHuemulCoinCalculus)
       else
-        data = ':kick-tmayr:'
+        data = '`finvox help` para ayuda.'
 
       if data != null and typeof data != 'object'
         data = data.toString().split ',', 1

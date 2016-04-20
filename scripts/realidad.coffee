@@ -34,6 +34,9 @@ images = [
   'https://media.giphy.com/media/123yhXdwobrTnW/giphy.gif'
   'https://media.giphy.com/media/rxnhSy4J3KyXe/giphy.gif'
   'https://media.giphy.com/media/AYKv7lXcZSJig/giphy.gif'
+  'http://i.imgur.com/628ywyK.jpg'
+  'http://i.imgur.com/FquqDr5.jpg'
+  'http://i.imgur.com/igcd9Mo.jpg'
 ]
 
 module.exports = (robot) ->

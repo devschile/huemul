@@ -1,6 +1,6 @@
 # Description:
 #   Busca por restaurantes en Chile usando Yelp API 2.0.
-#   Exclusivo para Pudu Bot.
+#   Exclusivo para Huemul Bot de DevsChile.cl
 #
 # Dependencies:
 #   "yelp": "0.1.1"
