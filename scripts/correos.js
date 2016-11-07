@@ -10,8 +10,6 @@
 // Author:
 //   @hectorpalmatellez
 
-var cheerio = require('cheerio');
-
 module.exports = function(robot) {
   robot.respond(/correos (.*)/i, function(msg) {
     msg.send(':mailbox_closed: buscando...');
