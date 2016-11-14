@@ -14,4 +14,5 @@ El repositorio queda abierto para todos los miembros de [devsChile en GitHub](ht
 
 ---
 
-![huemul-bot](http://www.revistalajunta.com/lajunta/wp-content/uploads/2015/01/4222Huemul_Perfil_Laid_700.jpg)
+![huemul-bot](http://www.utalca.cl/medios/utalca2010/saladeprensa/Estudiantes/huemul_2015_utalca.jpg)
+w

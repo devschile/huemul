@@ -1,0 +1,100 @@
+html,
+body {
+  height: 100%;
+  box-sizing: border-box; 
+}
+html {
+  overflow-x: hidden;
+}
+body {
+  background: #000;
+  color: #ddd;
+  font-size: 14px;
+}
+body,
+pre,
+code {
+  font-family: 'Inconsolata', monospace;
+}
+h1,
+h2,
+h3,
+pre,
+code {
+  color: #fff;
+  font-weight: normal;
+}
+code {
+  background-color: rgba(255,255,255,.15);
+}
+a {
+  color: #e74c3c;
+}
+.text-center {
+  text-align: center;
+}
+main {
+  padding: 5em 1.5em;
+}
+
+h1 {
+  font-size: 18px;
+}
+h2 {
+}
+h3 {
+  margin-top: 20px;
+}
+h2,
+h3 {
+  font-size: 16px;
+}
+hr {
+  opacity: .4;
+}
+.btn {
+  display: inline-block;
+  padding: .2em .6em;
+  color: #e74c3c;
+  border: 1px solid #e74c3c;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+button.btn {
+  margin: 0 .4em;
+  background-color: transparent;
+  cursor: pointer;
+  color: #2980B9;
+  border-color: #2980B9;
+}
+button.btn.agencias-delete {
+  color: #e74c3c;
+  border-color: #e74c3c;
+}
+.login-heroku {
+  margin: 1em auto;
+}
+.agencias-listado {
+  max-height: 500px;
+  overflow: hidden;
+  overflow-y: auto;
+}
+.agencias-listado li {
+}
+.agencias-listado div {
+  display: block;
+  margin: .5em 0 1em;
+}
+.agencias-listado .active span {
+  color: #2980B9;
+}
+.agencias-preview {
+  display: none;
+  text-align: center;
+}
+  .agencias-preview img {
+    max-width: 100%;
+  }
+  .agencias-preview p {
+    text-align: center;
+  }

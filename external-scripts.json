@@ -33,5 +33,9 @@
   "hubot-anime-dl",
   "hubot-minions",
   "hubot-ascii-art",
-  "hubot-onemi"
+  "hubot-onemi",
+  "hubot-mrrobot",
+  "hubot-what3words",
+  "hubot-jobtitles",
+  "hubot-heroku-deploy-hook"
 ]

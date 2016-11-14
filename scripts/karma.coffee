@@ -22,15 +22,28 @@ module.exports = (robot) ->
     thisUser = response.message.user
     targetToken = response.match[1].trim()
     return if not targetToken
+    return if not robot.adapter.client.rtm.dataStore.getChannelGroupOrDMById(response.envelope.room).is_channel
     targetUser = userForToken targetToken, response
     return if not targetUser
-    return response.send "Oe no po, el karma es pa otros no pa ti!" if thisUser is targetUser
+    return response.send "Oe no po, el karma es pa otros no pa ti!" if thisUser.name is targetUser.name
     op = response.match[2]
     limit = canUpvote(thisUser, targetUser)
     if Number.isFinite(limit)
       response.send "¡No abuses! Intenta en " + limit + " minutos"
       return
-    targetUser.karma += if op is "++" then 1 else -1
+    modifyingKarma = if op is "++" then 1 else -1
+    targetUser.karma += modifyingKarma
+    karmaLog = robot.brain.get('karmaLog') or []
+    karmaLog.push({
+      name: thisUser.name,
+      id: thisUser.id,
+      karma: modifyingKarma,
+      targetName: targetUser.name,
+      targetId: targetUser.id,
+      date: Date.now(),
+      msg: response.envelope.message.text
+    })
+    robot.brain.set 'karmaLog', karmaLog
     robot.brain.save()
     response.send "#{getCleanName(targetUser.name)} ahora tiene #{targetUser.karma} puntos de karma."
 
@@ -58,7 +71,8 @@ module.exports = (robot) ->
     else
       targetUser = userForToken targetToken, response
       return if not targetUser
-      msg = "#{getCleanName(targetUser.name)} tiene #{targetUser.karma} puntos de karma."
+      msg = "#{getCleanName(targetUser.name)} tiene #{targetUser.karma} puntos de karma.
+            Más detalles en: #{hubotWebSite}/karma/log/#{targetUser.name}"
     robot.brain.save()
     response.send msg
 
@@ -74,6 +88,36 @@ module.exports = (robot) ->
           <ul>
           <li>#{list.join '</li><li>'}</li>
           </ul>"
+    res.setHeader 'content-type', 'text/html'
+    res.end msg
+
+  robot.router.get "/#{robot.name}/karma/log", (req, res) ->
+    karmaLog = robot.brain.get('karmaLog') or []
+    processedKarmaLog = karmaLog.map (line) ->
+                          if typeof line != 'string'
+                            line = "#{line.name} le ha dado #{line.karma} karma a #{line.targetName} - #{new Date(line.date).toJSON()}"
+                          return line
+    msg = "Karmalog:\n
+          <ul>
+          <li>#{processedKarmaLog.join '</li><li>'}</li>
+          </ul>"
+    res.setHeader 'content-type', 'text/html'
+    res.end msg
+
+  robot.router.get "/#{robot.name}/karma/log/:user", (req, res) ->
+    karmaLog = robot.brain.get('karmaLog') or []
+    filteredKarmaLog = karmaLog.filter (log) ->
+                          if typeof log != 'string' && log.msg
+                            return log.targetName == req.params.user
+    processedKarmaLog = filteredKarmaLog.map (log) ->
+                          return "#{new Date(log.date).toJSON()} - #{log.name}: #{log.msg}"
+    if filteredKarmaLog.length > 0
+      msg = "Karmalog:
+            <ul>
+              <li>#{processedKarmaLog.join '</li><li>'}</li>
+            </ul>"
+    else
+      msg = "No hay detalles sobre el karma de #{req.params.user}"
     res.setHeader 'content-type', 'text/html'
     res.end msg
 

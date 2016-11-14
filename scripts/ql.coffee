@@ -12,6 +12,9 @@
 #   hubot rql
 #   hubot ctm
 #   hubot matate
+#   hubot culiao
+#   hubot reculiao
+#   hubot remilculiao
 #
 # Author:
 #   @jorgeepunan
@@ -60,5 +63,5 @@ ascii = ["\n
 ]
 
 module.exports = (robot) ->
-  robot.respond /ql|rql|ctm|m[áa]tate/gi, (msg) ->
+  robot.respond /ql|rql|ctm|m[áa]tate|culiao|reculiao|remilculiao/gi, (msg) ->
     msg.send msg.random ascii

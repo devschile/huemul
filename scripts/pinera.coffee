@@ -1,5 +1,5 @@
 # Description:
-#   Shows a random Piñera image when someone says a keyword. All pictures were taken from tweets of the @YetaReactions account
+#   Display pictures of our former president
 #
 # Dependencies:
 #   None
@@ -15,27 +15,13 @@
 #   @hectorpalmatellez
 
 images = [
-  "https://pbs.twimg.com/media/CDUmITXWIAAAg2J.jpg",
-  "https://pbs.twimg.com/media/CD9VseXWoAE200w.jpg",
-  "https://pbs.twimg.com/media/CD5RcSuW8AA7C_O.jpg",
-  "https://pbs.twimg.com/media/CD43SE2W0AA4byw.jpg",
-  "https://pbs.twimg.com/media/CDxpnPrWMAEUDO8.png",
-  "https://pbs.twimg.com/media/CD4o8uQXIAATNGG.jpg",
-  "https://pbs.twimg.com/media/CDrzrglWYAEzwWM.jpg",
-  "https://pbs.twimg.com/media/CDf75TDWgAAlsq6.jpg",
-  "https://pbs.twimg.com/media/CDeviChW0AEyd-T.jpg",
-  "https://pbs.twimg.com/media/CDKbvdpWAAAyG0c.jpg",
-  "https://pbs.twimg.com/media/CDJ8beHW4AA9JBY.jpg",
-  "https://pbs.twimg.com/media/CDDK8l7XIAEQFKx.jpg",
-  "https://pbs.twimg.com/media/CC0DSPaWgAAm7nx.jpg",
-  "https://pbs.twimg.com/media/CCv-2sgW4AAYCeW.jpg",
-  "https://pbs.twimg.com/media/CCv9IHmW8AATBx_.jpg",
-  "https://pbs.twimg.com/media/CCv8K-TWAAAagOp.jpg",
-  "https://pbs.twimg.com/media/CCv7IAWWEAEouEh.jpg",
-  "https://pbs.twimg.com/media/CCrDYg0WAAATx3F.jpg",
-  "https://pbs.twimg.com/media/CClnArAWYAEiC3s.jpg",
-  "https://pbs.twimg.com/media/CClVvQ5W4AE2tPZ.png",
-  "https://pbs.twimg.com/media/CCgOS3aWMAAlY1c.jpg"
+  "http://s3-sa-east-1.amazonaws.com/lalegal/app/public/system/photos/4038/original/5b9.jpg",
+  "http://www.gamba.cl/wp-content/uploads/2012/02/pi%C3%B1era-skate1-225x300.jpg",
+  "http://www.gamba.cl/wp-content/uploads/2011/12/PI%C3%91ERA-AWEONAO.jpg",
+  "https://wnfeliz.files.wordpress.com/2011/07/129100360258.jpg",
+  "http://4.bp.blogspot.com/-WyfG_qQpTUw/TiEP7kXi3lI/AAAAAAAAFKE/6bmDrjjdfZY/s1600/4.jpg",
+  "http://img.emol.com/2011/03/08/File_201138135519.jpg",
+  "http://www.australvaldivia.cl/prontus3_fotos/site/artic/20050910/imag/FOTO4220050910232209.jpg"
 ]
 
 module.exports = (robot) ->
