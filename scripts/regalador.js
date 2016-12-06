@@ -27,7 +27,11 @@ hombre = [
   'Cargador Celular',
   'Pendrive / Tarjeta SD de muchos gigas',
   'Batería de carga para dispositivos móviles',
-  'Café / Caja de Te'
+  'Café / Caja de Te',
+  'The New Macbook Pro',
+  'Cargador de Macbook',
+  'Carcasa de iPhone',
+  'Cable cargador de iPhone'
 ]
 
 mujer = [
