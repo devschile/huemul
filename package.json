@@ -5,6 +5,7 @@
   "author": "Huemul",
   "description": "Animal salvaje nivel 20",
   "dependencies": {
+    "Q": "0.0.1",
     "cheerio": "^0.22.0",
     "cloudscraper": "^1.4.1",
     "express": "^3.21.2",
@@ -60,6 +61,7 @@
     "moment-countdown": "0.0.3",
     "needle": "^1.3.0",
     "password-generator": "^2.0.2",
+    "phantom": "^3.2.0",
     "pug": "^2.0.0-beta6",
     "request": "^2.78.0",
     "rutjs": "^0.1.1",
@@ -69,6 +71,6 @@
     "yelp": "^1.0.1"
   },
   "engines": {
-    "node": "4.2.x"
+    "node": "6.9.x"
   }
 }
