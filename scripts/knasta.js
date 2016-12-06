@@ -77,9 +77,11 @@ module.exports = function(robot) {
 
         $('.item.linio.panel.panel-default').each(function() {
             var title = $(this).find('.title').text();
+            var price = $(this).find('.item-price').text();
+            var discount = $(this).find('.perc.minus').text();
             var link = 'http://knasta.cl' + $(this).find('a').attr('href');
 
-            resultados.push( '<' + link + '|' + title + '>' );
+            resultados.push( '<' + link + '|' + title + ': ' + price + ' (' + discount +')>' );
         });
 
         if(resultados.length > 0) {
