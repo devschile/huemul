@@ -3,7 +3,7 @@
 //
 //  Dependencies:
 //    phantom
-//    Q
+//    q
 //    cheerio
 //
 // Commands:
