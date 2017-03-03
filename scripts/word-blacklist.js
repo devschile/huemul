@@ -57,8 +57,7 @@ module.exports = function(robot) {
     if (!isUserPunished(context.response.message.user) || isAuthorized(context.response.message.user)) {
       const command = context.response.message.text
       let forbiddenWords = process.env.HUBOT_BANNED_WORDS || '';
-      forbiddenWords = forbiddenWords.split(',')
-
+      forbiddenWords = forbiddenWords.split(',').filter(word => word !== '')
       for (let i = 0; i < forbiddenWords.length; i++) {
         if (command.indexOf(forbiddenWords[i]) !== -1) {
           punishUser(context.response.message.user);
