@@ -16,13 +16,13 @@ addons:
     - ubuntu-toolchain-r-test
     packages:
     - g++-4.8
-before_install:
--  \[ "$TRAVIS_SECURE_ENV_VARS" = true \] && openssl aes-256-cbc -K $encrypted_687768fa4b0e_key -iv $encrypted_687768fa4b0e_iv
-  -in deploy_key.pem.enc -out deploy_key.pem -d
-after_success:
-- \[ "$TRAVIS_SECURE_ENV_VARS" = true \]
-  && eval "$(ssh-agent -s)"
-  && chmod 600 deploy_key.pem
-  && ssh-add deploy_key.pem
-  && git remote add dokku dokku@104.131.105.95:huemul
-  && git push dokku master
+before_deploy:
+- openssl aes-256-cbc -K $encrypted_687768fa4b0e_key -iv $encrypted_687768fa4b0e_iv -in deploy_key.pem.enc -out deploy_key.pem -d
+- eval "$(ssh-agent -s)"
+- chmod 600 deploy_key.pem
+- ssh-add deploy_key.pem
+deploy:
+  provider: script
+  script: git remote add dokku dokku@104.131.105.95:huemul && git push dokku master
+  on:
+    branch: master
