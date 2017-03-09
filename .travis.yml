@@ -4,7 +4,7 @@ node_js:
 - '7'
 notifications:
   email: false
-  webhooks: http://huemul.herokuapp.com/travis-ci/huemul-devs
+  webhooks: http://huemul.devschile.cl/travis-ci/huemul-devs
 env:
 - CXX=g++-4.8
 addons:

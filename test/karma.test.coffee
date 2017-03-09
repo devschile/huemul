@@ -161,7 +161,7 @@ describe "karma", ->
     it "Debe mostrar url", ->
       expect(@room.messages).to.eql([
         ["user", "karma todos"]
-        ["hubot", "Karma de todos: http://hubot.herokuapp.com/hubot/karma/todos"]
+        ["hubot", "Karma de todos: http://localhost:8080/hubot/karma/todos"]
       ])
 
   context "Karma de un usuario", ->
@@ -172,7 +172,7 @@ describe "karma", ->
     it "Debe mostrar puntaje y url", ->
       expect(@room.messages).to.eql([
         ["user", "karma leonardo"]
-        ["hubot", "l.eonardo tiene 0 puntos de karma. Más detalles en: http://hubot.herokuapp.com/hubot/karma/log/leonardo"]
+        ["hubot", "l.eonardo tiene 0 puntos de karma. Más detalles en: http://localhost:8080/hubot/karma/log/leonardo"]
       ])
 
   context "Karma reset invalido", ->

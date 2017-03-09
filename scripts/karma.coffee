@@ -15,8 +15,8 @@
 #   @clsource
 
 module.exports = (robot) ->
-
-  hubotWebSite = "http://#{robot.name}.herokuapp.com/#{robot.name}"
+  hubotHost = process.env.HEROKU_URL or process.env.HUBOT_URL or "http://localhost:8080"
+  hubotWebSite = "#{hubotHost}/#{robot.name}"
 
   robot.hear /@?((?=[^\+\-_])[a-zA-Z0-9-_]+|[^-\s\+]+)(\b\+{2}|-{2})(\s|$)/g, (response) ->
     tokens = response.match
