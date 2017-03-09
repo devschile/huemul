@@ -43,7 +43,6 @@
     "hubot-emoji-creator": "0.1.0",
     "hubot-google-images": "^0.2.6",
     "hubot-help-private": "^1.0.0",
-    "hubot-heroku-deploy-hook": "0.0.2",
     "hubot-info-rut": "^2.0.2",
     "hubot-insulter": "^1.0.2",
     "hubot-jobtitles": "0.0.2",
