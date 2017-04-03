@@ -3,18 +3,11 @@ node_js:
 - '7'
 notifications:
   email: false
-  webhooks: http://huemul.devschile.cl/travis-ci/huemul-devs
-env:
-- CXX=g++-4.8
+  webhooks: https://huemul.devschile.cl/travis-ci/huemul-devs
 addons:
   ssh_known_hosts:
   - github.com
   - 104.131.105.95
-  apt:
-    sources:
-    - ubuntu-toolchain-r-test
-    packages:
-    - g++-4.8
 before_deploy:
 - openssl aes-256-cbc -K $encrypted_687768fa4b0e_key -iv $encrypted_687768fa4b0e_iv -in deploy_key.pem.enc -out deploy_key.pem -d
 - eval "$(ssh-agent -s)"
