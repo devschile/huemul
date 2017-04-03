@@ -135,7 +135,7 @@ module.exports = (robot) ->
         robot.brain.save()
         response.send "#{getCleanName(targetUser.name)} ahora tiene #{targetUser.karma} puntos de karma."
     .catch (err) ->
-      console.log(err)
+      robot.emit("error", err)
 
   userForToken = (token, response) ->
     return usersForToken(token)

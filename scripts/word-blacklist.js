@@ -48,7 +48,6 @@ module.exports = function(robot) {
   }
 
   function isAuthorized(user) {
-    console.log(user)
     const authorizedUsers = (process.env.HUBOT_AUTH_ADMIN) ? process.env.HUBOT_AUTH_ADMIN.split(',') : [];
 
     return authorizedUsers.indexOf(user.id) !== -1;

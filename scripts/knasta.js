@@ -74,7 +74,7 @@ module.exports = function(robot) {
 
         var $ = cheerio.load(content);
         var resultados = [];
-        
+
         if( !$('.fa-meh-o').length ) {
 
           $('.item.panel.panel-default').each(function() {
@@ -85,7 +85,7 @@ module.exports = function(robot) {
               var link = 'http://knasta.cl' + $(this).find('a').attr('href');
 
               resultados.push( '<' + link + '|' + title + ': ' + price + ' (' + discount +')>' );
-              
+
           });
 
           if(resultados.length > 0) {
@@ -120,7 +120,7 @@ module.exports = function(robot) {
         _page.close();
         _ph.exit();
 
-      }).catch(e => console.log(e));
+      }).catch(e => robot.emit('error', e));
 
     });
 

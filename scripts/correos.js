@@ -24,10 +24,10 @@ module.exports = function(robot) {
       data = JSON.parse(body);
       msg.send(data.registros[0].estado + ' ' + data.registros[0].fecha);
     } catch (error) {
-      console.log(error);
+      robot.emit('error', error);
       msg.send(body);
     }
-      
+
     });
   });
 };
