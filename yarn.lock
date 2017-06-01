@@ -1503,6 +1503,12 @@ empower-core@^0.6.1:
     call-signature "0.0.2"
     core-js "^2.0.0"
 
+encoding@^0.1.11:
+  version "0.1.12"
+  resolved "https://registry.yarnpkg.com/encoding/-/encoding-0.1.12.tgz#538b66f3ee62cd1ab51ec323829d1f9480c74beb"
+  dependencies:
+    iconv-lite "~0.4.13"
+
 entities@1.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/entities/-/entities-1.0.0.tgz#b2987aa3821347fcde642b24fdfc9e4fb712bf26"
@@ -1865,6 +1871,10 @@ function-bind@^1.0.2:
 fuse.js@^2.6.2:
   version "2.7.4"
   resolved "https://registry.yarnpkg.com/fuse.js/-/fuse.js-2.7.4.tgz#96e420fde7ef011ac49c258a621314fe576536f9"
+
+fuse.js@^3.0.4:
+  version "3.0.4"
+  resolved "https://registry.yarnpkg.com/fuse.js/-/fuse.js-3.0.4.tgz#cd4e2ec63ac324e28f5d17fcc3d01584379d3717"
 
 fuzzy@^0.1.0:
   version "0.1.3"
@@ -2238,11 +2248,12 @@ hubot-jobtitles@0.0.2:
   version "0.0.2"
   resolved "https://registry.yarnpkg.com/hubot-jobtitles/-/hubot-jobtitles-0.0.2.tgz#2a7802e56c9527ddbe9f75d9272e7c8c3ca504b3"
 
-hubot-kitsu@0.0.4:
-  version "0.0.4"
-  resolved "https://registry.yarnpkg.com/hubot-kitsu/-/hubot-kitsu-0.0.4.tgz#2735e78e251b71319367ef70b6ff8f08b18a5041"
+hubot-kitsu@0.0.5:
+  version "0.0.5"
+  resolved "https://registry.yarnpkg.com/hubot-kitsu/-/hubot-kitsu-0.0.5.tgz#930cb155ef3100009adcd5a8f6dc50919f107dee"
   dependencies:
-    node-kitsu "^1.0.0"
+    fuse.js "^3.0.4"
+    kitsu.js "^1.1.1"
 
 hubot-librarynames@0.0.1:
   version "0.0.1"
@@ -2418,7 +2429,7 @@ iconv-lite@0.4.13:
   version "0.4.13"
   resolved "https://registry.yarnpkg.com/iconv-lite/-/iconv-lite-0.4.13.tgz#1f88aba4ab0b1508e8312acc39345f36e992e2f2"
 
-iconv-lite@^0.4.4:
+iconv-lite@^0.4.4, iconv-lite@~0.4.13:
   version "0.4.17"
   resolved "https://registry.yarnpkg.com/iconv-lite/-/iconv-lite-0.4.17.tgz#4fdaa3b38acbc2c031b045d0edcdfe1ecab18c8d"
 
@@ -2879,6 +2890,12 @@ kind-of@^3.0.2:
   dependencies:
     is-buffer "^1.1.5"
 
+kitsu.js@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/kitsu.js/-/kitsu.js-1.1.1.tgz#b7274a3f098be712c2bc7091f0a9102772b1ffcb"
+  dependencies:
+    node-fetch "^1.6.3"
+
 klaw@^1.0.0:
   version "1.3.1"
   resolved "https://registry.yarnpkg.com/klaw/-/klaw-1.3.1.tgz#4088433b46b3b1ba259d78785d8e96f73ba02439"
@@ -3302,11 +3319,12 @@ nock@^9.0.13:
     propagate "0.4.0"
     qs "^6.0.2"
 
-node-kitsu@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/node-kitsu/-/node-kitsu-1.0.0.tgz#aa19184c2583fab4ce2ce34e9170b8bf066abf3f"
+node-fetch@^1.6.3:
+  version "1.7.0"
+  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-1.7.0.tgz#3ff6c56544f9b7fb00682338bb55ee6f54a8a0ef"
   dependencies:
-    request "^2.79.0"
+    encoding "^0.1.11"
+    is-stream "^1.0.1"
 
 node-pre-gyp@^0.6.29:
   version "0.6.36"
