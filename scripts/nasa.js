@@ -13,7 +13,6 @@
 // Author:
 //   @jorgeepunan
 
-var request = require('request');
 var url = 'https://api.nasa.gov/planetary/apod';
 var apikey = 'fCSASHvV7aQWommjx56XrfPwijEpHPeDkbHIPySi';
 
@@ -38,7 +37,7 @@ module.exports = function(robot) {
 
     var fullURL = url + '?api_key=' + apikey;
 
-    request(fullURL, function (error, response, body) {
+    robot.http(fullURL).get()(function (error, response, body) {
 
       if (!error && response.statusCode == 200) {
 

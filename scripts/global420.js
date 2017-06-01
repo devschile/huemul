@@ -32,9 +32,9 @@ var jokes = [
   "¿Quién tiene quequitos mágicos?"
 ];
 
-module.exports = function(pudu) {
+module.exports = function(huemul) {
 
-  pudu.respond(/420/i, function(res) {
+  huemul.respond(/420/i, function(res) {
 
     var info = global420.next420();
     var message = "";
@@ -51,7 +51,7 @@ module.exports = function(pudu) {
 
     } else {
 
-      message = "Tranquilein solamente faltan " + info.minutes + " Minutos para las 4:20 PM en:";
+      message = "Tranquilein solamente faltan " + info.minutes + " minutos para las 4:20 PM en:";
 
     }
 

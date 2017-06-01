@@ -28,8 +28,8 @@ module.exports = function(robot) {
       var resultados = [];
 
       $('.job-list .job').each(function() {
-        var title = $(this).find('a').attr('title');
-        var link = $(this).find('a').attr('href');
+        var title = $(this).find('h4').text().replace(/\n|\r/g, ' ');
+        var link = 'https://www.getonbrd.cl' + $(this).find('a').attr('href');
 
         resultados.push( '<' + link + '|' + title + '>' );
       });

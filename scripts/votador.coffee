@@ -20,6 +20,7 @@
 #
 # Author:
 #   @antonishen
+#   @juanbrujo
 
 module.exports = (robot) ->
   robot.voting = {}
@@ -33,18 +34,17 @@ module.exports = (robot) ->
       robot.voting.votes = {}
       createChoices msg.match[1]
 
-      msg.send "Comienza votación"
+      msg.send "Comienza votación. Recuerda que para votar tienes que escribir `huemul voto [opción].`"
       sendChoices(msg)
 
   robot.respond /fin votador/i, (msg) ->
     if robot.voting.votes?
-      console.log robot.voting.votes
 
       results = tallyVotes()
 
       response = "Resultados votación..."
       for choice, index in robot.voting.choices
-        response += "\n#{choice}: #{results[index]}"
+        response += "\n - Opción #{index}: #{choice}: #{results[index]} votos (#{Math.round(results[index] * 100 / results.reduce (t, s) -> t + s)}%)"
 
       msg.send response
 
@@ -59,11 +59,11 @@ module.exports = (robot) ->
 
   robot.respond /votador help/i, (msg) ->
     msg.send "*Comandos:*"
-    msg.send "Crear votación: `hubot inicio votador item1, item2, item3, ...`\n
-Votar: `hubot voto (por) N` ~ donde N es el índice de la opción\n
-Mostrar Opciones: `hubot opciones votador`\n
-Mostrar conteo de votos actual: `hubot conteo votador`\n
-Finalizar votación: `hubot fin votador`"
+    msg.send "Crear votación: `huemul inicio votador item1, item2, item3, ...`\n
+Votar: `huemul voto (por) N` ~ donde N es el índice de la opción\n
+Mostrar Opciones: `huemul opciones votador`\n
+Mostrar conteo de votos actual: `huemul conteo votador`\n
+Finalizar votación: `huemul fin votador`"
 
   robot.respond /conteo votador/i, (msg) ->
     results = tallyVotes()
@@ -78,27 +78,25 @@ Finalizar votación: `hubot fin votador`"
     else
       choice = robot.voting.choices.indexOf msg.match[2]
 
-    console.log choice
-
     sender = robot.brain.usersForFuzzyName(msg.message.user['name'])[0].name
 
     if validChoice choice
       robot.voting.votes[sender] = choice
-      msg.send "#{sender} vota por #{robot.voting.choices[choice]}"
+      msg.send "#{sender} vota por opción #{choice}: #{robot.voting.choices[choice]}"
     else
       msg.send "#{sender}: esa no es una opción válida"
 
   createChoices = (rawChoices) ->
-    robot.voting.choices = rawChoices.split(/, /)
+    robot.voting.choices = rawChoices.split(/,/)
 
   sendChoices = (msg, results = null) ->
 
     if robot.voting.choices?
       response = ""
       for choice, index in robot.voting.choices
-        response += "#{index}: #{choice}"
+        response += " - Opción #{index}: #{choice}"
         if results?
-          response += " -- Total Votos: #{results[index]}"
+          response += " -- Total votos: #{results[index]}"
         response += "\n" unless index == robot.voting.choices.length - 1
     else
       msg.send "No existe votación vigente"

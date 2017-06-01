@@ -30,12 +30,17 @@ module.exports = function(robot) {
         var $productName = $(this).find('h1 a').text();
         var $productUrl = $(this).find('.comprar a').attr('href');
         var $productPrice = $(this).find('.precio').text().trim();
-        results.push($productName + ' → ' + mainUrl + $productUrl + ' (_' + $productPrice + '_)');
+        results.push(' - ' + $productName + ': ' + '_' + $productPrice + '_\n  ' + mainUrl + $productUrl );
       });
 
       if (results.length > 0) {
-        for (var i = 0; i<results.length; i++) {
-          msg.send(results[i]);
+        var text = results.join('\n');
+
+        if (robot.adapter.constructor.name === 'SlackBot') {
+          var options = {unfurl_links: false, as_user: true};
+          robot.adapter.client.web.chat.postMessage(msg.message.room, text, options);
+        } else {
+          msg.send(text);
         }
       } else {
         msg.send('No hay de lo que buscas, habla con :pinceleart:');

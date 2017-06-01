@@ -2,11 +2,6 @@
 
 set -e
 
-npm install
 export PATH="node_modules/.bin:node_modules/hubot/node_modules/.bin:$PATH"
-if [ -f "${PWD}/.env" ]
-then
-  export $(cat ${PWD}/.env | xargs)
-fi
 
 exec node_modules/.bin/hubot --name "huemul" "$@"

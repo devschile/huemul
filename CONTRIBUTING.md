@@ -1,6 +1,6 @@
 # Contribuir
 
-El repositorio queda abierto para todos los miembros de [devsChile en GitHub](https://github.com/devschile).
+El repositorio de Huemul queda abierto para todos los miembros de [devsChile en GitHub](https://github.com/devschile).
 
 En la medida que sea posible todo script *complejo* que se quiera agregar debería ser su propio paquete de npm, ya sea el original o un fork con los cambios en esta organización u otra parte. **Una buena regla es que si tu script tiene dependencias debería ser su propio paquete, sino puede ir en la carpeta de scripts.**
 
@@ -20,6 +20,38 @@ En la medida que sea posible todo script *complejo* que se quiera agregar deber�
 --
 
 - Para probar tus cambios localmente: `$ bin/hubot` y activarás a Huemul. Ahora ya podrás invocarlo junto con sus comandos y los que hayas escrito.
-- Para enviar tus cambios a Huemul, haz un [_pull request_](https://github.com/devschile/huemul/pulls), coméntalo en [Slack devsChile](http://www.devschile.cl) canal [*#huemul-devs*](http://devschile.slack.com/messages/huemul-devs) y será revisado, testeado, linteado y, si pasa los rigurosos análisis, será agregado.
+- Para enviar tus cambios a Huemul, los pasos son:
+  - Haz un [_pull request_](https://github.com/devschile/huemul/pulls) y explica lo que hiciste. Agrega el comando para probarlo en el comentario.
+  - Agrega como reviewers a [@leonardo](https://devschile.slack.com/messages/huemul-devs/team/leonardo/), [@hector](https://devschile.slack.com/messages/huemul-devs/team/hector/), [@gmq](https://devschile.slack.com/messages/huemul-devs/team/gmq/) y/o [@jorgeepunan](https://devschile.slack.com/messages/huemul-devs/team/jorgeepunan/).
+  - Coméntalo en [Slack devsChile](http://www.devschile.cl) canal [*#huemul-devs*](http://devschile.slack.com/messages/huemul-devs) y será revisado, testeado, linteado y, si pasa los rigurosos análisis, será agregado.
 -  Para más información sobre *Hubot* consulta [Hubot Documentation > Scripting](https://hubot.github.com/docs/scripting/).
 -  **No olvides documentar tu código**.
+
+```
+                                 ;;;;;;   ;;;                  
+                                 @@@@@@   @@@                  
+                              ;;;+++@@@;;;+++;;;               
+                              @@@;;;@@@@@@;;;@@@               
+                              @@@;;;@@@@@@;;;@@@               
+                              @@@;;;;;;;;;;;;@@@               
+                                 @@@;;;@@@;;;;;;@@@            
+                                 @@@;;;@@@;;;;;;@@@            
+                                 @@@;;;;;;;;;;;;;;;@@@         
+                                 @@@;;;;;;;;;;;;;;;@@@         
+   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@;;;;;;;;;;;;;;;@@@@@@         
+   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@;;;;;;;;;;;;;;;@@@@@@         
+@@@......:;;;;;;;;;;;;;;;;;;;;;;;;;;;@@@@@@@@@            
+@@@......:;;;;;;;;;;;;;;;;;;;;;;;;;;;@@@@@@@@@            
+   @@@+;;;;;;;;;;;;;;;;;;;;;;;;;;;@@@                     
+   @@@+;;;;;;;;;;;;;;;;;;;;;;;;;;;@@@                     
+   @@@+;;;;;;;;;;;;;;;;;;;;;;;;@@@                        
+   @@@+;;;;;;;;;;;;;;;;;;;;;;;;@@@                        
+      ;@@+;;;;;;@@@@@@@@@;;;;;;@@@                        
+      ;@@+;;;;;;@@@@@@@@@;;;;;;@@@                        
+   @@@+;;;;;;@@@         @@@;;;@@@                        
+   @@@+;;;;;;@@@         @@@;;;@@@                        
+   @@@'..'@@@            @@@...@@@                        
+   @@@'..'@@@            @@@...@@@                        
+      ;@@;                  @@@                           
+      ;@@;                  @@@
+```

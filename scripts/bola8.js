@@ -36,7 +36,7 @@ var consejos = [
 module.exports = function(robot) {
   robot.respond(/pregunta|consejo/gi, function(res) {
 
-    res.send( ':huemul: ~ ' + consejos[Math.floor(Math.random() * consejos.length)] );
+    res.send( ':huemul: ~ ' + res.random(consejos) );
 
   });
 };

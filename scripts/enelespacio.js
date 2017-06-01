@@ -13,7 +13,6 @@
 // Author:
 //   @jorgeepunan
 
-var request = require('request');
 var url = 'http://api.open-notify.org/astros.json';
 
 var emojis = [":space_invader:",":stars:",":alien:",":star2:"]
@@ -25,7 +24,7 @@ function rand(items){
 module.exports = function(robot) {
   robot.respond(/en el espacio/i, function(res) {
 
-    request(url, function (error, response, body) {
+    robot.http(url).get()(function (error, response, body) {
 
       if (!error && response.statusCode == 200) {
 

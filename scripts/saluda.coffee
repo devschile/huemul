@@ -32,7 +32,6 @@ module.exports = (robot) ->
           - #mascotas: cuidado, tenencia responsable y productos para mascotas.\n
           - #random: todo lo que no cabe en otros canales, o que puede ir en todos, va aquí. Generalmente el canal con más movimiento.\n\n
 
-
-        Te sugerimos presentarte en #random y te daremos la bienvenida como corresponde. Para conocer mis comandos puedes enviarme un `help` por MD o decir `huemul help` en algún canal y te mostraré lo que puedo hacer.\n
+        Te sugerimos presentarte en #comunidad y te daremos la bienvenida como corresponde. Para conocer mis comandos puedes enviarme un `help` por MD o decir `huemul help` en algún canal y te mostraré lo que puedo hacer.\n
         No dejes de leer nuestro Código de Conducta http://www.devschile.cl/coc/ y cualquier duda o consulta sobre el CdC o el grupo puedes hacerla en #comunidad.\n
         ¡Esperamos tu participación!"
