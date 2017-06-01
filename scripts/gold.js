@@ -62,7 +62,11 @@ module.exports = robot => {
     const goldUsers = JSON.parse(robot.brain.get('gold_users') || '{}')
     const now = new Date()
     const diff = 1000 * 60 * 60 * 24 * 60 // 60 días
-    const expire = new Date(now.getTime() + diff)
+    if(goldUsers[name]){
+     const expire = new Date(goldUsers[name].expire.getTime() + diff)
+    }else{
+      const expire = new Date(now.getTime() + diff)
+    }
     goldUsers[name] = {user: name, expire: expire}
     robot.brain.set('gold_users', JSON.stringify(goldUsers))
     const channel = robot.adapter.client.rtm.dataStore.getChannelByName(process.env.GOLD_CHANNEL || '#random')
@@ -119,6 +123,11 @@ module.exports = robot => {
     } else if (keys.includes(key)) {
       const now = new Date()
       const diff = 1000 * 60 * 60 * 24 * 30 // 30 días
+      if(goldUsers[key]){
+       const expire = new Date(goldUsers[key].expire.getTime() + diff)
+      }else{
+        const expire = new Date(now.getTime() + diff)
+      }
       const expire = new Date(now.getTime() + diff)
       goldUsers[key] = {user: res.message.user.name, expire: expire}
       robot.brain.set('gold_users', JSON.stringify(goldUsers))
