@@ -104,6 +104,7 @@ Finalizar votación: `huemul fin votador`"
     msg.send response
 
   validChoice = (choice) ->
+    return false unless robot.voting.choices
     numChoices = robot.voting.choices.length - 1
     0 <= choice <= numChoices
 
