@@ -46,7 +46,10 @@ module.exports = function lastFm(robot) {
             }
         }).concat(type === 'similar' ? '&artist=' : '&tag=').concat(search);
         // request to last.fm
-        msg.http(lastUrl).get()(function (err, res, body) {
+        robot.http(lastUrl).get()(function (err, res, body) {
+            if (err || res.statusCode !== 200) {
+              return robot.emit('error', err || new Error(`Status code ${res.statusCode}`), msg)
+            }
             var respond;
             var json = JSON.parse(body);
             if (type === 'similar' && json.error !== 6) {

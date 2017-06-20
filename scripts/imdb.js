@@ -39,12 +39,15 @@ module.exports = (robot) => {
     }
 
     // Send request to the OMDB API
-    msg.http('http://omdbapi.com/').query({
+    robot.http('http://omdbapi.com/').query({
       t: title,
       y: year,
       tomatoes: true
     })
     .get()( (err, res, body) => {
+      if (err || res.statusCode !== 200) {
+        return robot.emit('error', err || new Error(`Status code ${res.statusCode}`), msg)
+      }
       const movie = JSON.parse(body);
 
       if (movie.Response === 'False') {
