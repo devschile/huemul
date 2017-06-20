@@ -22,7 +22,7 @@ module.exports = function(robot) {
     robot.http(url).get()(function(err, res, body) {
 
       if (err) {
-        robot.emit('error', err);
+        robot.emit('error', err, msg);
       } else {
         var $ = cheerio.load(body);
         var resultados  = [];

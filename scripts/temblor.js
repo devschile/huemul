@@ -23,8 +23,8 @@ module.exports = robot => {
       .query({format: 'geojson', minmagnitude: minMagnitude}) // {starttime: 'YYYY-MM-DDTHH:mm:ss-03:00'}
 
     fetch.get()((error, response, body) => {
-      if (error) return robot.emit('error', error)
-      if (response.statusCode !== 200) return robot.emit('error', new Error(`Response statusCode is ${response.statusCode}`))
+      if (error) return robot.emit('error', error, res)
+      if (response.statusCode !== 200) return robot.emit('error', new Error(`Response statusCode is ${response.statusCode}`), res)
       const {features: earthquakes} = JSON.parse(body)
 
       const earthquakesFilter = earthquakes.filter(({properties: {place}}) => {

@@ -120,7 +120,7 @@ module.exports = function(robot) {
         _page.close();
         _ph.exit();
 
-      }).catch(e => robot.emit('error', e));
+      }).catch(e => robot.emit('error', e, msg));
 
     });
 

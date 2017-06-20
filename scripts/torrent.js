@@ -25,7 +25,7 @@ module.exports = function(robot) {
 
     cloudscraper.get(url, function(error, response, body) {
       if (error) {
-        robot.emit('error', error, response);
+        robot.emit('error', error, msg);
       } else {
         var $ = cheerio.load(body);
         var resultados = [];

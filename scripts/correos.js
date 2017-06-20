@@ -24,7 +24,7 @@ module.exports = function(robot) {
       data = JSON.parse(body);
       msg.send(data.registros[0].estado + ' ' + data.registros[0].fecha);
     } catch (error) {
-      robot.emit('error', error);
+      robot.emit('error', error, msg);
       msg.send(body);
     }
 

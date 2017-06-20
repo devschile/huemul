@@ -20,7 +20,7 @@ module.exports = robot => {
     const uri = `http://especial.t13.cl/consulta-patente/index.php?patent=${patente}`
     robot.http(uri).get()((err, response, body) => {
       if (err) {
-        robot.emit('error', err, response)
+        robot.emit('error', err, res)
         res.send(`Ocurrio un error: ${err.message}`)
         return
       }

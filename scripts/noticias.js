@@ -20,7 +20,7 @@ module.exports = robot => robot.respond(/noticias (.*)/i, msg => {
 
   fetch.get()((err, res, body) => {
     if (err) {
-      robot.emit('error', err);
+      robot.emit('error', err, msg);
     } else {
       const {matches} = JSON.parse(body);
 
