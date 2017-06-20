@@ -53,9 +53,9 @@ module.exports = robot => {
     } else if (['bitcoin', 'btc'].includes(indicador)) {
       uri = BIT_API_URL
     }
-    res.robot.http(uri).get()((err, response, body) => {
+    robot.http(uri).get()((err, response, body) => {
       if (err) {
-        robot.emit('error', err, response)
+        robot.emit('error', err, res)
         res.send(`Ocurrio un error: ${err.message}`)
         return
       }
