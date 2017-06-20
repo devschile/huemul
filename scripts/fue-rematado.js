@@ -18,7 +18,7 @@ module.exports = robot => {
   robot.respond(/([A-Za-z]{2,4}[0-9]{2,4}) (fue|ha sido) rematado\?/i, res => {
     const patente = res.match[1].toLowerCase()
     const uri = `http://especial.t13.cl/consulta-patente/index.php?patent=${patente}`
-    res.robot.http(uri).get()((err, response, body) => {
+    robot.http(uri).get()((err, response, body) => {
       if (err) {
         robot.emit('error', err, response)
         res.send(`Ocurrio un error: ${err.message}`)

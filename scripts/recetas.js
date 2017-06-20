@@ -19,7 +19,7 @@ module.exports = function(robot) {
     var domain = 'https://www.recetasgratis.net/busqueda';
     var url = domain + '?q=' + busqueda.split(' ').join('+');
 
-    msg.robot.http(url).get()(function(err, res, body) {
+    robot.http(url).get()(function(err, res, body) {
 
       if (err) {
         robot.emit('error', err);

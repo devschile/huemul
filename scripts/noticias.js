@@ -16,7 +16,7 @@ const moment = require('moment');
 
 module.exports = robot => robot.respond(/noticias (.*)/i, msg => {
   const q = msg.match[1];
-  const fetch = msg.robot.http(`http://search.24horas.cl/search/?q=${q}`);
+  const fetch = robot.http(`http://search.24horas.cl/search/?q=${q}`);
 
   fetch.get()((err, res, body) => {
     if (err) {

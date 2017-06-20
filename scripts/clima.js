@@ -28,7 +28,7 @@ module.exports = function(robot) {
 
     var url = 'http://wttr.in/' + ciudad;
 
-    msg.robot.http(url).get()(function(err, res, body) {
+    robot.http(url).get()(function(err, res, body) {
       var $ = cheerio.load(body);
       if (res.statusCode !== 200 || body === 'ERROR') {
         return msg.reply('ocurrió un error con la búsqueda');

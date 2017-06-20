@@ -16,7 +16,7 @@
 module.exports = function(robot) {
   robot.respond(/flip/i, function(msg) {
     var url = 'http://tableflipper.com/json';
-    msg.robot.http(url).get()(function(err, res, body) {
+    robot.http(url).get()(function(err, res, body) {
       var data = JSON.parse(body);
       msg.send(data.gif);
     });

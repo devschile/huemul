@@ -18,7 +18,7 @@ module.exports = function(robot) {
     var mainUrl = 'http://api-correos.herokuapp.com/';
     var url = mainUrl + search;
 
-    msg.robot.http(url).get()(function(err, res, body) {
+    robot.http(url).get()(function(err, res, body) {
 
     try {
       data = JSON.parse(body);

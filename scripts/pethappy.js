@@ -20,7 +20,7 @@ module.exports = function(robot) {
     var mainUrl = 'https://www.pethappy.cl';
     var url = mainUrl + '/search/' + search.replace(' ', '%20');
 
-    msg.robot.http(url).get()(function(err, res, body){
+    robot.http(url).get()(function(err, res, body){
       if (err || res.statusCode !== 200) {
         robot.emit('error', err || new Error(`Status code is ${res.statusCode}`), msg);
         msg.reply(':happyto: mato el server, preguntar por INBOX a :pinceleart:')

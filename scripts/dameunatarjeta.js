@@ -35,7 +35,7 @@ module.exports = robot => {
       return false;
     }
 
-    msg.robot.http(url).get()((err, res, body) => {
+    robot.http(url).get()((err, res, body) => {
       if (err) {
         robot.emit('error', err);
       } else {

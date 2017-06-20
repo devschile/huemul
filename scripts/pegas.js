@@ -22,7 +22,7 @@ module.exports = function(robot) {
     var domain = 'https://www.getonbrd.cl/empleos-';
     var url = domain + busqueda.split(' ').join('%20');
 
-    msg.robot.http(url).get()(function(err, res, body) {
+    robot.http(url).get()(function(err, res, body) {
 
       var $ = cheerio.load(body);
       var resultados = [];
