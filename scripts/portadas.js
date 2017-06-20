@@ -95,7 +95,7 @@ const getPortada = (res, diario, daysPast, cb) => {
               callback(null, testUrl)
             }
           } else {
-            callback(new Error(`Status code is ${response.statusCode}`))
+            callback(new Error(`Status code is ${response.statusCode} with url ${testUrl}`))
           }
         })
       }
@@ -308,7 +308,7 @@ module.exports = robot => {
       res.send(listaPortadas())
     } else if (nombre in diarios) {
       getPortada(res, diarios[nombre], 0, (err, result) => {
-        if (err) return robot.emit('error', err)
+        if (err) return robot.emit('error', err, res)
         res.send(result)
       })
     }
