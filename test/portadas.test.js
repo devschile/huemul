@@ -8,23 +8,26 @@ const nock = require('nock')
 const helper = new Helper('../scripts/portadas.js')
 const now = new Date()
 now.setHours(now.getHours() - 3) // UTC to -03:00
-const date = now.toISOString().replace(/(\d+)-(\d+)-(\d+)T\d+:\d+:\d+.\d+Z/, '$1/$2/$3')
+const date = now.toISOString().replace(/(\d{2})(\d{2})-(\d+)-(\d+)T\d+:\d+:\d+.\d+Z/, '$4_$3_$2')
+const img = `http:\/\/impresa.soy-chile.cl\/HoyxHoy\/210617\/hoyxhoy\/${date}_pag_03-550-afba7c.jpg`
+console.log(img)
 
 test.beforeEach(t => {
-  nock('http://www.portadaschilenas.com')
-    .get(`/${date}/Latercera_grande.jpg`)
-    .reply(200)
+  nock('http://www.hoyxhoy.cl')
+    .get('/endpoints/for-soy.php')
+    .query({action: 'get-latest', size: 550})
+    .reply(200, [{img: img}])
   t.context.room = helper.createRoom({httpd: false})
 })
 
 test.afterEach(t => t.context.room.destroy())
 
-test.cb('Debe entregar la portada de la tercera', t => {
-  t.context.room.user.say('user', 'hubot portada tercera')
+test.cb('Debe entregar la portada de la hoyxhoy', t => {
+  t.context.room.user.say('user', 'hubot portada hoyxhoy')
   setTimeout(() => {
     t.deepEqual(t.context.room.messages, [
-      ['user', 'hubot portada tercera'],
-      ['hubot', `http://www.portadaschilenas.com/${date}/Latercera_grande.jpg`]
+      ['user', 'hubot portada hoyxhoy'],
+      ['hubot', img]
     ])
     t.end()
   }, 500)

@@ -55,6 +55,6 @@ module.exports = robot => {
     const promises = [getCsv(urlFNames, parserFNames), getCsv(UrlLNames, parserLNames)]
     Promise.all(promises).then(() => {
       res.send(`${random(fNames)} ${random(lNames1)} ${random(lNames2)}`)
-    }).catch(err => robot.emit('error', err))
+    }).catch(err => robot.emit('error', err, res))
   })
 }

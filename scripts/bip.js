@@ -18,7 +18,7 @@
 
 module.exports = function(robot) {
 
-  return robot.respond(/bip (\w+)/i, function(msg) {
+  robot.respond(/bip (\w+)/i, function(msg) {
 
     let indicador = msg.match[1];
     msg.send('La consulta va en la micro... espere harto... :clock5:');
@@ -28,9 +28,10 @@ module.exports = function(robot) {
     } else {
       let url = `http://bip-servicio.herokuapp.com/api/v1/solicitudes.json?bip=${indicador}`;
 
-      return msg.http(url).get()(function(err, res, body) {
-        if (err) {
+      robot.http(url).get()(function(err, res, body) {
+        if (err || res.statusCode !== 200) {
           msg.send('Algo pasó, intente nuevamente.');
+          return robot.emit('error', err || new Error(`Status code ${res.statusCode}`), msg)
         }
         if (body.indexOf('<') > -1) {
           msg.send('Error, intente con otro número.');
@@ -51,7 +52,7 @@ module.exports = function(robot) {
         }
       });
     }
-    
+
   });
 
 };

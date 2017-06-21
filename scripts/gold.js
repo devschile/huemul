@@ -184,7 +184,7 @@ module.exports = robot => {
       }
       res.send('Ok')
     } else {
-      robot.emit('error', `Se envió un request inválido con el siguiente email: ${req.body.email}`)
+      robot.emit('error', new Error(`Se envió un request inválido con el siguiente email: ${req.body.email}`))
       res.send('Error')
     }
   })

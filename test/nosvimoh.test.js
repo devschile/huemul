@@ -4,7 +4,7 @@ require('coffee-script/register');
 const test = require('ava');
 const Helper = require('hubot-test-helper');
 
-const helper = new Helper('../scripts/nosvimoh.coffee');
+const helper = new Helper('../scripts/nosvimoh.js');
 
 class NewMockResponse extends Helper.Response {
   random(items) {

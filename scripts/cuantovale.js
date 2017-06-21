@@ -23,7 +23,7 @@ module.exports = robot => {
 
     fetch.get(url, (err, res, body) => {
       if (err || res.statusCode !== 200) {
-        return robot.emit('error', err || res.statusCode)
+        return robot.emit('error', err || new Error(`Status code ${res.statusCode}`), msg)
       }
 
       const $ = cheerio.load(body)

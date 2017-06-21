@@ -58,7 +58,7 @@ module.exports = function(robot) {
     var domain = 'http://knasta.cl/results/';
     var url = domain + busqueda.split(' ').join('%20');
 
-    msg.robot.http(url).get()(function(err, res, body) {
+    robot.http(url).get()(function(err, res, body) {
 
       phantom.create().then(ph => {
         _ph = ph;
@@ -120,7 +120,7 @@ module.exports = function(robot) {
         _page.close();
         _ph.exit();
 
-      }).catch(e => robot.emit('error', e));
+      }).catch(e => robot.emit('error', e, msg));
 
     });
 

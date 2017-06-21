@@ -156,7 +156,7 @@ module.exports = robot => {
         robot.brain.set('karmaLog', karmaLog)
         robot.brain.save()
         response.send(`${getCleanName(targetUser.name)} ahora tiene ${targetUser.karma} puntos de karma.`)
-      }).catch(err => robot.emit('error', err))
+      }).catch(err => robot.emit('error', err, response))
   }
 
   robot.hear(/([a-zA-Z0-9-_\.]|[^\,\-\s\+$!(){}"'`~%=^:;#°|¡¿?]+?)(\b\+{2}|-{2})([^,]?|\s|$)/g, response => {

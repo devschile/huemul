@@ -35,9 +35,9 @@ module.exports = robot => {
       return false;
     }
 
-    msg.robot.http(url).get()((err, res, body) => {
+    robot.http(url).get()((err, res, body) => {
       if (err) {
-        robot.emit('error', err);
+        robot.emit('error', err, msg);
       } else {
         const dom = load(body);
         const section = dom(dom('section').get(3));

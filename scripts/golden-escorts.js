@@ -44,7 +44,7 @@ module.exports = function(robot) {
 
       robot.messageRoom('#nsfw', 'Buscando en sexo.cl chicas para ti :monea: ');
 
-      msg.robot.http(url).get()(function(err, res, body) {
+      robot.http(url).get()(function(err, res, body) {
 
         var $           = cheerio.load(body);
         tipo            = $('#subtCate').text();

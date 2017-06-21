@@ -1,28 +1,45 @@
-# Description:
-#   laura pausini foto prohibida zentaurus taringa crack full
-#
-# Dependencies:
-#   None
-#
-# Configuration:
-#   None
-#
-# Commands:
-#   hubot videla
-#   hubot taringa
-#   hubot pregunta
-#
-# Author:
-#   @eljojo
+// Description:
+//   laura pausini foto prohibida zentaurus taringa crack full
+//
+// Dependencies:
+//   None
+//
+// Configuration:
+//   None
+//
+// Commands:
+//   hubot videla
+//   hubot taringa
+//   hubot pregunta
+//
+// Author:
+//   @eljojo
 
-rand = (array) -> array[Math.floor(Math.random()*array.length)]
+let rand = array => array[Math.floor(Math.random()*array.length)];
 
-class Juliiiiiiito
-  constructor: (msg) ->
-    @msg = msg
+class Juliiiiiiito {
+  constructor(msg) {
+    this.lyrics = this.lyrics.bind(this);
+    this.dondebuscar = this.dondebuscar.bind(this);
+    this.persona_mujer = this.persona_mujer.bind(this);
+    this.persona_hombre = this.persona_hombre.bind(this);
+    this.persona_cualquiera = this.persona_cualquiera.bind(this);
+    this.significado = this.significado.bind(this);
+    this.preguntas_significado = this.preguntas_significado.bind(this);
+    this.cosa_desconocida = this.cosa_desconocida.bind(this);
+    this.usar_cosa_desconocida = this.usar_cosa_desconocida.bind(this);
+    this.cosa_para_hacer = this.cosa_para_hacer.bind(this);
+    this.tutorial = this.tutorial.bind(this);
+    this.accion = this.accion.bind(this);
+    this.lugar = this.lugar.bind(this);
+    this.accion_una_persona_a_otra = this.accion_una_persona_a_otra.bind(this);
+    this.hacer_pregunta = this.hacer_pregunta.bind(this);
+    this.yapo = this.yapo.bind(this);
+    this.msg = msg;
+  }
 
-  lyrics: =>
-    rand ["a ella le gusta la gasolina",
+  lyrics() {
+    return rand(["a ella le gusta la gasolina",
       "nada tiene de especial, dos mujeres que se dan la mano",
       "dansa cuduro",
       "por amarte asi cristian castro",
@@ -32,10 +49,11 @@ class Juliiiiiiito
       "son amores urbanos mekano regio",
       "cucurucucu paloma mekano",
       "mueve el ombligo mueve cristel"
-    ]
+    ]);
+  }
 
-  dondebuscar: =>
-    rand [
+  dondebuscar() {
+    return rand([
       "bajar arez",
       "bajar taringa",
       "karaoke erotico",
@@ -45,11 +63,12 @@ class Juliiiiiiito
       "vevo",
       "groovesharc",
       "sptify"
-    ]
+    ]);
+  }
 
 
-  persona_mujer: =>
-    rand [
+  persona_mujer() {
+    return rand([
       "paty maldonado",
       "patti maldonado",
       "maria elena sweet",
@@ -68,10 +87,11 @@ class Juliiiiiiito
       "cecilia la imcomparable",
       "maria jose quintanilla",
       "cesilia boloco"
-    ]
+    ]);
+  }
 
-  persona_hombre: =>
-    rand [
+  persona_hombre() {
+    return rand([
       "luciano bello",
       "tata pinocho",
       "chapulin colorado",
@@ -94,13 +114,15 @@ class Juliiiiiiito
       "mauricio israel",
       "nelson avila",
       "zentaurus"
-    ]
+    ]);
+  }
 
-  persona_cualquiera: =>
-    rand [@persona_mujer(), @persona_hombre(), @msg.message.user.name]
+  persona_cualquiera() {
+    return rand([this.persona_mujer(), this.persona_hombre(), this.msg.message.user.name]);
+  }
 
-  significado: =>
-    rand [
+  significado() {
+    return rand([
       "fake",
       "bacan",
       "choriflai",
@@ -112,10 +134,11 @@ class Juliiiiiiito
       "1313",
       "por el chico no hay guagua",
       "estai papo"
-    ]
+    ]);
+  }
 
-  preguntas_significado: =>
-    rand [
+  preguntas_significado() {
+    return rand([
       "por que los niños dicen",
       "por que los lolos dicen",
       "que significa",
@@ -123,10 +146,11 @@ class Juliiiiiiito
       "ejemplos de uso palabra",
       "como usar la palabra",
       "que significa cuando mi nieto dice"
-    ]
+    ]);
+  }
 
-  cosa_desconocida: =>
-    rand [
+  cosa_desconocida() {
+    return rand([
       "youtube",
       "twitter",
       "gmail",
@@ -139,19 +163,21 @@ class Juliiiiiiito
       "javascrit",
       "acheteemele",
       "snapchatrs"
-    ]
+    ]);
+  }
 
-  usar_cosa_desconocida: =>
-    rand [
+  usar_cosa_desconocida() {
+    return rand([
       "como usar",
       "que es un",
       "como funciona el",
       "como jotear lolitas en",
       "donde esta el chat en"
-    ]
+    ]);
+  }
 
-  cosa_para_hacer: =>
-    rand [
+  cosa_para_hacer() {
+    return rand([
       "hakear correo latinmail",
       "alejar a ex novio resentido",
       "hacer peinado Puma Rodriguez",
@@ -171,19 +197,21 @@ class Juliiiiiiito
       "mandar watsap desde fono fax",
       "mandar foto del sexo por fono fax",
       "hacer un vampirito",
-    ]
+    ]);
+  }
 
-  tutorial: =>
-    rand [
+  tutorial() {
+    return rand([
       "tutorial taringa",
       "tutorial paso a paso",
       "guia con fotos",
       "tutorial youtube",
       "tutorial bananero"
-    ]
+    ]);
+  }
 
-  accion: =>
-    rand [
+  accion() {
+    return rand([
       "cantando en el baño",
       "gritando en la alameda",
       "saludando a el presi",
@@ -194,10 +222,11 @@ class Juliiiiiiito
       "bailando ganam stile",
       "haciendo el treque treque",
       "baile del pollito"
-    ]
+    ]);
+  }
 
-  lugar: =>
-    rand [
+  lugar() {
+    return rand([
       "verano 94 pichidangui",
       "verano 83 cajon del maipo",
       "verano 43 plaza italia",
@@ -205,25 +234,26 @@ class Juliiiiiiito
       "detras de escenas cachureos",
       "evento anime 2004",
       "malón privada equipo mekano",
-      "malón campo dichato de #{@persona_cualquiera()}",
+      `malón campo dichato de ${this.persona_cualquiera()}`,
       "playa nudista miami",
       "festival de viña 74",
       "estudio de grabacion pase lo que pase",
       "detras de escena alo ely",
       "verano 2006 costa varua",
       "verano 97 cachagua",
-      "cumpleaños 2000 #{@persona_cualquiera()}",
+      `cumpleaños 2000 ${this.persona_cualquiera()}`,
       "ensayos japennin con já",
       "galpon persa biobio",
       "porlaputa",
       "la cuarta",
       "twitter",
       "slack",
-      "##{@msg.message.room}"
-    ]
+      `#${this.msg.message.room}`
+    ]);
+  }
 
-  accion_una_persona_a_otra: =>
-    rand [
+  accion_una_persona_a_otra() {
+    return rand([
       "besando a",
       "entregando su flor",
       "fumando estragon",
@@ -235,39 +265,47 @@ class Juliiiiiiito
       "aspirando lysoform",
       "chocando el hueso",
       "haciendo un vampirito",
-    ]
+    ]);
+  }
 
-  hacer_pregunta: =>
-    rand [
-      "#{@usar_cosa_desconocida()} #{@cosa_desconocida()} pregunta",
-      "que significa \"#{@msg.message.text}\" pregunta"
-    ]
+  hacer_pregunta() {
+    return rand([
+      `${this.usar_cosa_desconocida()} ${this.cosa_desconocida()} pregunta`,
+      `que significa \"${this.msg.message.text}\" pregunta`
+    ]);
+  }
 
-  # "#{@msg.message.text} #{@msg.message.user.name}"
-  yapo: =>
-    rand [
-      "video prohibido #{@persona_cualquiera()} #{@accion()} sin ropa online",
-      "fotos de #{@msg.message.user.name} #{@accion()} empelota",
-      "#{@lyrics()} #{@dondebuscar()}",
-      "#{@persona_hombre()} #{@accion_una_persona_a_otra()} #{@persona_mujer()} #{@lugar()} video prohibido",
-      "#{@preguntas_significado()} \"#{@significado()}\"",
-      "#{@usar_cosa_desconocida()} #{@cosa_desconocida()} pregunta",
-      "como #{@cosa_para_hacer()} #{@tutorial()}",
-      "#{@persona_cualquiera()} cantando #{@lyrics()} #{@lugar()}",
-      "que significa \"#{@msg.message.text}\" pregunta"
-    ]
+  // "#{@msg.message.text} #{@msg.message.user.name}"
+  yapo() {
+    return rand([
+      `video prohibido ${this.persona_cualquiera()} ${this.accion()} sin ropa online`,
+      `fotos de ${this.msg.message.user.name} ${this.accion()} empelota`,
+      `${this.lyrics()} ${this.dondebuscar()}`,
+      `${this.persona_hombre()} ${this.accion_una_persona_a_otra()} ${this.persona_mujer()} ${this.lugar()} video prohibido`,
+      `${this.preguntas_significado()} \"${this.significado()}\"`,
+      `${this.usar_cosa_desconocida()} ${this.cosa_desconocida()} pregunta`,
+      `como ${this.cosa_para_hacer()} ${this.tutorial()}`,
+      `${this.persona_cualquiera()} cantando ${this.lyrics()} ${this.lugar()}`,
+      `que significa \"${this.msg.message.text}\" pregunta`
+    ]);
+  }
+}
 
-module.exports = (robot) ->
-  # robot.enter (msg) ->
-  robot.respond /(videla|taringa)/i, (msg) ->
-    # console.log msg
-    # msg.send msg.random enterReplies
-    # msg.send "Bienvenido a *#{msg.message.room}*"
-    respuesta = new Juliiiiiiito(msg)
-    msg.send respuesta.yapo()
+module.exports = robot => {
+  // robot.enter (msg) ->
+  robot.respond(/(videla|taringa)/i, function(msg) {
+    // console.log msg
+    // msg.send msg.random enterReplies
+    // msg.send "Bienvenido a *#{msg.message.room}*"
+    let respuesta = new Juliiiiiiito(msg);
+    msg.send(respuesta.yapo());
+  });
 
-  # tranquilein john wayne
-  robot.respond /pregunta/i, (msg) ->
-    if Math.random() * 10 > 7
-      respuesta = new Juliiiiiiito(msg)
-      msg.send respuesta.hacer_pregunta()
+  // tranquilein john wayne
+  robot.respond(/pregunta/i, function(msg) {
+    if ((Math.random() * 10) > 7) {
+      let respuesta = new Juliiiiiiito(msg);
+      msg.send(respuesta.hacer_pregunta());
+    }
+  });
+};

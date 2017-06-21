@@ -19,11 +19,6 @@ const endpointHxh = 'http://www.hoyxhoy.cl/endpoints/for-soy.php?action=get-late
 const listaPortadas = () => {
   return `
   *Chile:*
-    (la)? segunda
-    (la)? tercera
-    (la)? cuarta
-    ((las)? ultimas noticias)|lun
-    (el)? mercurio$
     (el)? mercurio ((de)? calama|antofa(gasta)?|valpara(í|i)so|valpo)?
     (la)? estrella ((del?)? arica|iquique|loa|antofa(gasta)?|tocopilla|valpara(í|i)so|valpo|quillota|concepci(ó|o)n|chilo(é|e))
     (el)? sur
@@ -33,7 +28,6 @@ const listaPortadas = () => {
     (el)? diario (de)? atacama
     cr(ó|o)nica chill(á|a)n
     (hoyxhoy|hxh)
-    publimetro
   *Uruguay:*
     (el)? pais (uruguay|uru|uy)
   *Brasil:*
@@ -95,7 +89,7 @@ const getPortada = (res, diario, daysPast, cb) => {
               callback(null, testUrl)
             }
           } else {
-            callback(new Error(`Status code is ${response.statusCode}`))
+            callback(new Error(`Status code is ${response.statusCode} with url ${testUrl}`))
           }
         })
       }
@@ -119,34 +113,6 @@ module.exports = robot => {
       .replace(/chiloé$/, 'chiloe')
 
     const diarios = {
-      segunda: {
-        url: 'http://www.portadaschilenas.com/#DATE#/Lasegunda_grande.jpg',
-        noSlashes: false
-      },
-      tercera: {
-        url: 'http://www.portadaschilenas.com/#DATE#/Latercera_grande.jpg',
-        noSlashes: false
-      },
-      cuarta: {
-        url: 'http://www.portadaschilenas.com/#DATE#/Lacuarta_grande.jpg',
-        noSlashes: false
-      },
-      publimetro: {
-        url: 'http://www.portadaschilenas.com/#DATE#/pm_grande.jpg',
-        noSlashes: false
-      },
-      mercurio: {
-        url: 'http://www.portadaschilenas.com/#DATE#/Emol_grande.jpg',
-        noSlashes: false
-      },
-      ultimasnoticias: {
-        url: 'http://www.portadaschilenas.com/#DATE#/Lun_grande.jpg',
-        noSlashes: false
-      },
-      lun: {
-        url: 'http://www.portadaschilenas.com/#DATE#/Lun_grande.jpg',
-        noSlashes: false
-      },
       estrellaarica: {
         url: 'http://edicionimpresa.soychile.cl/portadas/EstrellaArica/01-550.jpg',
         noSlashes: false
@@ -308,7 +274,7 @@ module.exports = robot => {
       res.send(listaPortadas())
     } else if (nombre in diarios) {
       getPortada(res, diarios[nombre], 0, (err, result) => {
-        if (err) return robot.emit('error', err)
+        if (err) return robot.emit('error', err, res)
         res.send(result)
       })
     }
