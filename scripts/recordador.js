@@ -58,7 +58,7 @@ class Reminders {
           return this.queue();
         };
         // setTimeout uses a 32-bit INT
-        var extendTimeout = function(timeout, callback) {
+        var extendTimeout = (timeout, callback) =>{
           if (timeout > 0x7FFFFFFF) {
             return this.current_timeout = setTimeout(() => extendTimeout((timeout - 0x7FFFFFFF), callback)
             , 0x7FFFFFFF);
