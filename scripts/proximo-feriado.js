@@ -34,6 +34,11 @@ function humanizeMonth(month){
   return monthNames[month];
 }
 
+function humanizeDay(day){
+  var dayNames  = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+
+  return dayNames[day];
+}
 
 
 module.exports = function (robot) {
@@ -52,11 +57,12 @@ module.exports = function (robot) {
               body = JSON.parse(body);
 
           body.data.forEach(function(holiday, index) {
-            var date        = new Date(holiday.date + 'T00:00:00-03:00'),
-                humanDate   = holiday.date.split('-');
-                humanDay    = humanDate[2].replace(/^0+/, '');
-                humanMonth  = humanDate[1],
-                message     = holiday.title + " (_" + holiday.extra.toLowerCase() + "_)";
+            var date          = new Date(holiday.date + 'T00:00:00-03:00'),
+                humanDate     = holiday.date.split('-');
+                humanDay      = humanDate[2].replace(/^0+/, '');
+                humanMonth    = humanDate[1],
+                humanWeekDay  = humanizeDay(date.getDay()),
+                message       = holiday.title + " (_" + holiday.extra.toLowerCase() + "_)";
 
             if (ok == false && date.getTime() >= today.getTime()) {
               ok = true;
@@ -70,7 +76,7 @@ module.exports = function (robot) {
               if (dias == 0) {
                 msg.send('¡*HOY* es feriado! Se celebra: ' + message + '. ¡Disfrútalo!');
               } else {
-                msg.send("El próximo feriado es el *" + humanDay + " de " + humanizeMonth(humanMonth).toLowerCase() + "*, quedan *" + dias + "* días. Se celebra: " + message + ".");
+                msg.send("El próximo feriado es el *" + humanWeekDay + " " + humanDay + " de " + humanizeMonth(humanMonth) + "*, quedan *" + dias + "* días. Se celebra: " + message + ".");
               }
             }
           });

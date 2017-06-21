@@ -3,7 +3,7 @@
 //
 //  Dependencies:
 //    cheerio
-//    request
+//    cloudscraper
 //
 // Commands:
 //   hubot cu(a|á)ntovale [url sin http:// ni www.]
@@ -11,48 +11,28 @@
 // Author:
 //   @juanbrujo
 
-var cheerio = require('cheerio');
-var http  = require('http');
+const cheerio = require('cheerio')
+const fetch = require('cloudscraper')
 
-module.exports = function(robot) {
-  robot.respond(/cu(a|á)ntovale (.*)/i, function(msg) {
-    msg.send(':timer_clock: buscando...');
+module.exports = robot => {
+  robot.respond(/cu(a|á)ntovale (.*)/i, msg => {
+    msg.send(':timer_clock: buscando...')
 
-    var search = msg.match[2];
-    var mainUrl = 'http://www.worthofweb.com/website-value/';
-    var url = mainUrl + search;
-    var find_link = function(link, callback){
-      var root =''; 
+    const site = msg.match[2]
+    const url = `http://www.worthofweb.com/website-value/${site}`
 
-      var f = function(link) {
-        http.get(link, function(res) {
-          if (res.statusCode == 301) {
-            f(res.headers.location);
-          } else {
-            callback(link);
-          } 
-        });
+    fetch.get(url, (err, res, body) => {
+      if (err || res.statusCode !== 200) {
+        return robot.emit('error', err || res.statusCode)
       }
 
-      f(link, function(t){
-        i(t,'*');
-      });
-    }   
+      const $ = cheerio.load(body)
 
-    find_link(url, function(link){
-      msg.robot.http(link).get()(function(err, res, body){
-
-        var $ = cheerio.load(body);
-
-        if( $('.fa-bell').length ) {
-          msg.send('Este sitio no existe. Intenta con otro.')
-        } else {
-          msg.send(':monea: ' + $('title').text().trim().split(' - ')[0])
-        }
-
-      });
-      
-    });
-
-  });
-};
+      if ($('.fa-bell').length) {
+        msg.send('Este sitio no existe. Intenta con otro.')
+      } else {
+        msg.send(':monea: ' + $('title').text().trim().split(' - ')[0])
+      }
+    })
+  })
+}

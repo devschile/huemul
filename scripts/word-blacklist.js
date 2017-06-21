@@ -61,10 +61,12 @@ module.exports = function(robot) {
       let forbiddenWords = process.env.HUBOT_BANNED_WORDS || '';
       forbiddenWords = forbiddenWords.split(',').filter(word => word !== '')
       for (let i = 0; i < forbiddenWords.length; i++) {
-        if (command.indexOf(forbiddenWords[i]) !== -1) {
-          punishUser(context.response.message.user);
+        if (typeof command !== 'undefined' && command !== null) {
+          if (command.indexOf(forbiddenWords[i]) !== -1) {
+            punishUser(context.response.message.user);
 
-          return robot.messageRoom('#random', `${context.response.message.user.name} me quiso maltratar. No lo voy a pescar por 5 minutos.`);
+            return robot.messageRoom('#random', `${context.response.message.user.name} me quiso maltratar. No lo voy a pescar por 5 minutos.`);
+          }
         }
       }
       next();

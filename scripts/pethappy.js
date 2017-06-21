@@ -21,6 +21,11 @@ module.exports = function(robot) {
     var url = mainUrl + '/search/' + search.replace(' ', '%20');
 
     msg.robot.http(url).get()(function(err, res, body){
+      if (err || res.statusCode !== 200) {
+        robot.emit('error', err || new Error(`Status code is ${res.statusCode}`), msg);
+        msg.reply(':happyto: mato el server, preguntar por INBOX a :pinceleart:')
+        return
+      }
       var $ = cheerio.load(body);
       var results = [];
 

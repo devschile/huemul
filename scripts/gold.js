@@ -56,18 +56,35 @@ module.exports = robot => {
   /**
    * Agrega un usuario al store de golden
    * @param  {String} name
+   * @param  {Number} days
+   * @param  {String} channelId
+   * @param  {String} key
    * @return {Void}
    */
-  const addUser = name => {
+  const addUser = (name, days, channelId=null, key=null) => {
     const goldUsers = JSON.parse(robot.brain.get('gold_users') || '{}')
-    const now = new Date()
-    const diff = 1000 * 60 * 60 * 24 * 60 // 60 días
+    const diff = 1000 * 60 * 60 * 24 * days
+    let now
+    if (Object.keys(goldUsers).includes(name)) {
+      date = new Date(goldUsers[name].expire)
+      if (Object.prototype.toString.call(date) === '[object Date]') {
+        if (!isNaN(date.getTime())) {
+          now = date
+        }
+      }
+    }
+    if (!now) now = new Date()
     const expire = new Date(now.getTime() + diff)
     goldUsers[name] = {user: name, expire: expire}
+    let message = ':clap2: eres miembro golden :monea: por 1 mes!'
+    if (key === null) {
+      channelId = robot.adapter.client.rtm.dataStore.getChannelByName(process.env.GOLD_CHANNEL || '#random').id
+      message = `:clap2: *${name}* donó 1 mes de servidor a :huemul:, se lleva 3 stickers :huemul: y es miembro golden :monea: por 2 meses!`
+    } else {
+      goldUsers[name].key = key
+    }
     robot.brain.set('gold_users', JSON.stringify(goldUsers))
-    const channel = robot.adapter.client.rtm.dataStore.getChannelByName(process.env.GOLD_CHANNEL || '#random')
-    const message = `:clap2: *${name}* donó 1 mes de servidor a :huemul:, se lleva 3 stickers :huemul: y es miembro golden :monea: por 2 meses!`
-    robot.send({room: channel.id}, message)
+    robot.send({room: channelId}, message)
   }
 
   class Golden {
@@ -113,19 +130,10 @@ module.exports = robot => {
   robot.respond(/gold insert (.*)/i, res => {
     const key = res.match[1]
     const keys = (process.env.GOLD_KEYS || '').split(',')
-    const goldUsers = JSON.parse(robot.brain.get('gold_users') || '{}')
-    if (key in goldUsers) {
-      res.send('Lo siento, la key ya fue utilizada.')
-    } else if (keys.includes(key)) {
-      const now = new Date()
-      const diff = 1000 * 60 * 60 * 24 * 30 // 30 días
-      const expire = new Date(now.getTime() + diff)
-      goldUsers[key] = {user: res.message.user.name, expire: expire}
-      robot.brain.set('gold_users', JSON.stringify(goldUsers))
-      res.send('*¡Felicitaciones!* ya eres golden :monea: :wink: :yeah:')
-    } else {
-      res.send('No es una clave válida')
-    }
+    if (!keys.includes(key)) return res.send('No es una clave válida')
+    const user = getGoldUsers().find(user => user.data.key === key)
+    if (user) return res.send('Lo siento, la key ya fue utilizada.')
+    addUser(res.message.user.name, 30, res.message.room, key)
   })
 
   robot.respond(/gold add (.*)/i, res => {
@@ -134,7 +142,7 @@ module.exports = robot => {
     if (isAdmin || hasRole) {
       const user = robot.adapter.client.rtm.dataStore.getUserByName(res.match[1])
       if (typeof user !== 'undefined') {
-        addUser(user.name)
+        addUser(user.name, 60)
       } else {
         res.reply('el usuario no existe')
       }
@@ -161,7 +169,7 @@ module.exports = robot => {
     if (req.get('User-Agent') === process.env.GOLD_USER_AGENT && req.body.secret === process.env.GOLD_SECRET) {
       const user = robot.adapter.client.rtm.dataStore.getUserByEmail(req.body.email)
       if (typeof user !== 'undefined') {
-        addUser(user.name)
+        addUser(user.name, 60)
       } else {
         const admins = process.env.HUBOT_AUTH_ADMIN
         if (admins) {

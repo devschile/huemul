@@ -14,7 +14,7 @@
 //   @jorgeepunan
 
 
-function displayCalendar (month, year) {
+function displayCalendar (today, month, year) {
 
   month = parseInt(month);
   year = parseInt(year);
@@ -33,7 +33,11 @@ function displayCalendar (month, year) {
     if ( i%7 == 0 ) calendar += "\n ";
     if (i-startingPos+1 < 10)
       calendar += "0";
-    calendar += i-startingPos+1;
+    if(i-startingPos+1 == today) {
+      calendar += '()'
+    } else {
+      calendar += i-startingPos+1;
+    }
     calendar += " ";
   }
   for (i=days; i<42; i++)  {
@@ -70,9 +74,9 @@ function isLeapYear (Year) {
 
 function monthES (monthNum) {
 
-	var months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Sedtiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-	
-	return months[monthNum];
+  var months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Sedtiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
+  return months[monthNum];
 
 }
 
@@ -80,11 +84,12 @@ module.exports = function(robot) {
 
 	robot.respond(/calendario/, function(msg) {
 
-		var date   = new Date();
-		var currentMonth = date.getMonth();
-		var currentYear = date.getFullYear();
+    var date   = new Date();
+    var today = date.getDate();
+    var currentMonth = date.getMonth();
+    var currentYear = date.getFullYear();
 
-		msg.send('```\n Calendario para: ' + monthES(currentMonth) + '/' + currentYear + '\n\n' + displayCalendar(currentMonth, currentYear) + '\n```');
+    msg.send('```\n Calendario para: ' + monthES(currentMonth) + '/' + currentYear + '\n\n' + displayCalendar(today, currentMonth, currentYear) + '\n```');
 
 	});
 
