@@ -210,11 +210,19 @@ module.exports = robot => {
             robot.brain.save()
           })
         }
+
       } else {
         userForToken(targetToken, response).then(targetUser => {
           if (!targetUser) return
           response.send(`${getCleanName(targetUser.name)} tiene ${targetUser.karma} puntos de karma. Más detalles en: ${hubotWebSite}/karma/log/${targetUser.name}`)
         })
+      })
+
+  robot.router.get(`/${robot.name}/karma/log`, (req, res) => {
+    const karmaLog = robot.brain.get('karmaLog') || []
+    const processedKarmaLog = karmaLog.map(line => {
+      if (typeof line !== 'string') {
+        line = `${line.name} le ha dado ${line.karma} karma a ${line.targetName} - ${new Date(line.date).toJSON()}`
       }
     })
   

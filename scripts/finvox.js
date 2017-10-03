@@ -2,7 +2,7 @@
 //   Obtiene indicadores económicos para Chile
 //
 // Dependencies:
-//   none
+//   numberToCLPFormater
 //
 // Configuration:
 //   None
@@ -10,7 +10,6 @@
 // Commands:
 //   hubot finvox help
 //   hubot finvox dolar|usd
-//   hubot finvox bitcoin
 //   hubot finvox uf
 //   hubot finvox euro
 //   hubot finvox ipc
@@ -20,9 +19,8 @@
 // Author:
 //   @jorgeepunan
 
-const API_URL = process.env.API_URL || 'http://indicadoresdeldia.cl/webservice/indicadores.json'
-const BIT_API_URL = process.env.BIT_API_URL || 'https://blockchain.info/es/ticker'
-const SURBTC_ETH_URL = process.env.SURBTC_ETH_URL || 'https://www.surbtc.com/api/v2/markets/eth-clp/ticker.json'
+const CLP = require('numbertoclpformater').numberToCLPFormater;
+const API_URL = process.env.API_URL || 'http://mindicador.cl/api/'
 const mensajes = [
   'Aunque te esfuerces, seguirás siendo pobre. :poop:',
   'Los políticos ganan más que tú y más encima nos roban. Y no pueden irse presos. ¡Ánimo! :monkey:',
@@ -49,7 +47,7 @@ module.exports = robot => {
     const indicador = res.match[1].toLowerCase()
     const indicadores = ['uf', 'dolar', 'usd', 'euro', 'eur', 'ipc', 'utm', 'getonbrd', 'huemulcoin']
     if (indicador === 'help' || !indicador) {
-      res.send('Mis comandos son:\n\n * `finvox dolar|usd`\n * `finvox euro|eur`\n * `finvox bitcoin|btc`\n * `finvox ethereum|eth`\n * `finvox uf`\n * `finvox utm`\n * `finvox ipc`\n * `finvox getonbrd`\n * `finvox huemulcoin`\n')
+      res.send('Mis comandos son:\n\n * `finvox dolar|usd`\n * `finvox euro|eur`\n * `finvox uf`\n * `finvox utm`\n * `finvox ipc`\n * `finvox getonbrd`\n * `finvox huemulcoin`\n')
       return false
     }
     if (indicadores.includes(indicador)) {
@@ -65,38 +63,31 @@ module.exports = robot => {
     robot.http(uri).get()((err, response, body) => {
       if (err) {
         robot.emit('error', err, res)
-        res.send(`Ocurrio un error: ${err.message}`)
+        res.send(`Ocurrió un error: ${err.message}`)
         return
       }
       response.setEncoding('utf-8')
       let data = JSON.parse(body)
-      let date = ` (${data.date})`
-      if (!data.moneda && ['dolar', 'usd', 'getonbrd', 'euro', 'eur', 'huemulcoin'].includes(indicador)) {
+      let date = data.fecha.split('T')[0]
+
+      if (!data && ['dolar', 'usd', 'getonbrd', 'euro', 'eur', 'huemulcoin'].includes(indicador)) {
         return res.send('Sin resultados')
       }
       if (indicador === 'uf') {
-        data = data.indicador.uf
+        data = CLP(data.uf.valor)
       } else if (['dolar', 'usd'].includes(indicador)) {
-        data = data.moneda.dolar
+        data = CLP(data.dolar.valor)
       } else if (indicador === 'getonbrd') {
-        const complexGetonbrdCalculus = parseInt(data.moneda.dolar.split('$')[1], 10) * 1231
+        const complexGetonbrdCalculus = parseInt(data.dolar.valor, 10) * 1231
         data = `1₲ = $${numberWithCommas(complexGetonbrdCalculus)}`
       } else if (['euro', 'eur'].includes(indicador)) {
-        data = data.moneda.euro
+        data = CLP(data.euro.valor)
       } else if (indicador === 'ipc') {
-        data = `${data.indicador.ipc}%`
+        data = `${data.ipc.valor}%`
       } else if (indicador === 'utm') {
-        data = data.indicador.utm
-      } else if (['bitcoin', 'btc'].includes(indicador)) {
-        date = ''
-        const flatNumber = data.CLP.last.toString().split('.')[0]
-        data = `$${numberWithCommas(flatNumber)}`
-      } else if (['ethereum', 'eth'].includes(indicador)) {
-        date = ''
-        const ethValue = parseInt(data.ticker.last_price[0], 10);
-        data = `$${numberWithThousands(ethValue)}`
+        data = CLP(data.utm.valor)
       } else if (indicador === 'huemulcoin') {
-        const complexHuemulCoinCalculus = 1000 / parseInt(data.moneda.dolar.split('$')[1])
+        const complexHuemulCoinCalculus = 1000 / parseInt(data.dolar.valor)
         data = `1ℌℭ = US$${numberSplitDecimal(complexHuemulCoinCalculus)}`
       } else {
         data = '`finvox help` para ayuda.'
@@ -104,7 +95,7 @@ module.exports = robot => {
       if (data !== null && typeof data !== 'object') {
         data = data.toString().split(',', 1)
         const mensaje = res.random(mensajes)
-        res.send(`${indicador.toUpperCase()}: ${data}${date}. ${mensaje}`)
+        res.send(`${indicador.toUpperCase()}: ${data} (${date}). ${mensaje}`)
       } else {
         res.send('Error, intenta nuevamente *zopenco*.')
       }
