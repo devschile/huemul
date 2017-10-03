@@ -31,7 +31,8 @@ test.beforeEach(t => {
                 {name: 'cata'},
                 {name: 'dukuo'},
                 {name: 'hector'},
-                {name: 'ienc'}
+                {name: 'ienc'},
+                {name: 'chrisdelcaos'}
               ]
             })
           })
@@ -59,6 +60,9 @@ test.beforeEach(t => {
   })
   t.context.room.robot.brain.userForId('ienc', {
     name: 'ienc', id: 7
+  })
+  t.context.room.robot.brain.userForId('chrisdelcaos', {
+    name: 'chrisdelcaos', id: 8
   })
   t.context.room.robot.brain.karmaLimits = {
     user: {3: new Date()}
