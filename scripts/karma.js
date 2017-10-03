@@ -27,7 +27,6 @@ module.exports = robot => {
 
   const getUserByDisplayName = displayname => {
     const users = robot.brain.users();
-    console.log(JSON.stringify(Object.keys(users).map(key => users[key])));//para ver structura del obj
     return Object.keys(users).map(key => users[key]).find(user => displayname === user.slack.profile.display_name)
   }
 

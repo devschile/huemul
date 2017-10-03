@@ -19,20 +19,21 @@ test.beforeEach(t => {
         }
       }
     },
+    //{name: 'leonardo', slack: {profile: {display_name: 'leonardo'}}}
     web: {
       users: {
         list: function () {
           return new Promise(function (resolve) {
             resolve({
               members: [
-                {name: 'jorgeepunan'},
-                {name: 'leonardo'},
-                {name: 'leon'},
-                {name: 'cata'},
-                {name: 'dukuo'},
-                {name: 'hector'},
-                {name: 'ienc'},
-                {name: 'chrisdelcaos'}
+                {name: 'jorgeepunan', slack: {profile: {display_name: 'jorgeepunan'}}},
+                {name: 'leonardo', slack: {profile: {display_name: 'leonardo'}}},
+                {name: 'leon', slack: {profile: {display_name: 'leon'}}},
+                {name: 'cata', slack: {profile: {display_name: 'cata'}}},
+                {name: 'dukuo', slack: {profile: {display_name: 'dukuo'}}},
+                {name: 'hector', slack: {profile: {display_name: 'hector'}}},
+                {name: 'ienc', slack: {profile: {display_name: 'ienc'}}},
+                {name: 'chrisdelcaos', slack: {profile: {display_name: 'chrisdelcaos'}}}
               ]
             })
           })
@@ -41,28 +42,28 @@ test.beforeEach(t => {
     }
   }
   t.context.room.robot.brain.userForId('jorgeepunan', {
-    name: 'jorgeepunan', id: 1
+    name: 'jorgeepunan', id: 1, slack: {profile: {display_name: 'jorgeepunan'}}
   })
   t.context.room.robot.brain.userForId('leonardo', {
-    name: 'leonardo', id: 2
+    name: 'leonardo', id: 2, slack: {profile: {display_name: 'leonardo'}}
   })
   t.context.room.robot.brain.userForId('leon', {
-    name: 'leon', id: 3
+    name: 'leon', id: 3, slack: {profile: {display_name: 'leon'}}
   })
   t.context.room.robot.brain.userForId('cata', {
-    name: 'cata', id: 4, karma: -99
+    name: 'cata', id: 4, karma: -99, slack: {profile: {display_name: 'cata'}}
   })
   t.context.room.robot.brain.userForId('dukuo', {
-    name: 'dukuo', id: 5
+    name: 'dukuo', id: 5, slack: {profile: {display_name: 'dukuo'}}
   })
   t.context.room.robot.brain.userForId('hector', {
-    name: 'hector', id: 6
+    name: 'hector', id: 6, slack: {profile: {display_name: 'hector'}}
   })
   t.context.room.robot.brain.userForId('ienc', {
-    name: 'ienc', id: 7
+    name: 'ienc', id: 7, slack: {profile: {display_name: 'ienc'}}
   })
   t.context.room.robot.brain.userForId('chrisdelcaos', {
-    name: 'chrisdelcaos', id: 8
+    name: 'chrisdelcaos', id: 8, slack: {profile: {display_name: 'chrisdelcaos'}}
   })
   t.context.room.robot.brain.karmaLimits = {
     user: {3: new Date()}
