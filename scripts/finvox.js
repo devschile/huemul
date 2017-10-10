@@ -46,18 +46,10 @@ module.exports = robot => {
     let uri
     const indicador = res.match[1].toLowerCase()
     const indicadores = ['uf', 'dolar', 'usd', 'euro', 'eur', 'ipc', 'utm', 'getonbrd', 'huemulcoin']
-    if (indicador === 'help' || !indicador) {
-      res.send('Mis comandos son:\n\n * `finvox dolar|usd`\n * `finvox euro|eur`\n * `finvox uf`\n * `finvox utm`\n * `finvox ipc`\n * `finvox getonbrd`\n * `finvox huemulcoin`\n')
-      return false
-    }
     if (indicadores.includes(indicador)) {
       uri = API_URL
-    } else if (['bitcoin', 'btc'].includes(indicador)) {
-      uri = BIT_API_URL
-    } else if (['ethereum', 'eth'].includes(indicador)) {
-      uri = SURBTC_ETH_URL
     } else {
-      res.send('Mis comandos son:\n\n * `finvox dolar|usd`\n * `finvox euro|eur`\n * `finvox bitcoin|btc`\n * `finvox uf`\n * `finvox utm`\n * `finvox ipc`\n * `finvox getonbrd`\n * `finvox huemulcoin`\n')
+      res.send('Mis comandos son:\n\n * `finvox dolar|usd`\n * `finvox euro|eur`\n * `finvox uf`\n * `finvox utm`\n * `finvox ipc`\n * `finvox getonbrd`\n * `finvox huemulcoin`\n')
       return false
     }
     robot.http(uri).get()((err, response, body) => {

@@ -73,6 +73,15 @@ module.exports = (robot) => {
     })
   }
 
+  const sendMessage = (message, channel) => {
+    if (robot.adapter.constructor.name === 'SlackBot') {
+      const options = {unfurl_links: false, as_user: true};
+      robot.adapter.client.web.chat.postMessage(channel, message, options);
+    } else {
+      robot.messageRoom(channel, message);
+    }
+  }
+
   robot.respond(/steam(.*)/i, (msg) => {
 
     const args = msg.match[1].split(' ')[1];
@@ -90,7 +99,7 @@ module.exports = (robot) => {
             const messages = results.map(data => {
               return `Cacha el especial! : ${data.name}, a sólo $CLP ${data.final}. Valor original $CLP ${data.initial}, eso es un -${data.discount}%! <${data.uri}|Ver más>`;
             });
-            msg.send(messages.join('\n'));
+            sendMessage(messages.join('\n'), msg.message.room);
           }).catch(err => {
             msg.send('Actualmente _Steam_ no responde.');
             robot.emit('error', err || new Error(`Status code ${res.statusCode}`), msg);
@@ -107,7 +116,7 @@ module.exports = (robot) => {
 
     if (args == 'daily') {
       getDailyId().then(getPrice).then(data => {
-      msg.send(`¡Lorea la oferta del día!: ${data.name}, a sólo $CLP ${data.final}. Valor original $CLP ${data.initial}, eso es un -${data.discount}%! <${data.uri}|Ver más>`);
+        sendMessage(`¡Lorea la oferta del día!: ${data.name}, a sólo $CLP ${data.final}. Valor original $CLP ${data.initial}, eso es un -${data.discount}%! <${data.uri}|Ver más>`, msg.message.room);
       }).catch(err => {
         msg.send('Actualmente _Steam_ no responde.');
         robot.emit('error', err || new Error(`Status code ${res.statusCode}`), msg);
