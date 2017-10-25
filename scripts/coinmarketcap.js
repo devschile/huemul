@@ -14,6 +14,8 @@
 // Author:
 //   @hectorpalmatellez
 
+const CLP = require('numbertoclpformater').numberToCLPFormater;
+
 module.exports = function(robot) {
   robot.respond(/(cmc|coinmarketcap) (.*)/i, function(msg) {
     const currency = msg.match[2];
@@ -31,8 +33,8 @@ module.exports = function(robot) {
             const data = JSON.parse(body);
             if (data) {
               return (() => {
-                const priceCLP = Math.floor(data[0].price_clp * 100) / 100;
-                msg.send(`El precio de ${currency} en CLP es ${priceCLP}.`);
+                const priceCLP = CLP(data[0].price_clp, 'CLP$', true);
+                msg.send(`El precio de *${currency}* en coinmarketcap es ${priceCLP}.`);
               })();
             } else {
               msg.send('ERROR');
