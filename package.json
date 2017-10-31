@@ -72,7 +72,7 @@
     "hubot-shipit": "^0.2.1",
     "hubot-slack": "^4.3.4",
     "hubot-soon": "^1.0.0",
-    "hubot-surbtc": "0.0.2",
+    "hubot-surbtc": "0.1.0",
     "hubot-travis-ci-hook": "0.0.1",
     "hubot-tweets": "github:devschile/hubot-tweets",
     "hubot-wikipedia-lang": "^1.0.2",

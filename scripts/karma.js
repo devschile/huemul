@@ -14,6 +14,8 @@
 // Author
 //   @clsource
 
+const theme = require('./theme.js')
+
 module.exports = robot => {
   const hubotHost = process.env.HEROKU_URL || process.env.HUBOT_URL || 'http://localhost:8080'
   const hubotWebSite = `${hubotHost}/${robot.name}`
@@ -284,7 +286,7 @@ module.exports = robot => {
       return line
     })
     res.setHeader('content-type', 'text/html')
-    res.end(`Karmalog:\n<ul><li>${processedKarmaLog.join('</li><li>')}</li></ul>`)
+    res.end(theme('Karma Todos', 'Karmalog:', `<li>${processedKarmaLog.join('</li><li>')}</li>`))
   })
 
   robot.router.get(`/${robot.name}/karma/log/:user`, (req, res) => {
@@ -299,9 +301,10 @@ module.exports = robot => {
     )
     let msg
     if (filteredKarmaLog.length > 0) {
-      msg = `Karmalog:\n<ul><li>${processedKarmaLog.join('</li><li>')}</li></ul>`
-    } else { msg = `No hay detalles sobre el karma de ${req.params.user}` }
+      msg = `<li>${processedKarmaLog.join('</li><li>')}</li>`
+    } else { msg = `<li>No hay detalles sobre el karma de ${req.params.user}</li>` }
     res.setHeader('content-type', 'text/html')
-    res.end(msg)
+    // res.end(msg)
+    res.end(theme('Karma Todos', 'Karmalog:', msg))
   })
 }
