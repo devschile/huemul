@@ -8,7 +8,7 @@
 //   None
 //
 // Commands:
-//   huemul ql|rql|ctm|m[áa]tate|culiao|reculiao|remilculiao
+//   huemul ql|rql|ctm|m[áa]tate|culiao|reculiao|remilculiao|ch[úu]palo
 //
 // Author:
 //   @jorgeepunan
@@ -37,5 +37,5 @@ const ascii = [`\n \
 ];
 
 module.exports = function(robot) {
-  return robot.respond(/ql|rql|ctm|m[áa]tate|culiao|reculiao|remilculiao/gi, msg => msg.send( msg.random(ascii) ));
+  return robot.respond(/ql|rql|ctm|m[áa]tate|culiao|reculiao|remilculiao||ch[úu]palo/gi, msg => msg.send( msg.random(ascii) ));
 };
