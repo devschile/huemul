@@ -161,14 +161,25 @@ module.exports = robot => {
       }).catch(err => robot.emit('error', err, response))
   }
 
+  const removeURLFromTokens = (tokens, message) => {
+    const urls = message.match(/\bhttps?:\/\/\S+/gi)
+    if (!urls) return tokens
+    // if a token match with a URL, it gets remove
+    return tokens.filter(token => (
+      urls
+      .map(url => url.indexOf(token) === -1)
+      .reduce((acc, current) => acc && current, true)
+    ))
+  }
+
   robot.hear(/([a-zA-Z0-9-_\.]|[^\,\-\s\+$!(){}"'`~%=^:;#°|¡¿?]+?)(\b\+{2}|-{2})([^,]?|\s|$)/g, response => {
     stripRegex = /~!@#$`%^&*()|\=?;:'",<>\{\}/gi
-    const tokens = response.match
+    const tokens = removeURLFromTokens(response.match, response.message.text)
     if (!tokens) return
     if (robot.adapter.constructor.name === 'SlackBot') {
       if (!robot.adapter.client.rtm.dataStore.getChannelGroupOrDMById(response.envelope.room).is_channel) return
     }
-
+    
     tokens.slice(0, 5).forEach(token => {
       const opRegex = /(\+{2}|-{2})/g
       const specialChars = /@/

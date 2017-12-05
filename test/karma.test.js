@@ -139,6 +139,26 @@ test.cb.serial('Aplica karma sólo a 5 usuarios', t => {
     t.end()
   }, 500)
 })
+test.cb.serial('No intenta aplicar karma a URL que tengan "++" o "--"', t => {
+  t.context.room.user.say('user', 'https://i.pinimg.com/564x/7c/23/0c/7c230c754f30d6a44ed7a4aad9025a94--feels-meme-bodybuilding.jpg')
+  setTimeout(() => {
+    t.deepEqual(t.context.room.messages, [
+      ['user', 'https://i.pinimg.com/564x/7c/23/0c/7c230c754f30d6a44ed7a4aad9025a94--feels-meme-bodybuilding.jpg']
+    ])
+    t.end()
+  }, 500)
+})
+test.cb.serial('Aplica karma a usuarios y omitir url con "++" y "--"', t => {
+  t.context.room.user.say('user', 'http://placehold.it/200x200/t=++hello leonardo++ jorgeepunan-- https://i.pinimg.com/564x/7c/23/0c/7c230c754f30d6a44ed7a4aad9025a94--meme.jpg')
+  setTimeout(() => {
+    t.deepEqual(t.context.room.messages, [
+      ['user', 'http://placehold.it/200x200/t=++hello leonardo++ jorgeepunan-- https://i.pinimg.com/564x/7c/23/0c/7c230c754f30d6a44ed7a4aad9025a94--meme.jpg'],
+      ['hubot', 'l.eonardo ahora tiene 1 puntos de karma.'],
+      ['hubot', 'j.orgeepunan ahora tiene -1 puntos de karma.']
+    ])
+    t.end()
+  }, 500)
+})
 test.cb.serial('No Debe aplicar karma', t => {
   t.context.room.user.say('user', 'leo++')
   setTimeout(() => {
