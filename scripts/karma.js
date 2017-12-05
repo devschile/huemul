@@ -167,8 +167,7 @@ module.exports = robot => {
     // if a token match with a URL, it gets remove
     return tokens.filter(token => (
       urls
-      .map(url => url.indexOf(token) === -1)
-      .reduce((acc, current) => acc && current, true)
+      .reduce((acc, url) => (acc && url.indexOf(token) === -1), true)
     ))
   }
 
