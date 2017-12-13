@@ -12,7 +12,7 @@
 //   hubot orionx ethereum | eth
 //   hubot orionx bitcoin-cash | bch
 //   hubot orionx dash
-//   hubot orionx chaucha | chaucha
+//   hubot orionx chaucha | cha
 //
 // Author:
 //   @gmq
