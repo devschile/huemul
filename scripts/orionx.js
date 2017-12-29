@@ -72,7 +72,7 @@ module.exports = robot => {
   }
 
   robot.respond(/orionx (.*)/i, msg => {
-    const coin = msg.match[1]
+    const coin = msg.match[1].toLowerCase()
     const coinId = getCoinId(coin)
     if (!coinId) return msg.send('Moneda inválida o no disponible')
     msg.send('Consultando último valor con orionx... :clock5:')
