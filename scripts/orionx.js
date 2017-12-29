@@ -49,7 +49,10 @@ module.exports = robot => {
     }`
 
     return new Promise((resolve, reject) => {
-      robot.http(url).query({query: query}).get()((err, res, body) => {
+      robot
+        .http(url)
+        .header('Content-Type', 'application/json')
+        .post(JSON.stringify({ query }))((err, res, body) => {
         if (err) return reject(err)
         if (res.statusCode !== 200) {
           return reject(new Error(`Bad statusCode: ${res.statusCode}`))
