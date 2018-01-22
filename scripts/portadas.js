@@ -2,7 +2,7 @@
 //   Muestra las portadas de hoy de diversos diarios de Chile.
 //
 // Dependencies:
-//   moment
+//   moment, whilst
 //
 // Configuration:
 //   hubot portada <diario>
@@ -12,7 +12,7 @@
 //   @rotvulpix
 
 const moment = require('moment')
-const { whilst } = require('async')
+const whilst = require('whilst')
 
 const endpointHxh = 'http://www.hoyxhoy.cl/endpoints/for-soy.php?action=get-latest&size=550'
 
@@ -250,51 +250,51 @@ const sendPortadaDate = (res, date) => {
   portadaDate.indexOf('hoy a las') === -1 ? res.send(`Esta portada es ${portadaDate}`) : undefined
 }
 
-const getPortada = (res, diario, cb) => {
+const getPortada = (res, diario) => {
   let daysPast = 0
   let ready = true
   let testUrl = 'No existe portada de este diario por los últimos 5 días.'
-  whilst(
+  return whilst(
     () => ready,
-    callback => {
+    () => {
       if (daysPast > 5) {
         ready = false
-        callback(null)
+        Promise.resolve()
       } else {
         const fecha = moment().subtract(daysPast, 'days')
         testUrl = diario.url.replace('#DATE#', formatDate(fecha, diario.noSlashes))
-        res.http(testUrl).get()((err, response, body) => {
-          if (err) return callback(err)
-          switch (response.statusCode) {
-            case 404:
-              daysPast++
-              callback(null, testUrl)
-              break
-
-            case 200:
-              ready = false
-              if (testUrl === endpointHxh) {
-                try {
-                  testUrl = JSON.parse(body)[0].img
-                  const dateFromHxh = testUrl && testUrl.split('/')[4]
-                  dateFromHxh && sendPortadaDate(res, moment(dateFromHxh, 'DDMMYY').toDate())
-                  callback(null, testUrl)
-                } catch (err) {
-                  callback(err)
+        return new Promise((resolve, reject) => {
+          res.http(testUrl).get()((err, response, body) => {
+            if (err) return reject(err)
+            switch (response.statusCode) {
+              case 404:
+                daysPast++
+                resolve(testUrl)
+                break
+              case 200:
+                ready = false
+                if (testUrl === endpointHxh) {
+                  try {
+                    testUrl = JSON.parse(body)[0].img
+                    const dateFromHxh = testUrl && testUrl.split('/')[4]
+                    dateFromHxh && sendPortadaDate(res, moment(dateFromHxh, 'DDMMYY').toDate())
+                    resolve(testUrl)
+                  } catch (err) {
+                    reject(err)
+                  }
+                } else {
+                  sendPortadaDate(res, fecha)
+                  resolve(testUrl)
                 }
-              } else {
-                sendPortadaDate(res, fecha)
-                callback(null, testUrl)
-              }
-              break
-            default:
-              callback(new Error(`Status code is ${response.statusCode} with url ${testUrl}`))
-              break
-          }
+                break
+              default:
+                resolve()
+                break
+            }
+          })
         })
       }
-    },
-    err => cb(err, testUrl)
+    }
   )
 }
 
@@ -319,10 +319,14 @@ module.exports = robot => {
     if (['lista', 'help'].includes(nombre)) {
       res.send(listaPortadas())
     } else if (nombre in diarios) {
-      getPortada(res, diarios[nombre], (err, result) => {
-        if (err) return robot.emit('error', err, res)
-        res.send(result)
-      })
+      getPortada(res, diarios[nombre])
+        .then(result => {
+          if (!result) return res.send('No hay portada disponible')
+          res.send(result)
+        })
+        .catch(err => {
+          robot.emit('error', err, res)
+        })
     } else {
       res.send('No conozco ese diario :retard:')
     }
