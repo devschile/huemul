@@ -13,7 +13,7 @@
     "*.{js,json,css,md}": ["prettier --write", "git add"]
   },
   "engines": {
-    "node": "7.x.x"
+    "node": ">=8"
   },
   "repository": {
     "type": "git",
