@@ -13,7 +13,7 @@
 // Author:
 //   @jorgeepunan
 
-let desayuno = [
+const desayuno = [
   'cereal',
   'sandwich',
   'frutas',
@@ -22,7 +22,7 @@ let desayuno = [
   'huevos',
   'lo mismo que ayer'
 ]
-let almuerzo = [
+const almuerzo = [
   'pescado',
   'árabe',
   'thai',
@@ -39,17 +39,31 @@ let almuerzo = [
   'carne/parrilla',
   'lo mismo que ayer'
 ]
-let cena = ['carne', 'pastas', 'árabe', 'thai', 'india', 'pizza', 'sanguche', 'lo mismo que ayer', 'lasagna', 'china']
-let bebidas = [
+const cena = [
+  'carne',
+  'pastas',
+  'árabe',
+  'thai',
+  'india',
+  'pizza',
+  'sanguche',
+  'lo mismo que ayer',
+  'lasagna',
+  'ceviche',
+  'china'
+]
+const bebidas = [
   'cerveza',
   'agüita de hierba',
-  'piscola/roncola/whiscola',
+  'piscola',
+  'roncola',
+  'whiscola',
   'absenta',
   'pájaro verde',
   'vino tinto/blanco',
   'lo mismo que ayer nomás'
 ]
-let cervezas = [
+const cervezas = [
   'pale ale inglesa',
   'brown ale inglesa',
   'barley wine',
