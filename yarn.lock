@@ -2344,9 +2344,9 @@ hubot-cne@2.0.1:
   dependencies:
     cne "^1.0.1"
 
-hubot-command-log@1.0.2:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/hubot-command-log/-/hubot-command-log-1.0.2.tgz#ed6562bb60467f7131ce72184964f6308c65d0b3"
+hubot-command-log@1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/hubot-command-log/-/hubot-command-log-1.0.3.tgz#a2ea1bd99951b14d0a2275c509a2df65b2a7ed51"
   dependencies:
     moment "^2.18.1"
 
