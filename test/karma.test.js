@@ -8,31 +8,31 @@ const helper = new Helper('../scripts/karma.js')
 const hubotHost = process.env.HEROKU_URL || process.env.HUBOT_URL || 'http://localhost:8080'
 
 test.beforeEach(t => {
-  t.context.room = helper.createRoom({httpd: true})
+  t.context.room = helper.createRoom({ httpd: true })
   t.context.room.robot.golden = {
     isGold: () => false
   }
   t.context.room.robot.adapter.client = {
     rtm: {
       dataStore: {
-        getChannelGroupOrDMById: function () {
-          return {is_channel: true}
+        getChannelGroupOrDMById: function() {
+          return { is_channel: true }
         }
       }
     },
     web: {
       users: {
-        list: function () {
-          return new Promise(function (resolve) {
+        list: function() {
+          return new Promise(function(resolve) {
             resolve({
               members: [
-                {name: 'jorgeepunan'},
-                {name: 'leonardo'},
-                {name: 'leon'},
-                {name: 'cata'},
-                {name: 'dukuo'},
-                {name: 'hector'},
-                {name: 'ienc'}
+                { name: 'jorgeepunan' },
+                { name: 'leonardo' },
+                { name: 'leon' },
+                { name: 'cata' },
+                { name: 'dukuo' },
+                { name: 'hector' },
+                { name: 'ienc' }
               ]
             })
           })
@@ -41,29 +41,40 @@ test.beforeEach(t => {
     }
   }
   t.context.room.robot.brain.userForId('jorgeepunan', {
-    name: 'jorgeepunan', id: 1
+    name: 'jorgeepunan',
+    id: 1
   })
   t.context.room.robot.brain.userForId('leonardo', {
-    name: 'leonardo', id: 2
+    name: 'leonardo',
+    id: 2
   })
   t.context.room.robot.brain.userForId('leon', {
-    name: 'leon', id: 3
+    name: 'leon',
+    id: 3
   })
   t.context.room.robot.brain.userForId('cata', {
-    name: 'cata', id: 4, karma: -99
+    name: 'cata',
+    id: 4,
+    karma: -99
   })
   t.context.room.robot.brain.userForId('dukuo', {
-    name: 'dukuo', id: 5
+    name: 'dukuo',
+    id: 5
   })
   t.context.room.robot.brain.userForId('hector', {
-    name: 'hector', id: 6
+    name: 'hector',
+    id: 6
   })
   t.context.room.robot.brain.userForId('ienc', {
-    name: 'ienc', id: 7
+    name: 'ienc',
+    id: 7
   })
-  t.context.room.robot.brain.karmaLimits = {
-    user: {3: new Date()}
+  const karmaLimits = {
+    user: { 3: new Date() }
   }
+
+  t.context.room.robot.brain.set('karmaLimits', karmaLimits)
+
   t.context.room.robot.brain.data._private['karmaLog'] = [
     {
       name: 'jorgeepunan',
@@ -112,10 +123,7 @@ test.cb.serial('Debe aplicar a ambos usuarios', t => {
 test.cb.serial('No Debe aplicar karma', t => {
   t.context.room.user.say('user', 't++')
   setTimeout(() => {
-    t.deepEqual(t.context.room.messages, [
-      ['user', 't++'],
-      ['hubot', 'Chaucha, no encuentro al usuario \'t\'.']
-    ])
+    t.deepEqual(t.context.room.messages, [['user', 't++'], ['hubot', "Chaucha, no encuentro al usuario 't'."]])
     t.end()
   }, 500)
 })
@@ -141,7 +149,10 @@ test.cb.serial('Aplica karma sólo a 5 usuarios', t => {
   }, 500)
 })
 test.cb.serial('No intenta aplicar karma a URL que tengan "++" o "--"', t => {
-  t.context.room.user.say('user', 'https://i.pinimg.com/564x/7c/23/0c/7c230c754f30d6a44ed7a4aad9025a94--feels-meme-bodybuilding.jpg')
+  t.context.room.user.say(
+    'user',
+    'https://i.pinimg.com/564x/7c/23/0c/7c230c754f30d6a44ed7a4aad9025a94--feels-meme-bodybuilding.jpg'
+  )
   setTimeout(() => {
     t.deepEqual(t.context.room.messages, [
       ['user', 'https://i.pinimg.com/564x/7c/23/0c/7c230c754f30d6a44ed7a4aad9025a94--feels-meme-bodybuilding.jpg']
@@ -150,10 +161,16 @@ test.cb.serial('No intenta aplicar karma a URL que tengan "++" o "--"', t => {
   }, 500)
 })
 test.cb.serial('Aplica karma a usuarios y omitir url con "++" y "--"', t => {
-  t.context.room.user.say('user', 'http://placehold.it/200x200/t=++hello leonardo++ jorgeepunan-- https://i.pinimg.com/564x/7c/23/0c/7c230c754f30d6a44ed7a4aad9025a94--meme.jpg')
+  t.context.room.user.say(
+    'user',
+    'http://placehold.it/200x200/t=++hello leonardo++ jorgeepunan-- https://i.pinimg.com/564x/7c/23/0c/7c230c754f30d6a44ed7a4aad9025a94--meme.jpg'
+  )
   setTimeout(() => {
     t.deepEqual(t.context.room.messages, [
-      ['user', 'http://placehold.it/200x200/t=++hello leonardo++ jorgeepunan-- https://i.pinimg.com/564x/7c/23/0c/7c230c754f30d6a44ed7a4aad9025a94--meme.jpg'],
+      [
+        'user',
+        'http://placehold.it/200x200/t=++hello leonardo++ jorgeepunan-- https://i.pinimg.com/564x/7c/23/0c/7c230c754f30d6a44ed7a4aad9025a94--meme.jpg'
+      ],
       ['hubot', 'l.eonardo ahora tiene 1 puntos de karma.'],
       ['hubot', 'j.orgeepunan ahora tiene -1 puntos de karma.']
     ])
@@ -183,10 +200,7 @@ test.cb.serial('No Debe aplicar karma', t => {
 test.cb.serial('Aplica karma solo si es menos a uno mismo', t => {
   t.context.room.user.say('ienc', 'ienc--')
   setTimeout(() => {
-    t.deepEqual(t.context.room.messages, [
-      ['ienc', 'ienc--'],
-      ['hubot', 'i.enc ahora tiene -1 puntos de karma.'],
-    ])
+    t.deepEqual(t.context.room.messages, [['ienc', 'ienc--'], ['hubot', 'i.enc ahora tiene -1 puntos de karma.']])
     t.end()
   }, 500)
 })
