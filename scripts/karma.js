@@ -241,18 +241,19 @@ module.exports = robot => {
           return 0
         }
       })
-      // Suma el karma por usuarios. Deja fuera a los usuarios con karma 0
+      // Suma el karma por usuarios
       .reduce((acc, { karma, targetId }) => {
-        if (karma !== 0) {
-          acc.set(targetId, (acc.get(targetId) || 0) + karma)
-        }
+        acc.set(targetId, (acc.get(targetId) || 0) + karma)
         return acc
       }, new Map())
-    // Transform el karma a li
+    // Transform el karma a li. Deja fuera a los usuarios con karma 0
     const liKarma = reduce(
       karmaByUsers,
       (acc, [targetId, karma]) => {
-        return (acc += `<li>${karma} <strong>${robot.brain.userForId(targetId).name}</strong></li>`)
+        if (karma !== 0) {
+          acc += `<li>${karma} <strong>${robot.brain.userForId(targetId).name}</strong></li>`
+        }
+        return acc
       },
       ''
     )
