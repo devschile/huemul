@@ -211,32 +211,53 @@ module.exports = robot => {
     }
   })
 
+  /**
+   * Implementación de Arra.prototype.reduce para usar en Map.
+   * Fork de https://github.com/Tyler-Murphy/set-helpers/blob/master/functions/reduce.js
+   * @param {Map} map Objeto Map para implementar el reduce
+   * @param {Function} reducer Función reducer a aplicar en cada par de elementos
+   * @param {*} initialValue Valor inicial del reduce
+   * @return {*} Valor a retornar
+   */
+  const reduce = (map, reducer, initialValue) => {
+    const mapValues = map.entries()
+    let reducedValue = initialValue !== undefined ? initialValue : mapValues.next().value
+    for (let value of mapValues) {
+      reducedValue = reducer(reducedValue, value, map)
+    }
+    return reducedValue
+  }
+
   robot.router.get(`/${robot.name}/karma/todos`, (req, res) => {
     const karmaLog = robot.brain.get('karmaLog') || []
-    const usersKarma = {}
-
-    karmaLog.forEach(item => {
-      usersKarma[item.targetId] = usersKarma[item.targetId] || 0
-      usersKarma[item.targetId] = usersKarma[item.targetId] + item.karma
-    })
-
-    const list = Object.keys(usersKarma)
-      .filter(userId => usersKarma[userId])
-      .map(userId => {
-        return [usersKarma[userId], `<strong>${robot.brain.userForId(userId).name}</strong>`]
-      })
-      .sort((line1, line2) => {
-        if (line1[0] < line2[0]) {
+    const karmaByUsers = karmaLog
+      // Ordena de mayor a menor el karma
+      .sort((a, b) => {
+        if (a.karma < b.karma) {
           return 1
-        } else if (line1[0] > line2[0]) {
+        } else if (a.karma > b.karma) {
           return -1
         } else {
           return 0
         }
       })
-      .map(line => line.join(' '))
+      // Suma el karma por usuarios. Deja fuera a los usuarios con karma 0
+      .reduce((acc, { karma, targetId }) => {
+        if (karma !== 0) {
+          acc.set(targetId, (acc.get(targetId) || 0) + karma)
+        }
+        return acc
+      }, new Map())
+    // Transform el karma a li
+    const liKarma = reduce(
+      karmaByUsers,
+      (acc, [targetId, karma]) => {
+        return (acc += `<li>${karma} <strong>${robot.brain.userForId(targetId).name}</strong></li>`)
+      },
+      ''
+    )
     res.setHeader('content-type', 'text/html')
-    res.end(theme('Karma Todos', 'Listado de karma de usuarios devsChile', `<li>${list.join('</li><li>')}</li>`))
+    res.end(theme('Karma Todos', 'Listado de karma de usuarios devsChile', liKarma))
   })
 
   robot.router.get(`/${robot.name}/karma/log`, (req, res) => {
