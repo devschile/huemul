@@ -287,7 +287,6 @@ module.exports = robot => {
       msg = `<li>No hay detalles sobre el karma de ${req.params.user}</li>`
     }
     res.setHeader('content-type', 'text/html')
-    // res.end(msg)
     res.end(theme('Karma Todos', 'Karmalog:', msg))
   })
 }
