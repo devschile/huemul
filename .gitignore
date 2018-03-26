@@ -4,3 +4,4 @@ node_modules
 *.log
 node-v4.1.0-darwin-x64
 .env
+.vscode
