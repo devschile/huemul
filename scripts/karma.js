@@ -211,23 +211,6 @@ module.exports = robot => {
     }
   })
 
-  /**
-   * Implementación de Arra.prototype.reduce para usar en Map.
-   * Fork de https://github.com/Tyler-Murphy/set-helpers/blob/master/functions/reduce.js
-   * @param {Map} map Objeto Map para implementar el reduce
-   * @param {Function} reducer Función reducer a aplicar en cada par de elementos
-   * @param {*} initialValue Valor inicial del reduce
-   * @return {*} Valor a retornar
-   */
-  const reduce = (map, reducer, initialValue) => {
-    const mapValues = map.entries()
-    let reducedValue = initialValue !== undefined ? initialValue : mapValues.next().value
-    for (let value of mapValues) {
-      reducedValue = reducer(reducedValue, value, map)
-    }
-    return reducedValue
-  }
-
   robot.router.get(`/${robot.name}/karma/todos`, (req, res) => {
     const karmaLog = robot.brain.get('karmaLog') || []
     const karmaByUsers = Array.from(
