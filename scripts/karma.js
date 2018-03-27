@@ -213,7 +213,7 @@ module.exports = robot => {
 
   robot.router.get(`/${robot.name}/karma/todos`, (req, res) => {
     const karmaLog = robot.brain.get('karmaLog') || []
-    const karmaByUsers = Array.from(
+    const liKarma = Array.from(
       karmaLog
         // Suma el karma por usuarios
         .reduce((acc, { karma, targetId }) => {
