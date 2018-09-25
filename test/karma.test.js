@@ -298,3 +298,10 @@ test.cb.serial('Debe resetar', t => {
     t.end()
   }, 500)
 })
+test.cb.serial('No debe tirar todos los usuarios con --', t => {
+  t.context.room.user.say('hector', 'T-------T')
+  setTimeout(() => {
+    t.deepEqual(t.context.room.messages, [['hector', 'T-------T'], ['hubot', "Chaucha, no encuentro al usuario 'T-'."]])
+    t.end()
+  }, 500)
+})

@@ -162,16 +162,23 @@ module.exports = robot => {
       if (!robot.adapter.client.rtm.dataStore.getChannelGroupOrDMById(response.envelope.room).is_channel) return
     }
 
-    tokens.slice(0, 5).forEach(token => {
-      const opRegex = /(\+{2}|-{2})/g
-      const specialChars = /@/
-      const userToken = token
-        .trim()
-        .replace(specialChars, '')
-        .replace(opRegex, '')
-      const op = token.match(opRegex)[0]
-      applyKarma(userToken, op, response)
-    })
+    tokens
+      .slice(0, 5)
+      .map(token => {
+        const opRegex = /(\+{2}|-{2})/g
+        const specialChars = /@/
+        return {
+          userToken: token
+            .trim()
+            .replace(specialChars, '')
+            .replace(opRegex, ''),
+          op: token.match(opRegex)[0]
+        }
+      })
+      .filter(karma => karma.userToken && karma.userToken !== '')
+      .forEach(karma => {
+        applyKarma(karma.userToken, karma.op, response)
+      })
   })
 
   robot.hear(/^karma(?:\s+@?(.*))?$/, response => {
