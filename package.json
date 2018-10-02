@@ -10,7 +10,10 @@
     "precommit": "lint-staged"
   },
   "lint-staged": {
-    "*.{js,json,css,md}": ["prettier --write", "git add"]
+    "*.{js,json,css,md}": [
+      "prettier --write",
+      "git add"
+    ]
   },
   "engines": {
     "node": ">=8"
@@ -19,7 +22,9 @@
     "type": "git",
     "url": "git://github.com/devschile/huemul.git"
   },
-  "keywords": ["hubot"],
+  "keywords": [
+    "hubot"
+  ],
   "author": "Huemul",
   "private": true,
   "bugs": {
@@ -31,7 +36,7 @@
     "cheerio": "1.0.0-rc.2",
     "correos-chile": "^1.2.4",
     "csv-streamify": "4.0.0",
-    "hubot": "2.19.0",
+    "hubot": "3.1.1",
     "hubot-ascii-art": "1.1.3",
     "hubot-auth": "2.1.0",
     "hubot-azar": "0.1.0",
@@ -46,7 +51,7 @@
     "hubot-cne": "2.0.1",
     "hubot-command-log": "^1.1.0",
     "hubot-cpf": "1.0.6",
-    "hubot-diagnostics": "0.0.2",
+    "hubot-diagnostics": "1.0.0",
     "hubot-diceware": "3.0.0",
     "hubot-dokku-hook": "1.0.0",
     "hubot-earthimpact": "0.0.1",
@@ -73,41 +78,41 @@
     "hubot-qr": "0.0.2",
     "hubot-reggaeton": "^1.0.2",
     "hubot-restriccion_scl": "0.0.1",
-    "hubot-rules": "0.1.2",
+    "hubot-rules": "1.0.0",
     "hubot-scripts": "2.17.2",
     "hubot-sentry-integration": "0.0.2",
     "hubot-shipit": "0.2.1",
-    "hubot-slack": "4.4.0",
+    "hubot-slack": "4.5.5",
     "hubot-soon": "1.0.0",
     "hubot-surbtc": "0.3.0",
     "hubot-travis-ci-hook": "1.0.0",
     "hubot-tweets": "github:devschile/hubot-tweets",
     "hubot-wikipedia-lang": "1.0.3",
-    "hubot-youtube": "1.1.0",
+    "hubot-youtube": "1.1.1",
     "jquery": "3.3.1",
-    "mathjs": "4.3.0",
-    "moment": "2.22.1",
+    "mathjs": "5.1.2",
+    "moment": "2.22.2",
     "moment-business-days": "1.0.6",
     "moment-countdown": "0.0.3",
     "numbertoclpformater": "1.0.0",
     "password-generator": "2.2.0",
-    "phantom": "4.0.12",
+    "phantom": "6.0.3",
     "pug": "2.0.3",
-    "raven": "2.6.2",
+    "raven": "2.6.4",
     "rutjs": "0.1.1",
     "string": "3.3.3",
-    "superheroes": "1.0.0",
-    "uuid": "3.2.1",
+    "superheroes": "2.0.0",
+    "uuid": "3.3.2",
     "whilst": "1.0.2",
     "yelp": "1.0.2"
   },
   "devDependencies": {
     "ava": "0.25.0",
     "coffee-script": "1.12.7",
-    "hubot-test-helper": "1.8.1",
-    "husky": "0.14.3",
-    "lint-staged": "7.1.2",
-    "nock": "9.2.6",
-    "prettier": "1.12.1"
+    "hubot-test-helper": "1.9.0",
+    "husky": "1.1.0",
+    "lint-staged": "7.3.0",
+    "nock": "10.0.0",
+    "prettier": "1.14.3"
   }
 }
