@@ -82,7 +82,7 @@ module.exports = function(robot) {
       '0': '𝟎'
     }
     str = []
-    ref = msg.match[1].split('')
+    ref = msg.match[1].substr(0, 140).split('')
     for (i = 0, len = ref.length; i < len; i++) {
       letter = ref[i]
       if (letters[letter] != null) {
