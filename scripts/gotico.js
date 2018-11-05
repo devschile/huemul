@@ -15,7 +15,7 @@
 //   @davidlaym
 
 module.exports = function(robot) {
-  robot.respond(/gotico (.*)/i, function(msg) {
+  robot.respond(/g[o|ó]tico (.*)/i, function(msg) {
     var i, len, letter, letters, ref, str
     letters = {
       a: '𝔞',
