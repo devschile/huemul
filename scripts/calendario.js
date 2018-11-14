@@ -1,5 +1,5 @@
 // Description:
-//   Despliega calendario del mes actual
+//   Despliega calendario del mes actual entre 1582 y 100 años hacia el futuro
 //
 // Dependencies:
 //   None
@@ -9,67 +9,107 @@
 //
 // Commands:
 //   hubot calendario
+//   hubot calendario diciembre
+//   hubot calendario mayo 2018
+//   hubot calendario diciembre 1989
 //
 // Author:
 //   @jorgeepunan
+//   @raerpo
 
-function displayCalendar(today, month, year) {
-  month = parseInt(month)
-  year = parseInt(year)
-  var i = 0
-  var days = getDaysInMonth(month + 1, year)
-  var firstOfMonth = new Date(year, month, 1)
-  var startingPos = firstOfMonth.getDay()
-  days += startingPos
-  var calendar = ' Do Lu Ma Mi Ju Vi Sa'
-  calendar += '\n --------------------'
-  for (i = 0; i < startingPos; i++) {
-    if (i % 7 == 0) calendar += '\n '
-    calendar += '   '
-  }
-  for (i = startingPos; i < days; i++) {
-    if (i % 7 == 0) calendar += '\n '
-    if (i - startingPos + 1 < 10) calendar += '0'
-    if (i - startingPos + 1 == today) {
-      calendar += '()'
-    } else {
-      calendar += i - startingPos + 1
+const getDaysInMonth = (month, year) => new Date(year, month + 1, 0).getDate()
+
+const weeksInMonth = (month, year) => {
+  const offsetDays = new Date(year, month, 1).getDay()
+  const spacesInCalendar = offsetDays + getDaysInMonth(month, year)
+  return Math.ceil(spacesInCalendar / 7)
+}
+
+const formatCalendar = (calendarMatrix, header = ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa']) => {
+  const formatedHeader = '\n' + header.join(' ')
+  return calendarMatrix.reduce((acc, current) => {
+    const formatDays = current.map(day => {
+      if (isNaN(day) || day === '  ') {
+        return day
+      } else {
+        return day < 10 ? `0${day}` : `${day}`
+      }
+    })
+    return acc + '\n' + formatDays.join(' ')
+  }, formatedHeader)
+}
+
+const getCalendarMatrix = (
+  month,
+  year,
+  header = ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa'],
+  nonDaysSeparator = '  ',
+  currentDateSymbol = '()'
+) => {
+  const firstDayOfWeek = new Date(year, month, 1).getDay()
+  const daysInMonth = getDaysInMonth(month, year)
+  const currentDate = new Date()
+  const [currentDay, currentMonth, currentYear] = [
+    currentDate.getDate(),
+    currentDate.getMonth(),
+    currentDate.getFullYear()
+  ]
+  const isCurrentMonthAndYear = currentMonth === month && currentYear === year
+  // Build the calendar table
+  let calendarMatrix = []
+  let day = 1
+  let firstDayIsSet = false
+  for (let i = 0; i < weeksInMonth(month, year); i++) {
+    for (let j = 0; j < header.length; j++) {
+      // Create new row in calendar matrix
+      if (!calendarMatrix[i]) {
+        calendarMatrix[i] = []
+      }
+      // This logic only apply until the first day of the month is set
+      // in the calendar matrix
+      if (!firstDayIsSet) {
+        if (j !== firstDayOfWeek) {
+          calendarMatrix[i][j] = nonDaysSeparator
+        } else {
+          calendarMatrix[i][j] = isCurrentMonthAndYear && currentDay === day ? currentDateSymbol : day
+          firstDayIsSet = true
+          day++
+        }
+      } else {
+        // Fill the rest of the calendar
+        if (day <= daysInMonth) {
+          calendarMatrix[i][j] = isCurrentMonthAndYear && currentDay === day ? currentDateSymbol : day
+          day++
+        } else {
+          calendarMatrix[i][j] = nonDaysSeparator
+        }
+      }
     }
-    calendar += ' '
   }
-  for (i = days; i < 42; i++) {
-    if (i % 7 == 0) calendar += '\n '
-    calendar += '   '
-  }
-
-  return calendar
+  return calendarMatrix
 }
 
-function getDaysInMonth(month, year) {
-  var days
+const getCalendar = (month, year) => '```' + formatCalendar(getCalendarMatrix(month, year)) + '\n```'
 
-  if (month == 1 || month == 3 || month == 5 || month == 7 || month == 8 || month == 10 || month == 12) days = 31
-  else if (month == 4 || month == 6 || month == 9 || month == 11) days = 30
-  else if (month == 2) {
-    if (isLeapYear(year)) {
-      days = 29
-    } else {
-      days = 28
-    }
-  }
-
-  return days
+const monthToNumber = month => {
+  const months = [
+    'enero',
+    'febrero',
+    'marzo',
+    'abril',
+    'mayo',
+    'junio',
+    'julio',
+    'agosto',
+    'septiembre',
+    'octubre',
+    'noviembre',
+    'diciembre'
+  ]
+  return months.indexOf(month.toLowerCase())
 }
 
-function isLeapYear(Year) {
-  if ((Year % 4 == 0 && Year % 100 != 0) || Year % 400 == 0) {
-    return true
-  } else {
-    return false
-  }
-}
-
-function monthES(monthNum) {
+const monthES = monthNum => {
   var months = [
     'Enero',
     'Febrero',
@@ -88,21 +128,52 @@ function monthES(monthNum) {
   return months[monthNum]
 }
 
-module.exports = function(robot) {
-  robot.respond(/calendario/i, function(msg) {
-    var date = new Date()
-    var today = date.getDate()
-    var currentMonth = date.getMonth()
-    var currentYear = date.getFullYear()
+const isInputValid = (month, year) => {
+  // The condition could be written in a more nicer way but
+  // I think the cases are more explicit in this way
+  if (!month && !year) {
+    return true
+  }
+  if (month && monthToNumber(month) < 0) {
+    return false
+  } else if (isNaN(new Date(year, 1, 1))) {
+    return false
+  }
+  if (year < 1582 || year > new Date().getFullYear() + 100) {
+    return false
+  }
+  return true
+}
 
-    msg.send(
-      '```\n Calendario para: ' +
-        monthES(currentMonth) +
-        '/' +
-        currentYear +
-        '\n\n' +
-        displayCalendar(today, currentMonth, currentYear) +
-        '\n```'
-    )
+module.exports = function(robot) {
+  robot.respond(/calendario(.*)/i, function(msg) {
+    const [month, year] = msg.match[1].trim().split(' ')
+
+    if (!isInputValid(month, year)) {
+      msg.send('El mes o el año no son válidos')
+      return
+    }
+
+    if (month && year) {
+      const monthNumber = monthToNumber(month)
+      if (!monthNumber) {
+        msg.send('Ese mes no es válido')
+      }
+      msg.send(`Calendario ${monthES(monthNumber)} ${year}`)
+      msg.send(getCalendar(monthNumber, year))
+    } else if (month) {
+      const currentYear = new Date().getFullYear()
+      const monthNumber = monthToNumber(month)
+      if (!monthNumber) {
+        msg.send('Ese mes no es válido')
+      }
+      msg.send(`Calendario ${monthES(monthNumber)} ${currentYear}`)
+      msg.send(getCalendar(monthNumber, currentYear))
+    } else {
+      const currentYear = new Date().getFullYear()
+      const currentMonth = new Date().getMonth()
+      msg.send(`Calendario ${monthES(currentMonth)} ${currentYear}`)
+      msg.send(getCalendar(currentMonth, currentYear))
+    }
   })
 }
