@@ -22,9 +22,14 @@ module.exports = robot => {
       }
     }
     const sendError = (options, message) => {
-      options.attachments[0].fallback =
-        message +
-        '. Solo aparecerán los estados de los envíos que ya ingresaron a Chile y fueron recepcionados por la empresa.'
+      if (message) {
+        options.attachments[0].fallback =
+          message +
+            '. Solo aparecerán los estados de los envíos que ya ingresaron a Chile y fueron recepcionados por la empresa.' ||
+          'Búsqueda sin resultados'
+      } else {
+        options.attachments[0].fallback = 'Búsqueda sin resultados'
+      }
       options.attachments[0].text = options.attachments[0].fallback
       options.attachments[0].color = 'danger'
       send(options)
