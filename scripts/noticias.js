@@ -2,7 +2,7 @@
 //  Noticias desde 24horas
 //
 // Dependencies:
-//  moment
+//  moment, cheerio
 //
 // Commands:
 //  hubot noticias internacional
@@ -12,51 +12,54 @@
 // Author:
 //  @jlobitu
 
-const moment = require('moment');
+const moment = require('moment')
+const querystring = require('querystring')
+const cheerio = require('cheerio')
 
-module.exports = robot => robot.respond(/noticias (.*)/i, msg => {
-  const q = msg.match[1];
-  const fetch = robot.http(`http://search.24horas.cl/search/?q=${q}`);
-
-  fetch.get()((err, res, body) => {
-    if (err) {
-      robot.emit('error', err, msg);
-    } else {
-      try {
-        const {matches} = JSON.parse(body);
-
-        // Filtrar noticias encontradas para eliminar repeticiones a partir del título.
-        const matchesUniq = matches.filter((n, index, self) => {
-          const {value: title} = n.fields.find(({field}) => field === 'og-title');
-          return (
-            self.findIndex(
-              ({fields}) =>
-                fields.find(({field}) => field === 'og-title').value === title
-            ) === index
-          );
-        });
-
-        // Truncate array
-        (matchesUniq.length > 5) && (matchesUniq.length = 5);
-
-        const head = ':huemul: *News*';
-        const news = matchesUniq.map(({fields}, i) => {
-          const {value: date} = fields.find(({field}) => field === 'publishtime');
-          const {value: title} = fields.find(({field}) => field === 'og-title');
-          const {value: url} = fields.find(({field}) => field === 'og-url');
-
-          return `${i + 1}: <${url}|${title}> (${moment(date).fromNow()})`;
-        }).join('\n');
-
-        if (news) {
-          msg.send(`${head}\n${news}\n<http://www.24horas.cl/search/|Sigue buscando en 24horas.cl>`);
-        } else {
-          msg.send(`${head}\nNo se han encontrado noticias sobre *${q}*.`);
-        }
-      } catch (err) {
-        robot.emit('error', err, msg)
-        return msg.reply('ocurrió un error con la búsqueda');
+module.exports = robot =>
+  robot.respond(/noticias (.*)/i, msg => {
+    const send = text => {
+      if (robot.adapter.constructor.name === 'SlackBot') {
+        const options = { unfurl_links: false, as_user: true }
+        robot.adapter.client.web.chat.postMessage(msg.message.room, text, options)
+      } else {
+        msg.send(text)
       }
     }
-  });
-});
+    const q = msg.match[1]
+    robot
+      .http('http://www.ahoranoticias.cl/buscador/')
+      .header('Origin', 'http://www.ahoranoticias.cl')
+      .header('Accept-Language', 'es-419,es;q=0.9')
+      .header('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8')
+      .header('Accept', 'text/html, */*; q=0.01')
+      .header('Cache-Control', 'no-cache')
+      .header('X-Requested-With', 'XMLHttpRequest')
+      .header('Referer', 'http://www.ahoranoticias.cl/home/')
+      .post(querystring.stringify({ q, ajax: true }))((err, res, body) => {
+      if (err) {
+        robot.emit('error', err, msg)
+      } else {
+        const $ = cheerio.load(body)
+        const results = $('.item')
+          .map((i, el) => {
+            const url = $(el).find('.l a').attr('href')
+            const title = $(el).find('.r h2').text()
+            const date = $(el).find('.r span').text()
+            if (!url || !title || !date) return null
+            return `${i + 1}: <${url}|${title}> (${moment(date, 'DD/MM/YYYY').fromNow()})`
+          })
+          .get()
+          .filter(x => x !== null)
+        const news = results.length > 0 ? results.join('\n') : null
+
+        const head = ':huemul: *News*'
+
+        if (news) {
+          send(`${head}\n${news}\n<http://www.ahoranoticias.cl/buscador/|Sigue buscando en ahoranoticias.cl>`)
+        } else {
+          send(`${head}\nNo se han encontrado noticias sobre *${q}*.`)
+        }
+      }
+    })
+  })

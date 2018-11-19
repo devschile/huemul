@@ -10,54 +10,64 @@
 // Author:
 //   @jorgeepunan
 
-const cheerio = require('cheerio');
+const moment = require('moment')
+const cheerio = require('cheerio')
 
-module.exports = function (robot) {
-
-  robot.respond(/uoct|taco|tr(aá)nsito/i, function (msg) {
-
-    if (robot.golden.isGold(msg.message.user.name)) {
-
-      const url   = 'http://www.uoct.cl/';
-
-      msg.send(`Buscando qué cagá está en esta ciudad :ql:   :walking: :boom: :car: :boom: :blue_car: :boom: :red_car: :boom:          :police_car:`);
-
-      robot.http(url).get()(function (err, res, body) {
-
-        const $           = cheerio.load(body);
-        const title       = 'Estado del tránsito';
-        const results     = $('.map-events-container .map-events .event');
-        const resultQty   = results.length;
-        let resultados    = [];
-
-        if (resultQty > 0) {
-
-          results.each(function () {
-            const time = $(this).find('.time').text();
-            const link = $(this).attr('href');
-            const text = $(this).find('.caption').text();
-
-            resultados.push(`<${link}|${time}: ${text}>`);
-          });
-
-          const limite  = (resultados.length > 10) ? 8 : resultados.length;
-          const plural  = resultados.length > 1 ? ['s','s'] : ['',''];
-          const resume  = 'Encontrado' + plural[0] + ' '+ resultQty + ' resultado' + plural[1] + ' :bomb::fire:';
-          const links   = resultados.slice(0, limite).map((result, index) => `${index + 1}: ${result}`).join('\n');
-          const more    = resultados.length > limite ? `\n<${url}|Ver más resultados>` : '';
-          const text    = `${resume}\n${links}${more}`;
-
-          msg.send(text);
-
-        } else {
-          msg.send('Qué raro, parece que está todo normal :thinking_bachelet: . Intenta más tarde.');
-        }
-
-      });
-
-    } else {
-      msg.send('Esta funcionalidad es exclusiva para socios golden :monea: de devsChile. Dona en www.devschile.cl para participar de este selecto grupo :huemul-patitas: .')
+module.exports = function(robot) {
+  robot.respond(/uoct|taco|tr(aá)nsito/i, function(msg) {
+    function sendError(err, message) {
+      if (err) {
+        robot.emit('error', err)
+      }
+      msg.send('Error consultando UOCT: ' + message)
     }
-  });
 
-};
+    if (!robot.golden.isGold(msg.message.user.name)) {
+      msg.send(
+        'Esta funcionalidad es exclusiva para socios golden :monea: de devsChile. Dona en www.devschile.cl para participar de este selecto grupo :huemul-patitas: .'
+      )
+      return
+    }
+
+    const url = 'http://www.uoct.cl/historial/ultimos-eventos/json/'
+
+    msg.send(
+      `Buscando qué cagá está en esta ciudad :ql:   :walking: :boom: :car: :boom: :blue_car: :boom: :red_car: :boom:          :police_car:`
+    )
+
+    robot.http(url).get()(function(err, res, body) {
+      const limiteDeEventos = 5
+
+      if (err || res.statusCode !== 200) {
+        sendError(err, 'no se pudo obtener eventos')
+        return
+      }
+      try {
+        var payload = JSON.parse(body)
+      } catch (err) {
+        sendError(err, 'mal formato de los datos recibidos')
+        return
+      }
+      if (!payload.eventos || !Array.isArray(payload.eventos)) {
+        sendError(null, 'mal formato de los datos recibidos')
+        return
+      }
+      var events = payload.eventos
+      if (events.length === 0) {
+        msg.send('Qué raro, parece que está todo normal :thinking_bachelet: . Intenta más tarde.')
+      }
+      const eventList = events
+        .slice(0, limiteDeEventos)
+        .map(e => `${moment(e.fecha).format('hh:mm')}: (${e.comuna}) ${cheerio.load(e.informacion).text()}`)
+        .join('\n')
+
+      const plural = events.length > 1 ? ['s', 's'] : ['', '']
+      const resume = 'Encontrado' + plural[0] + ' ' + events.length + ' resultado' + plural[1] + ' :bomb::fire:\n'
+      const more =
+        events.length > limiteDeEventos ? `\n<http://www.uoct.cl/historial/ultimos-eventos/|Ver más resultados>` : ''
+      const text = `${resume}${eventList}${more}`
+
+      msg.send(text)
+    })
+  })
+}

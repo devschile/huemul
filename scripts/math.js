@@ -25,13 +25,11 @@ module.exports = function(robot) {
     var error, error1, result;
 
     try {
-
-      result = mathjs['eval'](msg.match[3]);
-      msg.send("Resultado de " + msg.match[3] + ": " + result);
+      msg.send("DEPRECADO PORQUE TAMALO");
 
     } catch (error) {
 
-      msg.send(error.message + '. Intenta con otra unidad / tipo de cálculo.' || 'Error mío. De nuevo plz.');
+      msg.send('No se ha podido ejecutar correctamente el cálculo.');
 
     }
 

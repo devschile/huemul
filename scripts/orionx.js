@@ -37,7 +37,9 @@ module.exports = robot => {
       cha: 'CHACLP',
       chaucha: 'CHACLP',
       ripple: 'XRPCLP',
-      xrp: 'XRPCLP'
+      xrp: 'XRPCLP',
+      luk: 'LUKCLP',
+      luka: 'LUKCLP'
     }
 
     return coins[coin]

@@ -15,11 +15,12 @@
 //   hubot finvox ipc
 //   hubot finvox utm
 //   hubot finvox huemulcoin
+//   hubot finvox palta
 //
 // Author:
 //   @jorgeepunan
 
-const CLP = require('numbertoclpformater').numberToCLPFormater;
+const CLP = require('numbertoclpformater').numberToCLPFormater
 const API_URL = process.env.API_URL || 'http://mindicador.cl/api/'
 const mensajes = [
   'Aunque te esfuerces, seguirás siendo pobre. :poop:',
@@ -29,8 +30,7 @@ const mensajes = [
   'Todos los días suben los precios, y no tu sueldo. :money_with_wings:'
 ]
 
-const numberWithCommas = number =>
-  number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+const numberWithCommas = number => number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')
 
 const numberSplitDecimal = number => {
   const d = Math.pow(10, 2)
@@ -38,20 +38,45 @@ const numberSplitDecimal = number => {
 }
 
 const numberWithThousands = number => {
-  return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')
 }
 
 module.exports = robot => {
   robot.respond(/finvox (\w+)/i, res => {
     let uri
     const indicador = res.match[1].toLowerCase()
-    const indicadores = ['uf', 'dolar', 'usd', 'euro', 'eur', 'ipc', 'utm', 'getonbrd', 'huemulcoin']
+    const indicadores = ['uf', 'dolar', 'usd', 'euro', 'eur', 'ipc', 'utm', 'getonbrd', 'huemulcoin', 'palta']
+
     if (indicadores.includes(indicador)) {
       uri = API_URL
     } else {
-      res.send('Mis comandos son:\n\n * `finvox dolar|usd`\n * `finvox euro|eur`\n * `finvox uf`\n * `finvox utm`\n * `finvox ipc`\n * `finvox getonbrd`\n * `finvox huemulcoin`\n')
+      res.send(
+        'Mis comandos son:\n\n * `finvox dolar|usd`\n * `finvox euro|eur`\n * `finvox uf`\n * `finvox utm`\n * `finvox ipc`\n * `finvox getonbrd`\n * `finvox huemulcoin`\n* `finvox palta`\n'
+      )
       return false
     }
+
+    if (indicador === 'palta') {
+      PALTA_URL =
+        'https://nuevo.jumbo.cl/api/catalog_system/pub/products/search/?sc=11&_from=0&_to=49&fq=productId%3A5801'
+      robot.http(PALTA_URL).get()((err, response, body) => {
+        if (err) {
+          robot.emit('error', err, res)
+          res.send(`Ocurrió un error: ${err.message}`)
+          return
+        }
+
+        response.setEncoding('utf-8')
+        let data = JSON.parse(body)
+
+        data = CLP(JSON.stringify(data[0]['items'][0]['sellers'][0]['commertialOffer']['Price']))
+        date = new Date().toJSON().split('T')[0]
+        const mensaje = res.random(mensajes)
+        res.send(`${indicador.toUpperCase()} 🥑: ${data} (${date}). ${mensaje}`)
+      })
+      return false
+    }
+
     robot.http(uri).get()((err, response, body) => {
       if (err) {
         robot.emit('error', err, res)

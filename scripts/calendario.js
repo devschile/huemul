@@ -13,84 +13,96 @@
 // Author:
 //   @jorgeepunan
 
-
-function displayCalendar (today, month, year) {
-
-  month = parseInt(month);
-  year = parseInt(year);
-  var i = 0;
-  var days = getDaysInMonth(month+1,year);
-  var firstOfMonth = new Date (year, month, 1);
-  var startingPos = firstOfMonth.getDay();
-  days += startingPos;
-  var calendar  =   " Do Lu Ma Mi Ju Vi Sa";
-  		calendar += "\n --------------------";
+function displayCalendar(today, month, year) {
+  month = parseInt(month)
+  year = parseInt(year)
+  var i = 0
+  var days = getDaysInMonth(month + 1, year)
+  var firstOfMonth = new Date(year, month, 1)
+  var startingPos = firstOfMonth.getDay()
+  days += startingPos
+  var calendar = ' Do Lu Ma Mi Ju Vi Sa'
+  calendar += '\n --------------------'
   for (i = 0; i < startingPos; i++) {
-    if ( i%7 == 0 ) calendar += "\n ";
-    calendar += "   ";
+    if (i % 7 == 0) calendar += '\n '
+    calendar += '   '
   }
   for (i = startingPos; i < days; i++) {
-    if ( i%7 == 0 ) calendar += "\n ";
-    if (i-startingPos+1 < 10)
-      calendar += "0";
-    if(i-startingPos+1 == today) {
+    if (i % 7 == 0) calendar += '\n '
+    if (i - startingPos + 1 < 10) calendar += '0'
+    if (i - startingPos + 1 == today) {
       calendar += '()'
     } else {
-      calendar += i-startingPos+1;
+      calendar += i - startingPos + 1
     }
-    calendar += " ";
+    calendar += ' '
   }
-  for (i=days; i<42; i++)  {
-    if ( i%7 == 0 ) calendar += "\n ";
-    calendar += "   ";
-  }
-
-  return calendar;
-
-}
-
-function getDaysInMonth (month,year) {
-
-  var days;
-
-  if (month==1 || month==3 || month==5 || month==7 || month==8 || month==10 || month==12)  days=31;
-  else if (month==4 || month==6 || month==9 || month==11) days=30;
-  else if (month==2)  {
-    if (isLeapYear(year)) { days=29; }
-    else { days=28; }
+  for (i = days; i < 42; i++) {
+    if (i % 7 == 0) calendar += '\n '
+    calendar += '   '
   }
 
-  return (days);
-
+  return calendar
 }
 
-function isLeapYear (Year) {
+function getDaysInMonth(month, year) {
+  var days
 
-  if (((Year % 4)==0) && ((Year % 100)!=0) || ((Year % 400)==0)) {
-    return (true);
-  } else { return (false); }
+  if (month == 1 || month == 3 || month == 5 || month == 7 || month == 8 || month == 10 || month == 12) days = 31
+  else if (month == 4 || month == 6 || month == 9 || month == 11) days = 30
+  else if (month == 2) {
+    if (isLeapYear(year)) {
+      days = 29
+    } else {
+      days = 28
+    }
+  }
 
+  return days
 }
 
-function monthES (monthNum) {
+function isLeapYear(Year) {
+  if ((Year % 4 == 0 && Year % 100 != 0) || Year % 400 == 0) {
+    return true
+  } else {
+    return false
+  }
+}
 
-  var months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Sedtiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+function monthES(monthNum) {
+  var months = [
+    'Enero',
+    'Febrero',
+    'Marzo',
+    'Abril',
+    'Mayo',
+    'Junio',
+    'Julio',
+    'Agosto',
+    'Sedtiembre',
+    'Octubre',
+    'Noviembre',
+    'Diciembre'
+  ]
 
-  return months[monthNum];
-
+  return months[monthNum]
 }
 
 module.exports = function(robot) {
+  robot.respond(/calendario/i, function(msg) {
+    var date = new Date()
+    var today = date.getDate()
+    var currentMonth = date.getMonth()
+    var currentYear = date.getFullYear()
 
-	robot.respond(/calendario/, function(msg) {
-
-    var date   = new Date();
-    var today = date.getDate();
-    var currentMonth = date.getMonth();
-    var currentYear = date.getFullYear();
-
-    msg.send('```\n Calendario para: ' + monthES(currentMonth) + '/' + currentYear + '\n\n' + displayCalendar(today, currentMonth, currentYear) + '\n```');
-
-	});
-
-};
+    msg.send(
+      '```\n Calendario para: ' +
+        monthES(currentMonth) +
+        '/' +
+        currentYear +
+        '\n\n' +
+        displayCalendar(today, currentMonth, currentYear) +
+        '\n```'
+    )
+  })
+}

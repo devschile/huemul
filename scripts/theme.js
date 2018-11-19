@@ -1,10 +1,10 @@
-function theme (title = 'Karma', description = '', content = null) {
+function theme(title = 'Karma', description = '', content = null) {
   return `
 <html>
 <head>
   <title>devsChile - ${title}</title>
   <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Inconsolata:400,700"/>
-  <link rel="stylesheet" type="text/css" href="//cdn.rawgit.com/mutable-tools/MutaGrid/master/demo/mutagrid/dist/5/mutagrid.min.css"/>
+  <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/gh/mutable-tools/MutaGrid/demo/mutagrid/dist/5/mutagrid.min.css"/>
   <style>body,html{height:100%;box-sizing:border-box}html{overflow-x:hidden}body{background:#000;color:#ddd;font-size:16px}body,code,pre{font-family:Inconsolata,monospace}code,h1,h2,h3,pre{color:#fff;font-weight:400}a{color:#e74c3c}.text-center{text-align:center}main{padding:5em 1.5em}h1{font-size:18px}h3{margin-top:20px}h2,h3{font-size:16px}hr{opacity:.4}</style>
 </head>
 <body>

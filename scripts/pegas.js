@@ -42,7 +42,7 @@ module.exports = function(robot) {
       if(resultados.length > 0) {
         var limiteResultados = (resultados.length > 4) ? 3 : resultados.length;
         var plural = resultados.length > 1 ? ['n','s'] : ['',''];
-        var text = 'Se ha'+plural[0]+' encontrado '+ resultados.length + ' resultado'+plural[1] + '\n';
+        var text = 'Se ha'+plural[0]+' encontrado '+ resultados.length + ' resultado'+plural[1] + ' para *' + busqueda + '*:\n';
         for (var i=0; i < limiteResultados; i++) {
           var conteo = i + 1;
           text += conteo + ': ' + resultados[i] + '\n';

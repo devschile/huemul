@@ -24,8 +24,8 @@
 // Author:
 //   @gtoroap
 
-process.env.HUBOT_WWO_API_KEY = '9ca1f6cb851ce2d8c004a425e5456';
-process.env.HUBOT_WWO_API_URL = 'http://api.worldweatheronline.com/free/v2/tz.ashx';
+process.env.HUBOT_WWO_API_KEY = '07b73143eac944fba54171910181107';
+process.env.HUBOT_WWO_API_URL = 'https://api.worldweatheronline.com/premium/v1/tz.ashx';
 
 module.exports = robot => {
   robot.respond(/hora en (.*)/i, msg => {
@@ -51,7 +51,7 @@ module.exports = robot => {
           let result = JSON.parse(body)['data'];
           let city = result['request'][0]['query'];
           let currentTime = result['time_zone'][0]['localtime'].slice(11);
-          msg.send(`Son las ${currentTime} en ${city} :clock1030:`);
+          msg.send(`Son las *${currentTime}* en *${city}* :clock1030:`);
         } catch (error) {
           msg.send("No entendi esa ciudad, intenta con otra si quieres. Si no, no me importa.");
         }

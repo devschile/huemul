@@ -8,7 +8,7 @@ notifications:
 addons:
   ssh_known_hosts:
     - github.com
-    - 104.131.105.95
+    - devschile.cl
 before_script:
   - export TZ=America/Santiago
 before_deploy:
@@ -18,7 +18,7 @@ before_deploy:
   - ssh-add deploy_key.pem
 deploy:
   provider: script
-  script: git remote add dokku dokku@104.131.105.95:huemul && git push dokku master
+  script: git remote add dokku dokku@devschile.cl:huemul && git push dokku master
   skip_cleanup: true
   on:
     branch: master

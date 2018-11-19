@@ -12,14 +12,15 @@
 
 const https = require('https')
 const csv = require('csv-streamify')
-const urlFNames = 'https://cdn.rawgit.com/marcboquet/spanish-names/fb966400/hombres.csv';
-const UrlLNames = 'https://cdn.rawgit.com/marcboquet/spanish-names/fb966400/apellidos.csv';
+const urlFNames =
+  'https://cdn.jsdelivr.net/gh/marcboquet/spanish-names@fb9664001e060e430a8e9314fc1992541f378297/hombres.csv'
+const UrlLNames =
+  'https://cdn.jsdelivr.net/gh/marcboquet/spanish-names@fb9664001e060e430a8e9314fc1992541f378297/apellidos.csv'
 
 module.exports = robot => {
-
   robot.respond(/random gmq/i, res => {
-    const parserFNames = csv({objectMode: true})
-    const parserLNames = csv({objectMode: true})
+    const parserFNames = csv({ objectMode: true })
+    const parserLNames = csv({ objectMode: true })
     const fNames = []
     const lNames1 = []
     const lNames2 = []
@@ -53,8 +54,10 @@ module.exports = robot => {
     const random = collection => collection[Math.floor(Math.random() * collection.length)]
 
     const promises = [getCsv(urlFNames, parserFNames), getCsv(UrlLNames, parserLNames)]
-    Promise.all(promises).then(() => {
-      res.send(`${random(fNames)} ${random(lNames1)} ${random(lNames2)}`)
-    }).catch(err => robot.emit('error', err, res))
+    Promise.all(promises)
+      .then(() => {
+        res.send(`${random(fNames)} ${random(lNames1)} ${random(lNames2)}`)
+      })
+      .catch(err => robot.emit('error', err, res))
   })
 }
