@@ -25,8 +25,7 @@ module.exports = robot => {
       if (message) {
         options.attachments[0].fallback =
           message +
-            '. Solo aparecerán los estados de los envíos que ya ingresaron a Chile y fueron recepcionados por la empresa.' ||
-          'Búsqueda sin resultados'
+          '. Solo aparecerán los estados de los envíos que ya ingresaron a Chile y fueron recepcionados por la empresa.'
       } else {
         options.attachments[0].fallback = 'Búsqueda sin resultados'
       }
