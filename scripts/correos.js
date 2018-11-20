@@ -45,6 +45,7 @@ module.exports = robot => {
     try {
       let trackingCode = res.match[1]
       if (trackingCode.length === 26) {
+        // This converts 26 char. tracking codes to the format Correos de Chile understands according to https://www.correos.cl/SitePages/direccion-aliexpress/tips/Default.aspx
         trackingCode = trackingCode.replace(/\w+(\d{12})\d{3}$/, '$1')
       }
       const results = await correos([trackingCode])
