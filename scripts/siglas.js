@@ -17,9 +17,9 @@ let rand = array => array[Math.floor(Math.random() * array.length)]
 
 module.exports = function(robot) {
   robot.respond(/siglas (.*)/i, function(msg) {
-    let i, len, letter, letters, input, ref, str, maxChars
+    let i, len, letter, letters, input, ref, str, maxChars, word
 
-    input = msg.match[1]
+    input = msg.match[1].replace(/\s/g, '')
     maxChars = 16
 
     if (input.length > maxChars) {
@@ -354,10 +354,17 @@ module.exports = function(robot) {
         .replace('ú', 'u')
         .replace('ú', 'u')
         .replace(/[0-9]+$/, '')
+
       for (i = 0, len = ref.length; i < len; i++) {
         letter = ref[i]
-        if (letters[letter] != null) {
-          str.push(rand(letters[letter]))
+
+        if (letters[letter] !== null) {
+          word = rand(letters[letter])
+
+          while (str.find(i => i === word)) {
+            word = rand(letters[letter])
+          }
+          str.push(word)
         } else {
           str.push(letter)
         }
