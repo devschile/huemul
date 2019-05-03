@@ -22,12 +22,34 @@ module.exports = robot => {
         return robot.emit('error', err || new Error(`Status code ${res.statusCode}`), msg, 'bitbucket-status')
       }
       try {
-        const { page: { updated_at }, status: { description } } = JSON.parse(body)
+        const { page: { updated_at }, status: { description, indicator } } = JSON.parse(body)
         const updatedDate = new Date(updated_at)
-        msg.send(`:bitbucket: ${description} (Actualizado: ${moment(updatedDate).fromNow()})`)
+        const message = `${description} (Actualizado: ${moment(updatedDate).fromNow()})`
+        const colors = new Map([
+          ['none', 'good'],
+          ['minor', '#FFC400'],
+          ['major', '#FF8B00'],
+          ['critical', 'danger'],
+        ])
+        const options = {
+          as_user: false,
+          link_names: 1,
+          icon_url: 'https://i.imgur.com/FedwEBP.jpg',
+          username: 'Bitbucket Status',
+          unfurl_links: false,
+          attachments: [{
+            fallback: message,
+            text: message,
+            color: colors.get(indicator),
+          }]
+        }
+        if (['SlackBot', 'Room'].includes(robot.adapter.constructor.name)) {
+          robot.adapter.client.web.chat.postMessage(msg.message.room, null, options)
+        } else {
+          msg.send(options.attachments[0].fallback)
+        }
       } catch (error) {
-        const errorMessage = 'Bitbucket status api failed to be parse'
-        return robot.emit('error', new Error(errorMessage), msg, 'bitbucket-status')
+        robot.emit('error', error, msg, 'bitbucket-status')
       }
     })
   })
