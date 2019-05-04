@@ -161,7 +161,12 @@ module.exports = robot => {
   // in karma assignation.
   const findTextInsideCodeBlocks = message => {
     const regex = /`(.*?)`/g
-    return [...message.matchAll(regex)].map(el => el[0])
+    let matches = []
+    let match
+    while ((match = regex.exec(message)) !== null) {
+      matches.push(match[0])
+    }
+    return matches
   }
 
   robot.hear(/([a-zA-Z0-9-_\.]|[^\,\-\s\+$!(){}"'`~%=^:;#°|¡¿?]+?)(\b\+{2}|-{2})([^,]?|\s|$)/g, response => {
