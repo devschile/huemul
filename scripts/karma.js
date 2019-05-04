@@ -156,6 +156,14 @@ module.exports = robot => {
     return tokens.filter(token => urls.reduce((acc, url) => acc && url.indexOf(token) === -1, true))
   }
 
+  // Sometimes we want to use code that contains ++ or --. This function allow us
+  // to find the text that is inside code blocks so we can compare and avoid false positives
+  // in karma assignation.
+  const findTextInsideCodeBlocks = message => {
+    const regex = /`(.*?)`/g
+    return [...message.matchAll(regex)].map(el => el[0])
+  }
+
   robot.hear(/([a-zA-Z0-9-_\.]|[^\,\-\s\+$!(){}"'`~%=^:;#°|¡¿?]+?)(\b\+{2}|-{2})([^,]?|\s|$)/g, response => {
     stripRegex = /~!@#$`%^&*()|\=?;:'",<>\{\}/gi
     const tokens = removeURLFromTokens(response.match, response.message.text)
@@ -164,7 +172,13 @@ module.exports = robot => {
       if (!robot.adapter.client.rtm.dataStore.getChannelGroupOrDMById(response.envelope.room).is_channel) return
     }
 
+    const codeBlocks = findTextInsideCodeBlocks(response.message.text)
+
     tokens
+      .filter(token => {
+        // If the token match with a codeBlock it is remove from the karma assignation
+        return codeBlocks.filter(codeBlock => codeBlock.includes(token)).length === 0
+      })
       .slice(0, 5)
       .map(token => {
         const opRegex = /(\+{2}|-{2})/g
