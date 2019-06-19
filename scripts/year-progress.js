@@ -1,5 +1,5 @@
 // Description:
-//   Muestro en una barra de progreso cuando ha pasado del año
+//   Muestra en una barra de progreso con cuanto ha pasado del año
 //
 // Dependencies:
 //   None
@@ -8,7 +8,7 @@
 //   None
 //
 // Commands:
-//   hubot year progress - Muestro en una barra de progreso cuando ha pasado del año
+//   huemul year progress - Muestra en una barra de progreso con cuanto ha pasado del año
 //
 // Author:
 //   @alv.alvarez
