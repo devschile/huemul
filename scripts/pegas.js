@@ -30,9 +30,9 @@ module.exports = function(robot) {
       const $ = cheerio.load(body)
       let resultados = []
 
-      $('.job-list .job').each(function() {
+      $('.gb-results-list > div').each(function() {
         let title = $(this)
-          .find('.job-list__title')
+          .find('.gb-results-list__title .color-hierarchy1')
           .first()
           .contents()
           .filter(function() {
@@ -40,7 +40,7 @@ module.exports = function(robot) {
           })
           .text()
         let type = $(this)
-          .find('.job-list__title .modality')
+          .find('.gb-results-list__title .color-hierarchy3')
           .text()
         let path = $(this)
           .find('a')

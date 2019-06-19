@@ -8,7 +8,7 @@ const helper = new Helper('../scripts/pegas.js')
 const sleep = m => new Promise(resolve => setTimeout(() => resolve(), m))
 
 test.beforeEach(t => {
-  t.context.room = helper.createRoom({ httpd: false })
+  t.context.room = helper.createRoom({httpd: false})
 })
 
 test.afterEach(t => t.context.room.destroy())
@@ -29,48 +29,7 @@ test('Buscando pega fullstack', async t => {
 
   // test response messages of hubot
   t.deepEqual(hubotMessage1, ['hubot', 'Buscando en GetOnBrd... :dev:'])
-  t.deepEqual(hubotMessage2, [
-    'hubot',
-    'Se ha encontrado 1 resultado para *fullstack*:\n1: </empleos/programacion/programador-fullstack-wivo-analytics| - >\n'
-  ])
-})
-
-test('Buscando pega de mecanico', async t => {
-  nock('https://www.getonbrd.cl')
-    .get('/empleos-mecanico')
-    .reply(200, '')
-  t.context.room.user.say('user', 'hubot pega mecanico')
-  await sleep(500)
-
-  const user = t.context.room.messages[0]
-  const hubotMessage1 = t.context.room.messages[1]
-  const hubotMessage2 = t.context.room.messages[2]
-
-  // test message of user
-  t.deepEqual(user, ['user', 'hubot pega mecanico'])
-
-  // test response messages of hubot
-  t.deepEqual(hubotMessage1, ['hubot', 'Buscando en GetOnBrd... :dev:'])
-  t.deepEqual(hubotMessage2, ['hubot', 'No se han encontrado resultados para *mecanico*'])
-})
-
-test('Error en el servidor', async t => {
-  nock('https://www.getonbrd.cl')
-    .get('/empleos-500')
-    .replyWithError('Server error')
-  t.context.room.user.say('user', 'hubot pega 500')
-  await sleep(500)
-
-  const user = t.context.room.messages[0]
-  const hubotMessage1 = t.context.room.messages[1]
-  const hubotMessage2 = t.context.room.messages[2]
-
-  // test message of user
-  t.deepEqual(user, ['user', 'hubot pega 500'])
-
-  // test response messages of hubot
-  t.deepEqual(hubotMessage1, ['hubot', 'Buscando en GetOnBrd... :dev:'])
-  t.deepEqual(hubotMessage2, ['hubot', '@user :gob: tiene problemas en el servidor'])
+  t.deepEqual(hubotMessage2, ['hubot', 'Se ha encontrado 1 resultado para *fullstack*:\n1: </empleos/programacion/programador-fullstack-wivo-analytics| - >\n'])
 })
 
 test('Redirect', async t => {
