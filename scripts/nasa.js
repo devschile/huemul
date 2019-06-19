@@ -1,5 +1,5 @@
 // Description:
-//   Muestra quiénes están en el espacio (fuera de la tierra) AHORA
+//   Muestra la foto del día entregada por la NASA.
 //
 // Dependencies:
 //   https://api.nasa.gov/
@@ -8,8 +8,7 @@
 //   None
 //
 // Commands:
-//   hubot foto del dia - Muestra quiénes están en el espacio (fuera de la tierra) AHORA
-//   hubot foto del día - Muestra quiénes están en el espacio (fuera de la tierra) AHORA
+//   huemul foto del d(i|í)a
 //
 // Author:
 //   @jorgeepunan
