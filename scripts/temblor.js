@@ -8,7 +8,8 @@
 //   None
 //
 // Commands:
-//   hubot temblores <Chile|Nombre País> (sin país despliega en todo el mundo)
+//   hubot temblores - Muestra los últimos temblores >= a 6° en el 🌍.
+//   hubot temblores <país> - Muestra los últimos temblores >= a 6° en el país seleccionado.
 //
 // Author:
 //   @jorgeepunan

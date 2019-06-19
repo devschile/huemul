@@ -9,7 +9,11 @@
 //   WALLET_ETH
 //
 // Commands:
-//   hubot wallet [currency]
+//   hubot wallet btc - Display :huemul: addresses to receive bitcoin as donation
+//   hubot wallet bitcoin - Display :huemul: addresses to receive bitcoin as donation
+//   hubot wallet eth - Display :huemul: addresses to receive ethereum as donation
+//   hubot wallet ethereum - Display :huemul: addresses to receive ethereum as donation
+//   hubot wallet help - Display help
 //
 // Author:
 //   @hectorpalmatellez

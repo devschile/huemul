@@ -8,7 +8,13 @@
 //   None
 //
 // Commands:
-//   hubot alegría|alégrame|felicidad|yay|feliz - Te alegra el día
+//   hubot alegria - Te alegra el día
+//   hubot alegría - Te alegra el día
+//   hubot alégrame - Te alegra el día
+//   hubot alegrame - Te alegra el día
+//   hubot felicidad - Te alegra el día
+//   hubot feliz - Te alegra el día
+//   hubot yay - Te alegra el día
 //
 // Author:
 //   @gmq

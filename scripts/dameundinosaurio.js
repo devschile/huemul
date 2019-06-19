@@ -8,7 +8,7 @@
 //   None
 //
 // Command:
-//   huemul dame un saurio
+//   hubot dame un saurio - Muestra un dinosaurio al azar
 //
 // Author:
 //   @jriveros

@@ -5,7 +5,7 @@
 //    cheerio
 //
 // Commands:
-//   hubot pethappy [producto]
+//   hubot pethappy <producto> - Get available products from PetHappy
 //
 // Author:
 //   @hectorpalmatellez

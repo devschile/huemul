@@ -8,7 +8,7 @@
 //   None
 //
 // Commands:
-//   huemul awesome <nombrecanal>
+//   hubot awesome <nombrecanal> - Retorna los enlaces `awesome` de un canal. Ejemplo: `hubot awesome backend`
 //
 // Author:
 //   @jorgeepunan
@@ -57,9 +57,9 @@ module.exports = function(robot) {
 
         if (findChannelContent) {
           res.send(
-            `En Awesome devsChile para *${channel}* tenemos los siguientes links:\n\r${
-              parseMarkdownLinks(findChannelContent.raw)
-            }\n\rTodo el detalle en: <${link}|Awesome devsChile>`
+            `En Awesome devsChile para *${channel}* tenemos los siguientes links:\n\r${parseMarkdownLinks(
+              findChannelContent.raw
+            )}\n\rTodo el detalle en: <${link}|Awesome devsChile>`
           )
         } else {
           res.send(`¿Ayuda? Comando: \`huemul awesome <nombrecanal>\``)

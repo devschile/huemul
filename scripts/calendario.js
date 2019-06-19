@@ -8,10 +8,9 @@
 //   None
 //
 // Commands:
-//   hubot calendario
-//   hubot calendario diciembre
-//   hubot calendario mayo 2018
-//   hubot calendario diciembre 1989
+//   hubot calendario - Obtiene el calendario actual
+//   hubot calendario <mes> - Obtiene el calendario del mes indicado para el año actual
+//   hubot calendario <mes> <año> - Obtiene el calendario del mes y año indicados
 //
 // Author:
 //   @jorgeepunan

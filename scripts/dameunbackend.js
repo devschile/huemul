@@ -8,7 +8,7 @@
 //   None
 //
 // Command:
-//   huemul dame un backend
+//   hubot dame un backend - Muestra un clásico backend al azar
 //
 // Author:
 //   @jorgeepunan

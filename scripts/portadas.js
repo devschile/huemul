@@ -5,8 +5,8 @@
 //   moment, whilst
 //
 // Configuration:
-//   hubot portada <diario>
-//   hubot portada <lista|help>
+//   hubot portada <diario> - Muestra las portada de hoy del diario seleccionado.
+//   hubot portada <lista|help> - Muestra el listado de portadas.
 //
 // Author:
 //   @rotvulpix, @pottersys
@@ -43,6 +43,7 @@ const listaPortadas = () => {
     folha
   *Colombia:*
     (el)? tiempo
+    (el)? espectador
   *Mexico:*
     (el)? financiero
   *USA*
@@ -211,6 +212,10 @@ const diarios = {
   },
   tiempo: {
     url: 'http://img.kiosko.net/#DATE#/co/co_eltiempo.750.jpg',
+    noSlashes: false
+  },
+  espectador: {
+    url: 'http://img.kiosko.net/#DATE#/co/co_espectador.750.jpg',
     noSlashes: false
   },
   paisuruguay: {

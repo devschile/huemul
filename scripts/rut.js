@@ -8,9 +8,9 @@
 //   None
 //
 // Commands:
-//   hubot dame un rut
-//   hubot dame un rut persona
-//   hubot dame un rut empresa
+//   hubot dame un rut - Entrega un RUT aleatorio de persona
+//   hubot dame un rut persona - Entrega un RUT aleatorio de persona
+//   hubot dame un rut empresa - Entrega un RUT aleatorio de empresa
 //
 // Author:
 //   @jorgeepunan

@@ -8,7 +8,7 @@
 //   None
 //
 // Commands:
-//   hubot idea|s lav[ií]n - Una frase random y actualizada de Joaquín Lavín
+//   hubot idea|ideas lavin - Una frase random y actualizada de Joaquín Lavín
 //
 // Author:
 //   @raulghm
@@ -27,11 +27,13 @@ module.exports = robot => {
           icon_url: 'https://i.imgur.com/PcIlgxP.jpg',
           username: 'Joaquín Lavín',
           unfurl_links: false,
-          attachments: [{
-            fallback: quote,
-            text: quote,
-            color: error ? 'danger' : 'info',
-          }]
+          attachments: [
+            {
+              fallback: quote,
+              text: quote,
+              color: error ? 'danger' : 'info'
+            }
+          ]
         }
         robot.adapter.client.web.chat.postMessage(msg.message.room, null, options)
       } else {

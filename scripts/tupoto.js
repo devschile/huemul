@@ -7,10 +7,10 @@
 //   None
 //
 // Commands:
-//   hubot tupo.to URL
-//   hubot tupoto URL
-//   hubot tupotoizame URL
-//   hubot tupotizame URL
+//   hubot tupo.to <URL> - Devuelve una url corta generada por tupo.to
+//   hubot tupoto <URL> - Devuelve una url corta generada por tupo.to
+//   hubot tupotoizame <URL> - Devuelve una url corta generada por tupo.to
+//   hubot tupotizame <URL> - Devuelve una url corta generada por tupo.to
 //
 // Author:
 //   @victorsanmartin

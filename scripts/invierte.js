@@ -8,7 +8,7 @@
 //   None
 //
 // Commands:
-//   hubot invierte <string>
+//   hubot invierte <string> - Invierte los caracteres de un string segun un mapa de unicode
 //
 // Author:
 //   @jorgeepunan

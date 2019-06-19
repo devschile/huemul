@@ -8,13 +8,13 @@
 //   ORIONX_APIKEY, ORIONX_SECRET_KEY, ORIONX_ENDPOINT
 //
 // Commands:
-//   hubot orionx bitcoin | btc
-//   hubot orionx ethereum | eth
-//   hubot orionx litecoin | ltc
-//   hubot orionx bitcoin-cash | bch
-//   hubot orionx dash
-//   hubot orionx chaucha | cha
-//   hubot orionx ripple | xrp
+//   hubot orionx bitcoin|btc - Muestra el valor de bitcoin desde OrionX
+//   hubot orionx ethereum|eth - Muestra el valor de ethereum desde OrionX
+//   hubot orionx litecoin|ltc - Muestra el valor de litecoin desde OrionX
+//   hubot orionx bitcoin-cash|bch - Muestra el valor de bitcoin-cash desde OrionX
+//   hubot orionx dash - Muestra el valor de dash desde OrionX
+//   hubot orionx chaucha|cha - Muestra el valor de chaucha desde OrionX
+//   hubot orionx ripple|xrp - Muestra el valor de ripple desde OrionX
 //
 // Author:
 //   @gmq

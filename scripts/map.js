@@ -8,7 +8,7 @@
 //   GOOGLE_MAPS_API_KEY
 //
 // Commands:
-//   huemul map <lugar>
+//   hubot map <lugar> - Devuelve un mapa según lugar entregado
 //
 // Author:
 //   @jorgeepunan
@@ -72,7 +72,7 @@ module.exports = function(robot) {
    * @param {string} location - A valid location ('address', 'lat,lng')
    * @returns {Promise<string>} -
    */
-  const getMapUrl = (location) => {
+  const getMapUrl = location => {
     return new Promise((resolve, reject) => {
       const mapUrlParams = querystring.stringify({
         center: location,

@@ -5,7 +5,7 @@
 //   None
 //
 // Commands:
-//   hubot signo chino 1989
+//   hubot signo chino <año> - Devuelve el signo Chino dependiendo del año seleccionado
 //
 // Author:
 //   @raerpo

@@ -5,7 +5,7 @@
 //   Moment
 //
 // Commands:
-//   huemul 18
+//   hubot 18 - Retorna la cantidad de dás faltantes para el 18 de septiembre
 //
 // Author:
 //   @jorgeepunan

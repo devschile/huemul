@@ -10,7 +10,8 @@
 //                                    Ej: '#random,#pegas,#otrocanal'
 //
 // Commands:
-//   hubot mi secreto [canal] <secreto>
+//   hubot mi secreto <secreto> - Envia el secreto al canal #random.
+//   hubot mi secreto <canal> <secreto> - Envia el secreto al canal seleccionado.
 //
 // Author:
 //   @jorgeepunan

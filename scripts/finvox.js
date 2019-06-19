@@ -8,14 +8,8 @@
 //   None
 //
 // Commands:
-//   hubot finvox help
-//   hubot finvox dolar|usd
-//   hubot finvox uf
-//   hubot finvox euro
-//   hubot finvox ipc
-//   hubot finvox utm
-//   hubot finvox huemulcoin
-//   hubot finvox palta
+//   hubot finvox help - Imprime la ayuda
+//   hubot finvox dolar|usd|uf|euro|ipc|utm|huemulcoin|palta - Obtiene el valor de la moneda seleccionada
 //
 // Author:
 //   @jorgeepunan

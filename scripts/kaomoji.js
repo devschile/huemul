@@ -8,7 +8,7 @@
 //   None
 //
 // Commands:
-//   hubot kaomoji [keyword]
+//   hubot kaomoji <keyword> - Devuelve un kaomoji para la búsqueda indicada
 //
 // Author:
 //   @hectorpalmatellez

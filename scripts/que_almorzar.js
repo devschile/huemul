@@ -8,7 +8,16 @@
 //   None
 //
 // Commands:
-//   hubot qu[ée] [puedo][me sugieres (para|de)] desayunar|almorzar|cenar|tomar|comer
+//   hubot que puedo desayunar - Retorna una sugerencia para desayunar
+//   hubot que puedo almorzar - Retorna una sugerencia para almorzar
+//   hubot que puedo cenar - Retorna una sugerencia para cenar
+//   hubot que puedo tomar - Retorna una sugerencia para tomar
+//   hubot que puedo comer - Retorna una sugerencia para comer
+//   hubot que me sugieres para desayunar - Retorna una sugerencia para desayunar
+//   hubot que me sugieres para almorzar - Retorna una sugerencia para almorzar
+//   hubot que me sugieres para cenar - Retorna una sugerencia para cenar
+//   hubot que me sugieres para tomar - Retorna una sugerencia para tomar
+//   hubot que me sugieres para comer - Retorna una sugerencia para comer
 //
 // Author:
 //   @jorgeepunan

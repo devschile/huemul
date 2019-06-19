@@ -5,7 +5,7 @@
 //    cheerio
 //
 // Commands:
-//   huemul pega|pegas|trabajo|trabajos <oficio>
+//   hubot pega|pegas|trabajo|trabajos <oficio> - Busca pegas recientes para el oficio seleccionado en GetOnBrd
 //
 // Author:
 //   @jorgeepunan

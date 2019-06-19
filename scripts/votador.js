@@ -8,12 +8,12 @@
 //   None
 //
 // Commands:
-//   hubot votador help
-//   hubot inicio votador item1, item2, item3, ...
-//   hubot voto (por) N ~ donde N es el índice de la opción
-//   hubot opciones votador
-//   hubot conteo votador
-//   hubot fin votador
+//   hubot votador help - Muestra la ayuda
+//   hubot inicio votador item1, item2, item3, ... - Inicia el votar con N items
+//   hubot voto (por) <indice> - Vota por la opcion deseada
+//   hubot opciones votador - Muestra las opciones a votar
+//   hubot conteo votador - Muestra el conteo de votaciones
+//   hubot fin votador - Finaliza la votación
 //
 // Notes:
 //   Base: https://github.com/joshingly/hubot-voting/blob/master/src/scripts/voting.coffee

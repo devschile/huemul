@@ -8,7 +8,8 @@
 //   None
 //
 // Commands:
-//   huemul horóscopo <signo zodiacal>
+//   hubot horóscopo <signo zodiacal> - Muestra el horóscopo del día para el signo indicado. Ejemplo: `hubot horóscopo leo`
+//   hubot horoscopo <signo zodiacal> - Muestra el horóscopo del día para el signo indicado. Ejemplo: `hubot horoscopo leo`
 //
 // Author:
 //   @jorgeepunan

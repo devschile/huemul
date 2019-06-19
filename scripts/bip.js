@@ -8,7 +8,7 @@
 //   None
 //
 // Commands:
-//   Huemul bip <numero>
+//   hubot bip <numero> - Retorna el saldo de una tarjeta BIP!
 //
 // Author:
 //   @jorgeepunan

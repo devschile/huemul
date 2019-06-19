@@ -5,7 +5,10 @@
 //    cheerio
 //
 // Commands:
-//   huemul uoct|taco|tr(aá)nsito
+//   hubot uoct - Muestra problemas de tránsito en Santiago.
+//   hubot taco - Muestra problemas de tránsito en Santiago.
+//   hubot transito - Muestra problemas de tránsito en Santiago.
+//   hubot tránsito - Muestra problemas de tránsito en Santiago.
 //
 // Author:
 //   @jorgeepunan

@@ -8,22 +8,20 @@
 //   None
 //
 // Commands:
-//   hubot avisar <message> en <room1>, <roomN>
-//   hubot avisar help - Imprime una ayuda la ayuda del comando `avisar`
+//   hubot avisar <message> en <room1>, <roomN> - Publica el mensaje en/los canal/es indicados
+//   hubot avisar help - Imprime la ayuda del comando `avisar`
 //   hubot avisar -h - alias de `hubot avisar help`
 //   hubot avisar ? - alias de `hubot avisar help`
 //
 // Author:
 //   @eseceve
 
-
 module.exports = function avisar(robot) {
-  var ROBOTNAME = robot.name;
-  var VALIDHELPINPUTS = ['avisar help', 'avisar -h', 'avisar ?'];
+  var ROBOTNAME = robot.name
+  var VALIDHELPINPUTS = ['avisar help', 'avisar -h', 'avisar ?']
 
-  robot.respond(/avisar (help|\-h|\?)/i, help);
-  robot.respond(/avisar ([\w\d\s\:]+) en (([#|@][\w-]+(,?)(\s*))+)/i, notify);
-
+  robot.respond(/avisar (help|\-h|\?)/i, help)
+  robot.respond(/avisar ([\w\d\s\:]+) en (([#|@][\w-]+(,?)(\s*))+)/i, notify)
 
   /**
    *
@@ -37,13 +35,12 @@ module.exports = function avisar(robot) {
    *
    */
   function notify(res) {
-    var message = res.message.user.name + ' dice: ' + res.match[1];
-    var rooms = getRooms(res.match[2], res.message.room);
+    var message = res.message.user.name + ' dice: ' + res.match[1]
+    var rooms = getRooms(res.match[2], res.message.room)
     rooms.forEach(function onEachRoom(room) {
-      robot.send({room: room}, message);
-    });
+      robot.send({ room: room }, message)
+    })
   }
-
 
   /**
    *
@@ -59,17 +56,19 @@ module.exports = function avisar(robot) {
    *
    */
   function getRooms(message, exclude) {
-    if (exclude) { exclude = exclude.toLowerCase(); }
+    if (exclude) {
+      exclude = exclude.toLowerCase()
+    }
 
-    return message.match(/(#|@)?[\w-]+/ig)
+    return message
+      .match(/(#|@)?[\w-]+/gi)
       .map(function cleanRoomName(room) {
-        return room.replace('@', '');
+        return room.replace('@', '')
       })
       .filter(function filterExcludedRooms(room) {
-        return exclude && room.toLowerCase() === exclude ? false : room;
-      });
+        return exclude && room.toLowerCase() === exclude ? false : room
+      })
   }
-
 
   /**
    *
@@ -83,15 +82,19 @@ module.exports = function avisar(robot) {
    *
    */
   function help(res) {
-    var reg = new RegExp('@?('+ROBOTNAME+')(:?)(\\s*)');
-    var text = res.message.text.replace(reg, '');
+    var reg = new RegExp('@?(' + ROBOTNAME + ')(:?)(\\s*)')
+    var text = res.message.text.replace(reg, '')
 
-    if (VALIDHELPINPUTS.indexOf(text) == -1) { return; }
+    if (VALIDHELPINPUTS.indexOf(text) == -1) {
+      return
+    }
 
-    res.send('Esto es bien simple. Solo debes escribirme algo como ' +
-      ' `avisar :mensaje en :rooms`\n' +
-      '`:mensaje` Lo que quieres avisar\n' +
-      '`:rooms` La lista de canales/usuarios donde quieres avisar. ' +
-      'Debe ser algo como `#canal1, @user1, #canalN, @userN`');
+    res.send(
+      'Esto es bien simple. Solo debes escribirme algo como ' +
+        ' `avisar :mensaje en :rooms`\n' +
+        '`:mensaje` Lo que quieres avisar\n' +
+        '`:rooms` La lista de canales/usuarios donde quieres avisar. ' +
+        'Debe ser algo como `#canal1, @user1, #canalN, @userN`'
+    )
   }
-};
+}

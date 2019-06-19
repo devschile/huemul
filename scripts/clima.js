@@ -6,7 +6,8 @@
 //   None
 //
 // Commands:
-//   hubot clima <ciudad> | default: Santiago
+//   hubot clima - Obtiene el clima de Santiago
+//   hubot clima <ciudad> - Obtiene el clima de la ciudad indicada
 //
 // Author:
 //   @jorgeepunan

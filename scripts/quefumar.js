@@ -8,7 +8,9 @@
 //   None
 //
 // Command:
-//   huemul que fumar <sativa|indica|hibrida>
+//   hubot que fumar sativa - Muestra un tipo de :mota: sativa pa :smoking:
+//   hubot que fumar indica - Muestra un tipo de :mota: indica pa :smoking:
+//   hubot que fumar hibrida - Muestra un tipo de :mota: hibrida pa :smoking:
 //
 // Author:
 //   @jorgeepunan
@@ -55,7 +57,7 @@ const indica = [
   'Blueberry',
   'Grape Ape',
   'Master Kush',
-  'God\'s Gift',
+  "God's Gift",
   'Death Star',
   'Purple Urkle',
   'Afghan Kush',
@@ -65,8 +67,8 @@ const indica = [
 
 module.exports = robot => {
   robot.respond(/qu(e|é) fumar (\w+)/i, msg => {
-    const type = msg.match[2].toLowerCase();
-    switch(type) {
+    const type = msg.match[2].toLowerCase()
+    switch (type) {
       case 'sativa':
         msg.send(`Sativa: puede ser *${msg.random(sativa)}* :slowparrot:`)
         break

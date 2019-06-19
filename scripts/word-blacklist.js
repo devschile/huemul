@@ -4,6 +4,13 @@
 // Configuration:
 //   HUBOT_BANNED_WORDS = Words to be banned separated by commas (@here,@everywhere)
 //
+// Commands:
+//   hubot ban <username> - Ban username for 5 minutes. Example: hubot ban jaime
+//   hubot ban <username> <time>h - Ban username for X minutes. Example: hubot ban jaime 5h
+//   hubot ban <username> <time>m - Ban username for X hours. Example: hubot ban jaime 5m
+//   hubot unban <username> - Unban username. Example: hubot unban jaime
+//   hubot ban-info <username> - Get ban info of a username. Example: hubot ban-info jaime
+//
 // Author:
 //   @gmq
 const moment = require('moment')

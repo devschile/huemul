@@ -4,7 +4,7 @@
 //  Dependencies:
 //
 // Commands:
-//   hubot torrent <query>
+//   hubot torrent <query> - Search torrents for query from yts.ag
 //
 // Author:
 //   @jorgeepunan
@@ -40,7 +40,7 @@ module.exports = function(robot) {
         } else {
           msg.send('Nada encontrado con ' + busqueda + ', intenta con otra película.');
         }
-        
+
       }
     });
 

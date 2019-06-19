@@ -8,7 +8,7 @@
 //   None
 //
 // Commands:
-//   hubot gardel
+//   hubot gardel|cuando pagan|cuándo pagan - Indica la cantidad de dias que faltan para que paguen
 //
 // Author:
 //   @hectorpalmatellez

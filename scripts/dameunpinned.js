@@ -8,7 +8,7 @@
 //   None
 //
 // Command:
-//   huemul dame un pinned
+//   hubot dame un pinned - Muestra un pinned de un canal especifico o al azar
 //
 // Author:
 //   @ienc

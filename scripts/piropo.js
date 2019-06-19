@@ -8,7 +8,7 @@
 //   None
 //
 // Command:
-//   huemul dame un piropo
+//   hubot dame un piropo - Muestra al azar un piropo
 //
 // Author:
 //   @edades

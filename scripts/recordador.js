@@ -8,7 +8,7 @@
 //   None
 //
 // Commands:
-//   hubot recuerdame en <tiempo> que tengo que <accion>
+//   hubot recuerdame en <tiempo> que tengo que <accion> - Establece un recordatorio
 //
 // Notes:
 //   <tiempo> semanas, dias, horas|hrs, segundos|segs

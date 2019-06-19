@@ -8,7 +8,7 @@
 //   None
 //
 // Command:
-//   huemul dame un frontend
+//   hubot dame un frontend - Muestra un experto frontend al azar
 //
 // Author:
 //   @jorgeepunan

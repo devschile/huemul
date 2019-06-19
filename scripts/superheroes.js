@@ -8,7 +8,7 @@
 //   None
 //
 // Commands:
-//   hubot superheroe
+//   hubot superheroe - Entrega al azar el nombre de un super-heroe ficticio
 //
 // Author:
 //   @jorgeepunan

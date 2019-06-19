@@ -8,7 +8,7 @@
 //   None
 //
 // Commands:
-//   kickstarter [tech | autos | cocina | iot]
+//   hubot kickstarter <term> - Show random popular projects from kickstarter. Example: `hubot kickstarter iot`
 //
 // Author:
 //   @edades

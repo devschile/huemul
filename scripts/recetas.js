@@ -5,7 +5,8 @@
 //    cheerio
 //
 // Commands:
-//   hubot receta <ingrediente>
+//   hubot receta <ingrediente> - Trae recetas de recetasgratis.net
+//   hubot recetas <ingrediente> - Trae recetas de recetasgratis.net
 //
 // Author:
 //   @jorgeepunan

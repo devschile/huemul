@@ -8,7 +8,7 @@
 //   None
 //
 // Command:
-//   huemul dame un keldor
+//   hubot dame un keldor - Muestra un @keldor al azar
 //
 // Author:
 //   @jorgeepunan

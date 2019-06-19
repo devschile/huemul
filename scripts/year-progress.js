@@ -8,7 +8,7 @@
 //   None
 //
 // Commands:
-//   year progress
+//   hubot year progress - Muestro en una barra de progreso cuando ha pasado del año
 //
 // Author:
 //   @alv.alvarez

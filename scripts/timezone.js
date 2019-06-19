@@ -8,8 +8,9 @@
 //   None
 //
 // Commands:
-//   hubot que hora
-//   hubot la hora
+//   hubot que hora - Indica la hora
+//   hubot qué hora - Indica la hora
+//   hubot la hora - Indica la hora
 //
 // Author:
 //   @jorgeepunan

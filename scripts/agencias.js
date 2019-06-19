@@ -11,7 +11,10 @@
 //   HEROKU_OAUTH_SECRET
 //
 // Commands:
-//   hubot agencias add <url> -> Add new gif to agencias
+//   hubot agencias add <url> - Add new gif to #agencias
+//   hubot agencias all - Show all gifs of #agencias
+//   #agencias - Get a new gif of #agencias
+//   #agencia - Get a new gif of #agencias
 //
 // Author:
 //   @jorgeepunan
@@ -46,7 +49,7 @@ module.exports = robot => {
     if (agencias === null) agencias = '[]'
     agencias = JSON.parse(agencias)
     agencias = agencias.concat(images)
-    res.send('agencias... :point_down::skin-tone-4:\n' + (res.random(agencias)))
+    res.send('agencias... :point_down::skin-tone-4:\n' + res.random(agencias))
   })
 
   robot.respond(/agencias add ((https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?)/, res => {
@@ -135,9 +138,9 @@ module.exports = robot => {
       .http('https://id.heroku.com/oauth/token')
       .header('Content-Type', 'application/x-www-form-urlencoded')
       .post(data)((err, resp, body) => {
-        if (err) return res.redirect('/agencias/all')
-        body = JSON.parse(body)
-        res.redirect(`/agencias/all?token=${body.access_token}`)
-      })
+      if (err) return res.redirect('/agencias/all')
+      body = JSON.parse(body)
+      res.redirect(`/agencias/all?token=${body.access_token}`)
+    })
   })
 }

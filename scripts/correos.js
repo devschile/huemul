@@ -5,7 +5,7 @@
 //   correos-chile
 //
 // Commands:
-//   hubot correos [envio]
+//   hubot correos <tracking_number> - Indica el estado de una encomienda de correos de chile
 //
 // Author:
 //   @hectorpalmatellez

@@ -8,20 +8,18 @@
 //   None
 //
 // Commands:
-//   None
+//   NaN - Retorna NaNNaNNaNNaNNaNNaNNaNNaNNaNNaNNaNNaNNaNNaNNaN Batman!
 //
 // Author:
 //   @jorgeepunan
 
-
-
-function batman(){
-  return Array(16).join('wat' - 1) + " Batman! ~ :huemul:";
+function batman() {
+  return Array(16).join('wat' - 1) + ' Batman! ~ :huemul:'
 }
 
 module.exports = function(robot) {
   robot.hear(/NaN/, function(res) {
-    msg = batman();
-    res.send(msg);
-  });
-};
+    msg = batman()
+    res.send(msg)
+  })
+}

@@ -8,7 +8,7 @@
 //   None
 //
 // Commands:
-//   hubot en el espacio
+//   hubot en el espacio - Muestra quiénes están en el espacio (fuera de la tierra) AHORA
 //
 // Author:
 //   @jorgeepunan

@@ -10,6 +10,7 @@
 //
 // Commands:
 //   hubot gotico <texto> - Escribe el texto en letra gótica
+//   hubot gótico <texto> - Escribe el texto en letra gótica
 //
 // Author:
 //   @davidlaym

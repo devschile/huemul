@@ -2,7 +2,11 @@
 //   A simple karma tracking script for hubot.
 //
 // Commands:
-//   karma <name> - shows karma for the named user
+//   <username>++ - adds karma to a user
+//   <username>-- - removes karma from a user
+//   karma <username> - shows karma for the named user
+//   karma all - shows karma for all users
+//   karma todos - shows karma for all users
 //
 // Notes
 //   <name>++ - adds karma to a user

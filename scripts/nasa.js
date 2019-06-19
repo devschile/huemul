@@ -8,48 +8,44 @@
 //   None
 //
 // Commands:
-//   hubot foto del d[ií]a
+//   hubot foto del dia - Muestra quiénes están en el espacio (fuera de la tierra) AHORA
+//   hubot foto del día - Muestra quiénes están en el espacio (fuera de la tierra) AHORA
 //
 // Author:
 //   @jorgeepunan
 
-var url = 'https://api.nasa.gov/planetary/apod';
-var apikey = 'fCSASHvV7aQWommjx56XrfPwijEpHPeDkbHIPySi';
+var url = 'https://api.nasa.gov/planetary/apod'
+var apikey = 'fCSASHvV7aQWommjx56XrfPwijEpHPeDkbHIPySi'
 
-function currentDate(){
-  var today = new Date();
-  var dd = today.getDate();
-  var mm = today.getMonth()+1;
-  var yyyy = today.getFullYear();
+function currentDate() {
+  var today = new Date()
+  var dd = today.getDate()
+  var mm = today.getMonth() + 1
+  var yyyy = today.getFullYear()
 
-  if( dd < 10 ){
-      dd = '0' + dd;
+  if (dd < 10) {
+    dd = '0' + dd
   }
-  if( mm < 10 ){
-      mm = '0' + mm;
+  if (mm < 10) {
+    mm = '0' + mm
   }
-  var today = yyyy + '-' + mm + '-' + dd;
+  var today = yyyy + '-' + mm + '-' + dd
   return today
 }
 
 module.exports = function(robot) {
   robot.respond(/foto del d[ií]a/i, function(res) {
+    var fullURL = url + '?api_key=' + apikey
 
-    var fullURL = url + '?api_key=' + apikey;
-
-    robot.http(fullURL).get()(function (error, response, body) {
-
+    robot.http(fullURL).get()(function(error, response, body) {
       if (!error && response.statusCode == 200) {
+        var data = JSON.parse(body)
 
-        var data = JSON.parse(body);
-
-        res.send( data.title + ' [' + currentDate() + ']' );
-        res.send( data.url );
-
+        res.send(data.title + ' [' + currentDate() + ']')
+        res.send(data.url)
       } else {
-        res.send(":facepalm: Error: ", error);
+        res.send(':facepalm: Error: ', error)
       }
-
-    });
-  });
-};
+    })
+  })
+}

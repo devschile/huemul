@@ -7,7 +7,7 @@
 
 // Commands:
 //   hubot steam daily - Muestra la oferta del día.
-//   hubot steam [Nombre Juego] - Muestra información básica de un juego.
+//   hubot steam <Nombre Juego> - Muestra información básica de un juego.
 //   hubot steam help - Muestra los comandos disponibles.
 
 // Author:

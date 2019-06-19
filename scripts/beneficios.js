@@ -8,7 +8,7 @@
 //   None
 //
 // Commands:
-//   un beneficio
+//   hubot un beneficio - Retorna un beneficio otorgado por :huemul:
 
 var beneficios = [
   'Tómate la tarde libre, proletario.',
@@ -20,10 +20,10 @@ var beneficios = [
   'Seguro de salud y dental para ti y tu familia.',
   'Bono anual sólo por ser un :huemul: dev y/o golden :monea:',
   'Permisos para celebrar y compartir la :beerjs:'
-];
+]
 
 module.exports = function(robot) {
   robot.respond(/un beneficio/gi, function(res) {
-    res.send( res.random(beneficios) );
-  });
-};
+    res.send(res.random(beneficios))
+  })
+}

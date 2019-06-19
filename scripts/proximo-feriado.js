@@ -8,7 +8,8 @@
 //   none
 
 // Commands:
-//   hubot pr(o|ó)ximo feriado - Retorna la cantidad de días, la fecha y el motivo del próximo feriado en Chile
+//   hubot proximo feriado - Retorna la cantidad de días, la fecha y el motivo del próximo feriado en Chile
+//   hubot próximo feriado - Retorna la cantidad de días, la fecha y el motivo del próximo feriado en Chile
 
 // Author:
 //   @victorsanmartin

@@ -8,7 +8,7 @@
 //   None
 //
 // Commands:
-//   hubot quozio <user> dijo <quote>
+//   hubot quozio <user> dijo <quote> - Generate quote image from quozio
 //
 // Author:
 //   @lgaticaq

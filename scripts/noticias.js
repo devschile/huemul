@@ -5,9 +5,7 @@
 //  moment, cheerio
 //
 // Commands:
-//  hubot noticias internacional
-//  hubot noticias nacional
-//  hubot noticias de perros
+//  hubot noticias <query> - Mustra noticias para la busqueda seleccionada
 //
 // Author:
 //  @jlobitu

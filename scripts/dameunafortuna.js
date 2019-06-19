@@ -8,7 +8,7 @@
 //   None
 //
 // Command:
-//   huemul dame una fortuna
+//   hubot dame una fortuna - Muestra al azar una frase de galleta de la fortuna
 //
 // Author:
 //   @jorgeepunan
@@ -46,5 +46,7 @@ const fortunes = [
 ]
 
 module.exports = robot => {
-  robot.respond(/dame una fortuna/gi, msg => msg.send(`:fortune_cookie: *${msg.message.user.name}* ${msg.random(fortunes)}`))
+  robot.respond(/dame una fortuna/gi, msg =>
+    msg.send(`:fortune_cookie: *${msg.message.user.name}* ${msg.random(fortunes)}`)
+  )
 }

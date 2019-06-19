@@ -8,8 +8,7 @@
 //   None
 //
 // Commands:
-//   hubot <patente> fue rematado?
-//   hubot <patente> ha sido rematado?
+//   hubot <patente> fue rematado|ha sido rematado? - Indica si el auto asociado a la patente indicada ha sido rematado
 //
 // Author:
 //   @victorsanmartin

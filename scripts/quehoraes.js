@@ -9,7 +9,7 @@
 //   HUBOT_WWO_API_URL
 //
 // Commands:
-//   hubot hora en <ciudad>
+//   hubot hora en <ciudad> - Returns local time in given city.
 //
 // Notes
 //   Request an WWO API KEY in http://www.worldweatheronline.com/

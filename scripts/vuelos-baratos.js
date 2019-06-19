@@ -8,7 +8,7 @@
 //   None
 //
 // Commands:
-//   hubot vuelo barato a [ciudad] - Returns the cheapest price to [ciudad] from Santiago
+//   hubot vuelo barato a <ciudad> - Returns the cheapest price to selected city from Santiago
 //
 // Author:
 //   @raerpo_

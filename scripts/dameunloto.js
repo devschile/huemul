@@ -8,7 +8,7 @@
 //   None
 //
 // Command:
-//   huemul dame un loto
+//   hubot dame un loto - Devuelve 6 números ganadores para el Loto
 //
 // Author:
 //   @raerpo

@@ -8,7 +8,7 @@
 //   none
 //
 // Commands:
-//   huemul siglas <texto>
+//   hubot siglas <texto> - Muestra las siglas a un texto
 //
 // Author:
 //   @jorgeepunan
