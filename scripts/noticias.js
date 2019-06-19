@@ -1,11 +1,11 @@
 // Description:
-//  Noticias desde 24horas
+//  Muestra noticias para la busqueda seleccionada desde Ahora Noticias
 //
 // Dependencies:
 //  moment, cheerio
 //
 // Commands:
-//  hubot noticias <query> - Mustra noticias para la busqueda seleccionada
+//  huemul noticias <query>
 //
 // Author:
 //  @jlobitu
