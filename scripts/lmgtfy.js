@@ -1,6 +1,5 @@
 // Description:
-// 	Para quienes les da flojera buscar en Google
-// 	Huemul lo hace de la manera menos amable posible
+// 	Para quienes les da flojera buscar en Google, Huemul lo hace de la manera menos amable posible
 //
 // Dependencies:
 // 	None
@@ -9,7 +8,7 @@
 // 	None
 //
 // Commands:
-// 	hubot lmgtfy|google <consulta> - Mustra como buscar en Google
+// 	hubot lmgtfy|google <consulta> - Muestra como buscar en Google
 // 	hubot lmgtfy|google <@usuario> <consulta> - Mustra como buscar en Google
 //
 // Author:
