@@ -5,14 +5,14 @@
 //   Moment
 //
 // Commands:
-//   hubot 18 - Retorna la cantidad de dás faltantes para el 18 de septiembre
+//   hubot 18 - Retorna la cantidad de días faltantes para el 18 de septiembre
 //
 // Author:
 //   @jorgeepunan
 
 const moment = require('moment')
 
-const frases = ['Preparen la sed.', 'Tiqui-tiqui-tíiiiiiiii', '¡A viajar fuera de Chile patriotas!']
+const frases = ['Preparen la sed.', 'Tiqui-tiqui-tíiiiiiiii', '¡A viajar fuera de Chile patriotas!', '¡Afilen las espuelas!']
 
 module.exports = robot => {
   robot.respond(/18\s?(.*)/i, msg => {
