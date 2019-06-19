@@ -1,5 +1,5 @@
 // Description:
-//   Muestra quiénes están en el espacio (fuera de la tierra) AHORA
+//   Muestra quiénes están en el espacio (en el International Space Station o ISS) AHORA
 //
 // Dependencies:
 //   http://api.open-notify.org/
@@ -8,7 +8,7 @@
 //   None
 //
 // Commands:
-//   hubot en el espacio - Muestra quiénes están en el espacio (fuera de la tierra) AHORA
+//   huemul en el espacio
 //
 // Author:
 //   @jorgeepunan
