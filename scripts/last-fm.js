@@ -10,8 +10,8 @@
 //   None
 //
 // Commands:
-//   hubot lastfm similar <artista> - Recomienda artitas similares al indicado
-//   hubot lastfm como <categoria> - Recomienda categorias similares a la indicada
+//   hubot lastfm similar <artista> - Recomienda artistas similares al indicado
+//   hubot lastfm como <categoria> - Recomienda categorías similares a la indicada
 //   hubot lastfm top - Muestra lo más escuchado esta semana en last.fm
 //
 // Author:
