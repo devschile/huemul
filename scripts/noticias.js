@@ -1,11 +1,11 @@
 // Description:
-//  Muestra noticias para la busqueda seleccionada desde Ahora Noticias
+//  Muestra noticias para la búsqueda seleccionada desde Ahora Noticias Chile
 //
 // Dependencies:
 //  moment, cheerio
 //
 // Commands:
-//  huemul noticias <query>
+//  huemul noticias <query> - Muestra noticias para la búsqueda seleccionada desde Ahora Noticias Chile
 //
 // Author:
 //  @jlobitu
