@@ -1,5 +1,5 @@
 // Description:
-//   Muestra la foto del día entregada por la NASA.
+//   Muestra la foto del día entregada por la NASA
 //
 // Dependencies:
 //   https://api.nasa.gov/
@@ -8,7 +8,7 @@
 //   None
 //
 // Commands:
-//   huemul foto del d(i|í)a
+//   huemul foto del d(i|í)a - Muestra la foto del día entregada por la NASA
 //
 // Author:
 //   @jorgeepunan
