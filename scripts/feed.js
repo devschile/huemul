@@ -1,5 +1,5 @@
 // Description:
-//   Feeds hubot when it deserves it or when he's starving.
+//   Alimenta a Huemul con el alimento que prefieras para que siga funcionando.
 //
 // Dependencies:
 //   None
@@ -8,7 +8,7 @@
 //   None
 //
 // Commands:
-//   hubot toma|come|alimentate|traga|engulle <food|emoji> - Alimenta a :heumul:
+//   huemul toma|come|alimentate|traga|engulle <food|emoji> - Alimenta a :huemul:
 //
 // Author:
 //   @ravenous <hello@ravenous.io>
