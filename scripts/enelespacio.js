@@ -8,7 +8,7 @@
 //   None
 //
 // Commands:
-//   huemul en el espacio - Muestra quiénes están en el espacio (en el International Space Station o ISS) AHORA
+//   hubot en el espacio - Muestra quiénes están en el espacio (en el International Space Station o ISS) AHORA
 //
 // Author:
 //   @jorgeepunan
