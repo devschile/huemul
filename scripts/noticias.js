@@ -5,7 +5,7 @@
 //  moment, cheerio
 //
 // Commands:
-//  huemul noticias <query> - Muestra noticias para la búsqueda seleccionada desde Ahora Noticias Chile
+//  hubot noticias <query> - Muestra noticias para la búsqueda seleccionada desde Ahora Noticias Chile
 //
 // Author:
 //  @jlobitu
