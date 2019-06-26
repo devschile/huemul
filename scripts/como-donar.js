@@ -8,7 +8,8 @@
 //   None
 //
 // Commands:
-//   hubot c(o|ó)mo donar - Muestra las instrucciones de cómo donar
+//   hubot como donar - Muestra las instrucciones de cómo donar
+//   hubot cómo donar - Muestra las instrucciones de cómo donar
 //
 // Author:
 //   @jorgeepunan
