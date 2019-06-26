@@ -8,7 +8,8 @@
 //   None
 //
 // Commands:
-//   hubot foto del d(i|í)a - Muestra la foto del día entregada por la NASA
+//   hubot foto del dia - Muestra la foto del día entregada por la NASA
+//   hubot foto del día - Muestra la foto del día entregada por la NASA
 //
 // Author:
 //   @jorgeepunan
