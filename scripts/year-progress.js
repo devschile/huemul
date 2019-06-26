@@ -8,7 +8,7 @@
 //   None
 //
 // Commands:
-//   huemul year progress - Muestra en una barra de progreso con cuanto ha pasado del año
+//   hubot year progress - Muestra en una barra de progreso con cuanto ha pasado del año
 //
 // Author:
 //   @alv.alvarez
