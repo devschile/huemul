@@ -8,7 +8,7 @@
 //   None
 //
 // Commands:
-//   huemul toma|come|alimentate|traga|engulle <food|emoji> - Alimenta a :huemul:
+//   hubot toma|come|alimentate|traga|engulle <food|emoji> - Alimenta a :huemul:
 //
 // Author:
 //   @ravenous <hello@ravenous.io>
