@@ -9,13 +9,13 @@
 //
 // Commands:
 //   hubot finvox help - Imprime la ayuda
-//   hubot finvox dolar|usd|uf|euro|ipc|utm|huemulcoin|palta - Obtiene el valor de la moneda seleccionada
+//   hubot finvox dolar|usd|uf|euro|ipc|utm|huemulcoin - Obtiene el valor de la moneda seleccionada
 //
 // Author:
 //   @jorgeepunan
 
 const CLP = require('numbertoclpformater').numberToCLPFormater
-const API_URL = process.env.API_URL || 'http://mindicador.cl/api/'
+const API_URL = process.env.API_URL || 'https://mindicador.cl/api/'
 const mensajes = [
   'Aunque te esfuerces, seguirás siendo pobre. :poop:',
   'Los políticos ganan más que tú y más encima nos roban. Y no pueden irse presos. ¡Ánimo! :monkey:',
@@ -39,35 +39,14 @@ module.exports = robot => {
   robot.respond(/finvox (\w+)/i, res => {
     let uri
     const indicador = res.match[1].toLowerCase()
-    const indicadores = ['uf', 'dolar', 'usd', 'euro', 'eur', 'ipc', 'utm', 'getonbrd', 'huemulcoin', 'palta']
+    const indicadores = ['uf', 'dolar', 'usd', 'euro', 'eur', 'ipc', 'utm', 'getonbrd', 'huemulcoin']
 
     if (indicadores.includes(indicador)) {
       uri = API_URL
     } else {
       res.send(
-        'Mis comandos son:\n\n * `finvox dolar|usd`\n * `finvox euro|eur`\n * `finvox uf`\n * `finvox utm`\n * `finvox ipc`\n * `finvox getonbrd`\n * `finvox huemulcoin`\n* `finvox palta`\n'
+        'Mis comandos son:\n\n * `finvox dolar|usd`\n * `finvox euro|eur`\n * `finvox uf`\n * `finvox utm`\n * `finvox ipc`\n * `finvox getonbrd`\n * `finvox huemulcoin`\n'
       )
-      return false
-    }
-
-    if (indicador === 'palta') {
-      PALTA_URL =
-        'https://nuevo.jumbo.cl/api/catalog_system/pub/products/search/?sc=11&_from=0&_to=49&fq=productId%3A5801'
-      robot.http(PALTA_URL).get()((err, response, body) => {
-        if (err) {
-          robot.emit('error', err, res, 'finvox')
-          res.send(`Ocurrió un error: ${err.message}`)
-          return
-        }
-
-        response.setEncoding('utf-8')
-        let data = JSON.parse(body)
-
-        data = CLP(JSON.stringify(data[0]['items'][0]['sellers'][0]['commertialOffer']['Price']))
-        date = new Date().toJSON().split('T')[0]
-        const mensaje = res.random(mensajes)
-        res.send(`${indicador.toUpperCase()} 🥑: ${data} (${date}). ${mensaje}`)
-      })
       return false
     }
 
@@ -77,6 +56,7 @@ module.exports = robot => {
         res.send(`Ocurrió un error: ${err.message}`)
         return
       }
+
       response.setEncoding('utf-8')
       let data = JSON.parse(body)
       let date = data.fecha.split('T')[0]
