@@ -17,23 +17,24 @@ module.exports = robot => {
   robot.respond(/idea(s)? lav[ií]n(.*)/i, async msg => {
     /**
      * @param {string} quote
+     * @param {string} image
      * @param {boolean} [error=false]
      */
-    const send = (quote, error = false) => {
+    const send = (quote, image, error = false) => {
       if (['SlackBot', 'Room'].includes(robot.adapter.constructor.name)) {
+        const attachment = {
+          fallback: quote,
+          text: quote,
+          color: error ? 'danger' : 'info'
+        }
+        if (image) attachment.image_url = image
         const options = {
           as_user: false,
           link_names: 1,
           icon_url: 'https://i.imgur.com/PcIlgxP.jpg',
           username: 'Joaquín Lavín',
           unfurl_links: false,
-          attachments: [
-            {
-              fallback: quote,
-              text: quote,
-              color: error ? 'danger' : 'info'
-            }
-          ]
+          attachments: [attachment]
         }
         robot.adapter.client.web.chat.postMessage(msg.message.room, null, options)
       } else {
@@ -42,27 +43,27 @@ module.exports = robot => {
     }
 
     try {
-      const result = await getQuote()
-      send(result)
+      const quote = await getQuote()
+      send(quote.result, quote.image)
     } catch (err) {
       send('Error de Lavín, intenta más rato.', true)
     }
   })
 
   /**
-   * @returns {Promise<string>}
+   * @returns {Promise<object>}
    */
   function getQuote() {
     const url = 'https://api.graph.cool/simple/v1/cjitlaam22g9g0108oo6g43b8/graphql'
     const query = `{
       tweet {
         result
+        image
       }
     }`
 
     return new Promise((resolve, reject) => {
       const data = JSON.stringify({ query })
-
       robot
         .http(url)
         .header('Content-Type', 'application/json')
@@ -71,7 +72,7 @@ module.exports = robot => {
         try {
           const json = JSON.parse(body)
           if (json.data && json.data.tweet.result) {
-            resolve(json.data.tweet.result)
+            resolve(json.data.tweet)
           } else {
             resolve(null)
           }
