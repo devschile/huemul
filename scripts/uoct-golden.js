@@ -14,7 +14,6 @@
 //   @jorgeepunan, @davidlaym
 
 const moment = require('moment')
-const cheerio = require('cheerio')
 const fetch = require('node-fetch')
 
 const LIMITE_DE_EVENTOS = 5
