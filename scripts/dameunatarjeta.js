@@ -45,7 +45,6 @@ module.exports = robot => {
     } else {
       return false
     }
-    console.log('using url: ', url)
 
     robot.http(url).get()((err, res, body) => {
       if (err) {
