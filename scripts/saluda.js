@@ -25,21 +25,21 @@ Soy ${
           robot.name
         } el :robot: de este grupo y te doy la bienvenida a *devsChile*, la mejor y más activa comunidad chilena de desarrolladores y diseñadores web.\n\n \
 Entre los canales que te pueden interesar están:\n \
-- #anuncios: el canal que alberga todos los usuarios y donde se realizan anuncios oficiales por los admins sobre temas relacionados con la comunidad.\n \
+- #anuncios: el canal que alberga todos los usuarios y donde se realizan anuncios oficiales por los admins sobre temas relacionados con la comunidad. Aquí también se anuncia las inscripciones a la famosa BeerJS Santiago, mes a mes.\n \
 - #backend: server-side, BD, devops y lenguajes compilados.\n \
-- #cerveceros: somos wenos pa la chela y aquí se comparte todo lo relacionado con este delicioso brebaje, desde fabricantes a consumidores.\n \
-- #comunidad: temas relacionados con todos y que no cabe en ningún otro canal.\n \
-- #cultura: películas, series, libros, exposiciones y temas contingentes.\n \
+- #cerveceros: somos wenos pa la chela y aquí se comparte todo lo relacionado con este delicioso brebaje, desde fabricantes a consumidores y promociones.\n \
+- #comunidad: temas relacionados con todos y que no cabe en ningún otro canal o quizás en varios.\n \
+- #cultura: películas, series, libros, exposiciones, historia y temas contingentes.\n \
 - #eventos-juntas: como humanos a veces nos juntamos y aquí lo organizamos, además de meetups y conferencias nerds.\n \
-- #frontend: web standards, librerías y frameworks de moda.\n \
+- #frontend: web standards, librerías y frameworks de moda. ¿Tienes un problema en tu código? Aquí varios pueden ayudarte.\n \
 - #hardware: placas, impresoras 3D y demases.\n \
 - #huemul-devs: nuestro bot es ejemplo mundial de desarrollo open-source, y aquí lo lustramos todos los días.\n \
 - #lifehacks: tips, reviews, promociones, ofertas y todo lo que permita una vida mejor y más barata.\n \
 - #datascience: el nombre lo dice todo.\n \
-- #mascotas: cuidado, tenencia responsable, tips, compra y venta de productos para mascotas.\n \
+- #mascotas: cuidado, tenencia responsable, tips, compra y promociones de productos para mascotas.\n \
 - #mobile: desarrollo nativo e híbrido para dispositivos móviles.\n \
 - #moneas: criptomonedas, blockchain y demases.\n \
-- #musiqueria: bandas, discos, playlists para codear, white noise y reviews de audifonos.\n \
+- #musiqueria: bandas, discos, playlists para codear, white noise y reviews de audífonos.\n \
 - #pegas: avisos de trabajo y ~conversación~ pelambre del mundo laboral.\n \
 - #persa: compra / venta de todo lo que quieras, descuentos especiales para negocios dentro de la comunidad.\n \
 - #ux: diseño web, experiencia de usuario, UI y recursos gráficos.\n \
