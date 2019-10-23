@@ -19,8 +19,8 @@ module.exports = robot => {
     const channel = robot.adapter.client.rtm.dataStore.getChannelByName('#comunidad')
     if (msg.message.room === channel.id) {
       robot.send(
-        { room: msg.message.user.id },
-        `¡Hola, *${msg.message.user.name}*! :wave: \n \
+        { room: channel.members.pop() },
+        `¡Hola! :wave: \n \
 Soy ${
           robot.name
         } el :robot: de este grupo y te doy la bienvenida a *devsChile*, la mejor y más activa comunidad chilena de desarrolladores y diseñadores web.\n\n \
