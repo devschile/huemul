@@ -65,7 +65,9 @@ module.exports = function(robot) {
     return authorizedUsers.indexOf(user.id) !== -1
   }
 
+  // done needed for callback
   robot.listenerMiddleware((context, next, done) => {
+    //eslint-disable-line
     if (isAuthorized(context.response.message.user)) {
       next()
     } else if (!isUserPunished(context.response.message.user)) {
