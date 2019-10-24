@@ -20,7 +20,7 @@ const BotLaw = [
 
 module.exports = function(robot) {
   robot.respond(/ley (ro)?bot/i, msg => {
-    for (i = 0; i < BotLaw.length; i++) {
+    for (let i = 0; i < BotLaw.length; i++) {
       msg.send(`${BotLaw[i]}`)
     }
   })
