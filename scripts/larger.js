@@ -25,7 +25,6 @@ module.exports = robot => {
     robot.http(`${url}search/key/${apiKey}?domain=${siteUrl}`).get()((error, response, body) => {
       if (!error && response.statusCode == 200) {
         let data = JSON.parse(body)
-        let alexa = data.alexa
         let info = data.apps
         let _regalos = new Array()
 
