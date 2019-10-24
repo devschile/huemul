@@ -13,7 +13,7 @@
 
 const moment = require('moment')
 const whilst = require('whilst')
-const cheerio = require('cheerio')
+// const cheerio = require('cheerio')
 
 const endpointHxh = 'http://www.hoyxhoy.cl/endpoints/for-soy.php?action=get-latest&size=550'
 
