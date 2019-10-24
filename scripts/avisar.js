@@ -20,8 +20,8 @@ module.exports = function avisar(robot) {
   var ROBOTNAME = robot.name
   var VALIDHELPINPUTS = ['avisar help', 'avisar -h', 'avisar ?']
 
-  robot.respond(/avisar (help|\-h|\?)/i, help)
-  robot.respond(/avisar ([\w\d\s\:]+) en (([#|@][\w-]+(,?)(\s*))+)/i, notify)
+  robot.respond(/avisar (help|-h|\?)/i, help)
+  robot.respond(/avisar ([\w\d\s:]+) en (([#|@][\w-]+(,?)(\s*))+)/i, notify)
 
   /**
    *
