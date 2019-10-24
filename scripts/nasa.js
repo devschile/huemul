@@ -29,8 +29,7 @@ function currentDate() {
   if (mm < 10) {
     mm = '0' + mm
   }
-  var today = yyyy + '-' + mm + '-' + dd
-  return today
+  return yyyy + '-' + mm + '-' + dd
 }
 
 module.exports = function(robot) {
