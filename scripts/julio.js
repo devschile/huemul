@@ -257,7 +257,7 @@ class Juliiiiiiito {
   hacer_pregunta() {
     return rand([
       `${this.usar_cosa_desconocida()} ${this.cosa_desconocida()} pregunta`,
-      `que significa \"${this.msg.message.text}\" pregunta`
+      `que significa "${this.msg.message.text}" pregunta`
     ])
   }
 
@@ -268,11 +268,11 @@ class Juliiiiiiito {
       `fotos de ${this.msg.message.user.name} ${this.accion()} empelota`,
       `${this.lyrics()} ${this.dondebuscar()}`,
       `${this.persona_hombre()} ${this.accion_una_persona_a_otra()} ${this.persona_mujer()} ${this.lugar()} video prohibido`,
-      `${this.preguntas_significado()} \"${this.significado()}\"`,
+      `${this.preguntas_significado()} "${this.significado()}"`,
       `${this.usar_cosa_desconocida()} ${this.cosa_desconocida()} pregunta`,
       `como ${this.cosa_para_hacer()} ${this.tutorial()}`,
       `${this.persona_cualquiera()} cantando ${this.lyrics()} ${this.lugar()}`,
-      `que significa \"${this.msg.message.text}\" pregunta`
+      `que significa "${this.msg.message.text}" pregunta`
     ])
   }
 }
