@@ -92,7 +92,7 @@ module.exports = function(robot) {
   robot.respond(/invierte (.*)/i, function(res) {
     var frase = res.match[1]
 
-    msg = flipString(frase)
+    const msg = flipString(frase)
     res.send(msg)
   })
 }
