@@ -19,7 +19,7 @@ function batman() {
 
 module.exports = function(robot) {
   robot.hear(/NaN/, function(res) {
-    msg = batman()
+    const msg = batman()
     res.send(msg)
   })
 }
