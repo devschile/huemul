@@ -88,7 +88,7 @@ module.exports = robot => {
   }
 
   const canUpvote = (user, victim) => {
-    karmaLimits = robot.brain.get('karmaLimits') || {}
+    let karmaLimits = robot.brain.get('karmaLimits') || {}
     karmaLimits[user.id] = karmaLimits[user.id] || {}
     if (!karmaLimits[user.id][victim.id]) {
       karmaLimits[user.id][victim.id] = new Date()
@@ -160,8 +160,7 @@ module.exports = robot => {
     return tokens.filter(token => urls.reduce((acc, url) => acc && url.indexOf(token) === -1, true))
   }
 
-  robot.hear(/([a-zA-Z0-9-_\.]|[^\,\-\s\+$!(){}"'`~%=^:;#°|¡¿?]+?)(\b\+{2}|-{2})([^,]?|\s|$)/g, response => {
-    stripRegex = /~!@#$`%^&*()|\=?;:'",<>\{\}/gi
+  robot.hear(/([a-zA-Z0-9-_.]|[^,\-\s+$!(){}"'`~%=^:;#°|¡¿?]+?)(\b\+{2}|-{2})([^,]?|\s|$)/g, response => {
     const tokens = removeURLFromTokens(response.match, response.message.text)
     if (!tokens) return
     if (robot.adapter.constructor.name === 'SlackBot') {
