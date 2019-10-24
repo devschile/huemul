@@ -45,7 +45,6 @@ module.exports = function(robot) {
 
       robot.http(url).get()(function(err, res, body) {
         const $ = cheerio.load(body)
-        const title = $('.title_holder h1')
         const results = $('.title_holder .more')
         const resultQty = results.text().split(' ')[0]
         let resultados = []
