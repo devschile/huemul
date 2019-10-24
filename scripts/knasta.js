@@ -14,7 +14,7 @@
 
 var phantom = require('phantom')
 var cheerio = require('cheerio')
-var _ph, _page, _outObj
+var _ph, _page
 
 function textPopulated() {
   return _page
@@ -61,7 +61,7 @@ module.exports = function(robot) {
     var domain = 'http://knasta.cl/results/'
     var url = domain + busqueda.split(' ').join('%20')
 
-    robot.http(url).get()(function(err, res, body) {
+    robot.http(url).get()(function() {
       phantom
         .create()
         .then(ph => {
@@ -72,7 +72,7 @@ module.exports = function(robot) {
           _page = page
           return _page.open(url)
         })
-        .then(status => {
+        .then(() => {
           return waitState(textPopulated, 3)
         })
         .then(() => {
