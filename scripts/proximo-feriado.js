@@ -27,7 +27,7 @@ function days_diff(now, date) {
 }
 
 function humanizeMonth(month) {
-  var month = month - 1,
+  let monthNumber = month - 1,
     monthNames = [
       'Enero',
       'Febrero',
@@ -43,7 +43,7 @@ function humanizeMonth(month) {
       'Diciembre'
     ]
 
-  return monthNames[month]
+  return monthNames[monthNumber]
 }
 
 function humanizeDay(day) {
@@ -66,9 +66,9 @@ module.exports = function(robot) {
         return robot.emit('error', err || new Error(`Status code ${res.statusCode}`), msg, 'proximo-feriado')
       }
       var ok = false,
-        body = JSON.parse(body)
+        bodyParsed = JSON.parse(body)
 
-      body.data.forEach(function(holiday, index) {
+      bodyParsed.data.forEach(function(holiday) {
         var date = new Date(holiday.date + 'T00:00:00-04:00'),
           humanDate = holiday.date.split('-'),
           humanDay = humanDate[2].replace(/^0+/, ''),
