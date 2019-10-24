@@ -96,7 +96,7 @@ const kinds = {
   ]
 }
 
-attachResponse = (kind, msg) => {
+const attachResponse = (kind, msg) => {
   let title = ''
   switch (kind) {
     case 'desayuno':
