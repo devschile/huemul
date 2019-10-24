@@ -31,10 +31,6 @@ const numberSplitDecimal = number => {
   return (parseInt(number * d, 10) / d).toFixed(number)
 }
 
-const numberWithThousands = number => {
-  return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')
-}
-
 module.exports = robot => {
   robot.respond(/finvox (\w+)/i, res => {
     let uri
