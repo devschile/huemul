@@ -60,7 +60,7 @@ const parseMarkdownLinks = (markdown, fallback = false) => {
  * @returns {Object}
  */
 function findVal(jsonMarkdown, channel) {
-  const result = Object.entries(jsonMarkdown['Awesome devsChile']).find(([key, _]) => key === channel)
+  const result = Object.entries(jsonMarkdown['Awesome devsChile']).find(([key]) => key === channel)
   if (!result) return
   return result[1]
 }
@@ -80,12 +80,14 @@ module.exports = function(robot) {
           icon_url: 'https://i.imgur.com/8NL6mb1.png',
           username: 'Awesome',
           unfurl_links: false,
-          attachments: [{
-            fallback,
-            text,
-            title: `${awesomeTitle} ${channel}`,
-            title_link: awesomeLink
-          }]
+          attachments: [
+            {
+              fallback,
+              text,
+              title: `${awesomeTitle} ${channel}`,
+              title_link: awesomeLink
+            }
+          ]
         }
         robot.adapter.client.web.chat.postMessage(res.message.room, null, options)
       } else {
