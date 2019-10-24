@@ -12,7 +12,7 @@
 
 module.exports = robot => {
   robot.respond(/signo chino(.*)/i, function(msg) {
-    const [_, year] = msg.match
+    const [, year] = msg.match
 
     if (year === undefined || year.trim() === '') {
       msg.send('Tienes que decirme de que año :retard:')
