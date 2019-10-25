@@ -26,46 +26,41 @@ module.exports = robot => {
 
   const getCleanName = name => `${name[0]}.${name.substr(1)}`
 
-  const userForMentionName = mentionName => {
-    const users = robot.brain.users()
-    return Object.keys(users)
-      .map(key => users[key])
-      .find(user => mentionName === user.mention_name)
-  }
-
-  const userFromWeb = token => {
-    return robot.adapter.client.web.users.list().then(users => {
-      const localUsers = robot.brain.users()
-      const user1 = users.members.find(x => x.name === token)
-      if (!user1) return
-      return localUsers[user1.id]
-    })
-  }
-
   const usersForToken = token => {
-    return new Promise((resolve, reject) => {
-      let user
-      if ((user = robot.brain.userForName(token))) {
-        return resolve([user])
-      }
-      if ((user = userForMentionName(token))) {
-        return resolve([user])
-      }
-      if (robot.adapter.constructor.name === 'SlackBot') {
-        userFromWeb(token)
-          .then(webUser => {
-            if (webUser) {
-              return resolve([webUser])
-            } else {
-              return resolve(robot.brain.usersForFuzzyName(token))
-            }
-          })
-          .catch(reject)
-      } else {
-        user = robot.brain.usersForFuzzyName(token)
-        resolve(user)
-      }
+    return getUsers().then(userList => userFromList(userList, token))
+  }
+
+  const getUsers = () => {
+    const userListCache = robot.brain.get('userListCache') || {}
+    const cacheLimit = 15
+    let checkCache = true
+    if (userListCache.updateDate) {
+      const timeSinceUpdate = Math.round(new Date().getTime() - userListCache.updateDate.getTime()) / 60000
+      checkCache = timeSinceUpdate > cacheLimit
+    }
+
+    if (checkCache) {
+      return updateUsersCache()
+    } else {
+      return new Promise((resolve, reject) => resolve(userListCache.members))
+    }
+  }
+
+  const updateUsersCache = () => {
+    return robot.adapter.client.web.users.list().then(userList => {
+      userList.updateDate = new Date()
+      robot.brain.set('userListCache', userList)
+
+      return userList.members
     })
+  }
+
+  const userFromList = (userList, token) => {
+    if (token.indexOf('<') === 0 && token.indexOf('>') === token.length - 1) {
+      return userList.filter(user => user.id === token.replace(/[><]/g, ''))
+    }
+
+    return userList.filter(user => user.profile.display_name_normalized.toLowerCase().indexOf(token) === 0)
   }
 
   const userForToken = (token, response) => {
@@ -75,9 +70,9 @@ module.exports = robot => {
         user = users[0]
       } else if (users.length > 1) {
         robot.messageRoom(
-          `@${response.message.user.name}`,
+          `@${response.message.user.profile.display_name}`,
           `Se más específico, hay ${users.length} personas que se parecen a: ${users
-            .map(user => user.name)
+            .map(user => user.profile.display_name_normalized)
             .join(', ')}.`
         )
       } else {
@@ -137,7 +132,11 @@ module.exports = robot => {
           })
           robot.brain.set('karmaLog', karmaLog)
           robot.brain.save()
-          response.send(`${getCleanName(targetUser.name)} ahora tiene ${getUserKarma(targetUser.id)} puntos de karma.`)
+          response.send(
+            `${getCleanName(targetUser.profile.display_name_normalized)} ahora tiene ${getUserKarma(
+              targetUser.id
+            )} puntos de karma.`
+          )
         })
         .catch(err => robot.emit('error', err, response, 'karma'))
     }
@@ -160,9 +159,12 @@ module.exports = robot => {
     return tokens.filter(token => urls.reduce((acc, url) => acc && url.indexOf(token) === -1, true))
   }
 
-  robot.hear(/([a-zA-Z0-9-_\.]|[^\,\-\s\+$!(){}"'`~%=^:;#°|¡¿?]+?)(\b\+{2}|-{2})([^,]?|\s|$)/g, response => {
-    stripRegex = /~!@#$`%^&*()|\=?;:'",<>\{\}/gi
-    const tokens = removeURLFromTokens(response.match, response.message.text)
+  const karmaRegex = /([a-zA-Z0-9-_\.]|[^\,\-\s\+$!(){}"'`~%=^:;#°|¡¿?]+?)(\+{2}|-{2})([^,]?|\s|$)/g
+
+  robot.hear(karmaRegex, response => {
+    const textToCheck = response.message.rawText || response.message.text
+    const reFilteredMatch = textToCheck.match(karmaRegex)
+    const tokens = removeURLFromTokens(reFilteredMatch, response.message.text)
     if (!tokens) return
     if (robot.adapter.constructor.name === 'SlackBot') {
       if (!robot.adapter.client.rtm.dataStore.getChannelGroupOrDMById(response.envelope.room).is_channel) return
@@ -173,6 +175,7 @@ module.exports = robot => {
       .map(token => {
         const opRegex = /(\+{2}|-{2})/g
         const specialChars = /@/
+
         return {
           userToken: token
             .trim()
@@ -208,7 +211,9 @@ module.exports = robot => {
           const karmaLog = robot.brain.get('karmaLog') || []
           const filteredKarmaLog = karmaLog.filter(item => item.targetId !== targetUser.id)
           robot.brain.set('karmaLog', filteredKarmaLog)
-          response.send(`${getCleanName(targetUser.name)} ha quedado libre de toda bendición o pecado.`)
+          response.send(
+            `${getCleanName(targetUser.profile.display_name_normalized)} ha quedado libre de toda bendición o pecado.`
+          )
           robot.brain.save()
         })
       }
@@ -216,9 +221,9 @@ module.exports = robot => {
       userForToken(targetToken, response).then(targetUser => {
         if (!targetUser) return
         response.send(
-          `${getCleanName(targetUser.name)} tiene ${getUserKarma(
+          `${getCleanName(targetUser.profile.display_name_normalized)} tiene ${getUserKarma(
             targetUser.id
-          )} puntos de karma. Más detalles en: ${hubotWebSite}/karma/log/${targetUser.name}`
+          )} puntos de karma. Más detalles en: ${hubotWebSite}/karma/log/${targetUser.id}`
         )
       })
     }
@@ -271,7 +276,7 @@ module.exports = robot => {
     const karmaLog = robot.brain.get('karmaLog') || []
     const filteredKarmaLog = karmaLog.filter(log => {
       if (typeof log !== 'string' && log.msg) {
-        return log.targetName === req.params.user
+        return log.id === req.params.user
       }
     })
     const processedKarmaLog = filteredKarmaLog.map(log => `${new Date(log.date).toJSON()} - ${log.name}: ${log.msg}`)

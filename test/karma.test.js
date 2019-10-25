@@ -26,13 +26,13 @@ test.beforeEach(t => {
           return new Promise(function(resolve) {
             resolve({
               members: [
-                { name: 'jorgeepunan' },
-                { name: 'leonardo' },
-                { name: 'leon' },
-                { name: 'cata' },
-                { name: 'dukuo' },
-                { name: 'hector' },
-                { name: 'ienc' }
+                { profile: { display_name_normalized: 'jorgeepunan' } },
+                { profile: { display_name_normalized: 'leonardo' } },
+                { profile: { display_name_normalized: 'leon' } },
+                { profile: { display_name_normalized: 'cata' } },
+                { profile: { display_name_normalized: 'dukuo' } },
+                { profile: { display_name_normalized: 'hector' } },
+                { profile: { display_name_normalized: 'ienc' } }
               ]
             })
           })
@@ -40,34 +40,7 @@ test.beforeEach(t => {
       }
     }
   }
-  t.context.room.robot.brain.userForId('jorgeepunan', {
-    name: 'jorgeepunan',
-    id: 1
-  })
-  t.context.room.robot.brain.userForId('leonardo', {
-    name: 'leonardo',
-    id: 2
-  })
-  t.context.room.robot.brain.userForId('leon', {
-    name: 'leon',
-    id: 3
-  })
-  t.context.room.robot.brain.userForId('cata', {
-    name: 'cata',
-    id: 4
-  })
-  t.context.room.robot.brain.userForId('dukuo', {
-    name: 'dukuo',
-    id: 5
-  })
-  t.context.room.robot.brain.userForId('hector', {
-    name: 'hector',
-    id: 6
-  })
-  t.context.room.robot.brain.userForId('ienc', {
-    name: 'ienc',
-    id: 7
-  })
+
   const karmaLimits = {
     user: { 3: new Date() }
   }
