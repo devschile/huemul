@@ -86,21 +86,21 @@ module.exports = robot => {
         )
         .header('Content-Length', postData.length)
         .post(postData)((err, res, body) => {
-        if (err) return reject(err)
-        if (res.statusCode !== 200) {
-          return reject(new Error(`Bad statusCode: ${res.statusCode}`))
-        }
-        try {
-          const json = JSON.parse(body)
-          if (json.data && json.data.market && json.data.market.lastTrade) {
-            resolve(json.data.market.lastTrade.price)
-          } else {
-            resolve(null)
+          if (err) return reject(err)
+          if (res.statusCode !== 200) {
+            return reject(new Error(`Bad statusCode: ${res.statusCode}`))
           }
-        } catch (err) {
-          reject(err)
-        }
-      })
+          try {
+            const json = JSON.parse(body)
+            if (json.data && json.data.market && json.data.market.lastTrade) {
+              resolve(json.data.market.lastTrade.price)
+            } else {
+              resolve(null)
+            }
+          } catch (err) {
+            reject(err)
+          }
+        })
     })
   }
 
@@ -115,12 +115,12 @@ module.exports = robot => {
 
     getLastPrice(coinId, msg)
       .then(price => {
-        if (!price) return msg.send(`Precio no encontrado`)
+        if (!price) return msg.send('Precio no encontrado')
         msg.send(`1 ${coin} está a ${numberToCLPFormater(price, 'CLP $')} en orionx`)
       })
       .catch(err => {
         robot.emit('error', err, msg, 'orionx')
-        msg.send(`Error al realizar la búsqueda.`)
+        msg.send('Error al realizar la búsqueda.')
       })
   })
 }

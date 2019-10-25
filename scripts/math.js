@@ -17,8 +17,8 @@
 // Author:
 //   :huemul:
 
-module.exports = function(robot) {
-  robot.respond(/(calcula|convierte|math|conv)( me)? (.*)/i, function(msg) {
+module.exports = function (robot) {
+  robot.respond(/(calcula|convierte|math|conv)( me)? (.*)/i, function (msg) {
     msg.send('DEPRECADO PORQUE TAMALO')
   })
 }

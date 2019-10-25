@@ -17,7 +17,7 @@ const url = 'http://api.open-notify.org/astros.json'
 
 const emojis = [':space_invader:', ':stars:', ':alien:', ':star2:']
 
-module.exports = function(robot) {
+module.exports = function (robot) {
   robot.respond(/en el espacio/i, res => {
     robot.http(url).get()((error, response, body) => {
       if (!error && response.statusCode === 200) {

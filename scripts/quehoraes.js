@@ -48,13 +48,13 @@ module.exports = robot => {
           return robot.emit('error', err || new Error(`Status code ${res.statusCode}`), msg, 'quehoraes')
         }
         try {
-          let result = JSON.parse(body)['data']
-          let city = result['request'][0]['query']
-          let currentTime = result['time_zone'][0]['localtime'].slice(11)
+          const result = JSON.parse(body).data
+          const city = result.request[0].query
+          const currentTime = result.time_zone[0].localtime.slice(11)
           msg.send(`Son las *${currentTime}* en *${city}* :clock1030:`)
         } catch (error) {
-          msg.send("No entendi esa ciudad, intenta con otra si quieres. Si no, no me importa.")
+          msg.send('No entendi esa ciudad, intenta con otra si quieres. Si no, no me importa.')
         }
-    })
+      })
   })
 }

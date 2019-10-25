@@ -16,7 +16,7 @@
 
 const url = 'https://api.adderou.cl/tyaas/'
 
-module.exports = function(robot) {
+module.exports = function (robot) {
   const signs = [
     'aries',
     'tauro',
@@ -32,7 +32,7 @@ module.exports = function(robot) {
     'piscis'
   ]
   const pattern = new RegExp(`hor[oó]scopo(\\s+(${signs.join('|')}))?$`, 'i')
-  robot.respond(pattern, function(res) {
+  robot.respond(pattern, function (res) {
     const send = options => {
       if (['SlackBot', 'Room'].includes(robot.adapter.constructor.name)) {
         robot.adapter.client.web.chat.postMessage(res.message.room, null, options)
@@ -57,7 +57,7 @@ module.exports = function(robot) {
       options.attachments[0].color = '#004085'
       return send(options)
     }
-    robot.http(url).get()(function(err, response, body) {
+    robot.http(url).get()(function (err, response, body) {
       if (err || response.statusCode !== 200) {
         robot.emit('error', err || new Error(`Status code ${response.statusCode}`), res, 'horoscopo')
         options.attachments[0].fallback = defaultError

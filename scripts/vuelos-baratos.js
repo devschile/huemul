@@ -30,7 +30,7 @@ module.exports = robot => {
       if (err || res.statusCode !== 200) {
         return robot.emit('error', err || new Error(`Status code ${res.statusCode}`), msg, 'vuelos-baratos')
       }
-      let json = JSON.parse(body)
+      const json = JSON.parse(body)
       if (json.error) {
         msg.send(json.error)
         return

@@ -25,15 +25,15 @@ module.exports = robot => {
       .http('http://ventanilla.dt.gob.cl/RegistroEmpleador/consultamultas.aspx')
       .header('Content-type', 'application/x-www-form-urlencoded')
       .post(data)((err, response, body) => {
-      if (err) {
-        robot.emit('error', err, res, 'multas-empresa')
-        return res.reply('ocurrio un error al consultar')
-      }
-      if (body.indexOf('0 multas encontradas') > -1) {
-        res.send(`La empresa con RUT ${rut} no posee multas`)
-      } else {
-        res.send(`La empresa con RUT ${rut} posee multas`)
-      }
-    })
+        if (err) {
+          robot.emit('error', err, res, 'multas-empresa')
+          return res.reply('ocurrio un error al consultar')
+        }
+        if (body.indexOf('0 multas encontradas') > -1) {
+          res.send(`La empresa con RUT ${rut} no posee multas`)
+        } else {
+          res.send(`La empresa con RUT ${rut} posee multas`)
+        }
+      })
   })
 }

@@ -17,8 +17,8 @@
 var cheerio = require('cheerio')
 var number = require('numbertoclpformater').numberToCLPFormater
 
-module.exports = function(robot) {
-  robot.respond(/escorts(.*)/i, function(msg) {
+module.exports = function (robot) {
+  robot.respond(/escorts(.*)/i, function (msg) {
     if (robot.golden.isGold(msg.message.user.name)) {
       var baseURL = 'http://www.sexo.cl'
       var tipoWasha = msg.match[1].split(' ')[1]
@@ -46,12 +46,13 @@ module.exports = function(robot) {
 
       robot.messageRoom('#nsfw', 'Buscando en sexo.cl chicas para ti :monea: ')
 
-      robot.http(url).get()(function(err, res, body) {
+      robot.http(url).get()(function (err, res, body) {
+        if (err) console.error(err)
         var $ = cheerio.load(body)
         tipo = $('#subtCate').text()
         var resultados = []
 
-        $('#ColDer ul li').each(function() {
+        $('#ColDer ul li').each(function () {
           var nombre = $(this)
             .find('h2 > a')
             .text()

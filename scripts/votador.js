@@ -26,7 +26,7 @@ module.exports = robot => {
   let tallyVotes
   robot.voting = {}
 
-  robot.respond(/inicio votador (.+)$/i, function(msg) {
+  robot.respond(/inicio votador (.+)$/i, function (msg) {
     if (robot.voting.votes != null) {
       msg.send('Ya existe votación vigente')
       return sendChoices(msg)
@@ -39,13 +39,13 @@ module.exports = robot => {
     }
   })
 
-  robot.respond(/fin votador/i, function(msg) {
+  robot.respond(/fin votador/i, function (msg) {
     if (robot.voting.votes != null) {
-      let results = tallyVotes()
+      const results = tallyVotes()
 
       let response = 'Resultados votación...'
       for (let index = 0; index < robot.voting.choices.length; index++) {
-        let choice = robot.voting.choices[index]
+        const choice = robot.voting.choices[index]
         response += `\n - Opción ${index}: ${choice}: ${results[index]} votos (${Math.round(
           results[index] * 100 / results.reduce((t, s) => t + s)
         )}%)`
@@ -62,17 +62,17 @@ module.exports = robot => {
 
   robot.respond(/opciones votador/i, msg => sendChoices(msg))
 
-  robot.respond(/votador help/i, function(msg) {
+  robot.respond(/votador help/i, function (msg) {
     msg.send('*Comandos:*')
-    return msg.send(`Crear votación: \`huemul inicio votador item1, item2, item3, ...\`\n \
-Votar: \`huemul voto (por) N\` ~ donde N es el índice de la opción\n \
-Mostrar Opciones: \`huemul opciones votador\`\n \
-Mostrar conteo de votos actual: \`huemul conteo votador\`\n \
-Finalizar votación: \`huemul fin votador\``)
+    return msg.send('Crear votación: `huemul inicio votador item1, item2, item3, ...`\n' +
+'Votar: `huemul voto (por) N` ~ donde N es el índice de la opción\n' +
+'Mostrar Opciones: `huemul opciones votador`\n' +
+'Mostrar conteo de votos actual: `huemul conteo votador`\n' +
+'Finalizar votación: `huemul fin votador`')
   })
 
-  robot.respond(/conteo votador/i, function(msg) {
-    let results = tallyVotes()
+  robot.respond(/conteo votador/i, function (msg) {
+    const results = tallyVotes()
     return sendChoices(msg, results)
   })
 
@@ -81,14 +81,14 @@ Finalizar votación: \`huemul fin votador\``)
     const userName = payload.user.name
     const channel = payload.channel.id
 
-    let re = /\d{1,2}$/i
+    const re = /\d{1,2}$/i
     if (re.test(payload.actions[0].value)) {
       choice = parseInt(payload.actions[0].value, 10)
     } else {
       choice = robot.voting.choices.indexOf(payload.actions[0].value)
     }
 
-    let sender = robot.brain.usersForFuzzyName(userName)[0].name
+    const sender = robot.brain.usersForFuzzyName(userName)[0].name
 
     if (validChoice(choice)) {
       robot.voting.votes[sender] = choice
@@ -101,17 +101,17 @@ Finalizar votación: \`huemul fin votador\``)
     }
   })
 
-  robot.respond(/voto (por )?(.+)$/i, function(msg) {
+  robot.respond(/voto (por )?(.+)$/i, function (msg) {
     let choice = null
 
-    let re = /\d{1,2}$/i
+    const re = /\d{1,2}$/i
     if (re.test(msg.match[2])) {
       choice = parseInt(msg.match[2], 10)
     } else {
       choice = robot.voting.choices.indexOf(msg.match[2])
     }
 
-    let sender = robot.brain.usersForFuzzyName(msg.message.user['name'])[0].name
+    const sender = robot.brain.usersForFuzzyName(msg.message.user.name)[0].name
 
     if (validChoice(choice)) {
       robot.voting.votes[sender] = choice
@@ -123,14 +123,14 @@ Finalizar votación: \`huemul fin votador\``)
 
   var createChoices = rawChoices => (robot.voting.choices = rawChoices.split(/,/))
 
-  var sendChoices = function(msg, results = null) {
+  var sendChoices = function (msg, results = null) {
     let response
     let attachments
     if (robot.voting.choices != null) {
       response = ''
       const choices = []
       for (let index = 0; index < robot.voting.choices.length; index++) {
-        let choice = robot.voting.choices[index]
+        const choice = robot.voting.choices[index]
         response += ` - Opción ${index}: ${choice}`
         choices.push(makeButton(index))
 
@@ -156,15 +156,15 @@ Finalizar votación: \`huemul fin votador\``)
     return robot.adapter.client.web.chat.postMessage(msg.message.room, response, { attachments })
   }
 
-  var validChoice = function(choice) {
+  var validChoice = function (choice) {
     if (!robot.voting.choices) {
       return false
     }
-    let numChoices = robot.voting.choices.length - 1
-    return 0 <= choice && choice <= numChoices
+    const numChoices = robot.voting.choices.length - 1
+    return choice >= 0 && choice <= numChoices
   }
 
-  var makeButton = function(choice) {
+  var makeButton = function (choice) {
     return {
       name: 'choice',
       text: choice,
@@ -173,18 +173,18 @@ Finalizar votación: \`huemul fin votador\``)
     }
   }
 
-  return (tallyVotes = function() {
+  return (tallyVotes = function () {
     let choice
-    let results = (() => {
-      let result = []
+    const results = (() => {
+      const result = []
       for (choice of Array.from(robot.voting.choices)) {
         result.push(0)
       }
       return result
     })()
 
-    let voters = Object.keys(robot.voting.votes)
-    for (let voter of Array.from(voters)) {
+    const voters = Object.keys(robot.voting.votes)
+    for (const voter of Array.from(voters)) {
       choice = robot.voting.votes[voter]
       results[choice] += 1
     }

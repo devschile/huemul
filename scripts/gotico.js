@@ -15,8 +15,8 @@
 // Author:
 //   @davidlaym
 
-module.exports = function(robot) {
-  robot.respond(/g[o|ó]tico (.*)/i, function(msg) {
+module.exports = function (robot) {
+  robot.respond(/g[o|ó]tico (.*)/i, function (msg) {
     var i, len, letter, letters, ref, str
     letters = {
       a: '𝔞',
@@ -71,16 +71,16 @@ module.exports = function(robot) {
       X: '𝔛',
       Y: '𝔜',
       Z: 'ℨ',
-      '1': '𝟏',
-      '2': '𝟐',
-      '3': '𝟑',
-      '4': '𝟒',
-      '5': '𝟓',
-      '6': '𝟔',
-      '7': '𝟕',
-      '8': '𝟖',
-      '9': '𝟗',
-      '0': '𝟎'
+      1: '𝟏',
+      2: '𝟐',
+      3: '𝟑',
+      4: '𝟒',
+      5: '𝟓',
+      6: '𝟔',
+      7: '𝟕',
+      8: '𝟖',
+      9: '𝟗',
+      0: '𝟎'
     }
     str = []
     ref = msg.match[1].substr(0, 140).split('')

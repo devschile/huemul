@@ -16,7 +16,7 @@
 //   @jorgeepunan
 
 var Rut = require('rutjs')
-var generar = function(type) {
+var generar = function (type) {
   var min
   var max
   if (type === 'empresa') {
@@ -26,13 +26,13 @@ var generar = function(type) {
     min = 5000000
     max = 25000000
   }
-  var num_aleatorio = Math.round(Math.random() * (max - min)) + min
-  var rut = new Rut(num_aleatorio.toString(), true)
+  var numAleatorio = Math.round(Math.random() * (max - min)) + min
+  var rut = new Rut(numAleatorio.toString(), true)
   return rut.getNiceRut()
 }
 
-module.exports = function(robot) {
-  robot.respond(/dame un rut(\s+)?(persona|empresa)?$/i, function(res) {
+module.exports = function (robot) {
+  robot.respond(/dame un rut(\s+)?(persona|empresa)?$/i, function (res) {
     var type = res.match[2] || 'persona'
     res.send('Un RUT: ' + generar(type))
   })

@@ -75,11 +75,11 @@ module.exports = robot => {
         projects.map(item => {
           if (item.id < 3) {
             const text = `
-							- Nombre: ${item.name}
-							- Descripción: ${item.description}
-							- Creado por: ${item.creator}
-							- Ubicación: ${item.location}
-							- Url: ${item.url}`
+- Nombre: ${item.name}
+- Descripción: ${item.description}
+- Creado por: ${item.creator}
+- Ubicación: ${item.location}
+- Url: ${item.url}`
             options.attachments[0].fallback = text
             options.attachments[0].title = item.name
             options.attachments[0].color = 'good'

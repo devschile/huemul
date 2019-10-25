@@ -20,23 +20,23 @@
 // Author:
 //   @jorgeepunan
 
-let consumer_key = process.env.YELP_CONSUMER_KEY
-let consumer_secret = process.env.YELP_CONSUMER_SECRET
-let token = process.env.YELP_TOKEN
-let token_secret = process.env.YELP_TOKEN_SECRET
+const consumerKey = process.env.YELP_CONSUMER_KEY
+const consumerSecret = process.env.YELP_CONSUMER_SECRET
+const token = process.env.YELP_TOKEN
+const tokenSecret = process.env.YELP_TOKEN_SECRET
 
 const Yelp = require('yelp')
-let yelp = new Yelp({
-  consumer_key,
-  consumer_secret,
+const yelp = new Yelp({
+  consumerKey,
+  consumerSecret,
   token,
-  token_secret
+  tokenSecret
 })
 
 module.exports = robot => {
   robot.respond(/yelp( me)? (.*) (en|cerca|cerca de) (.*)/i, msg => {
     msg.send('~·~ buscando ~·~')
-    let query = {
+    const query = {
       term: msg.match[2],
       location: `${msg.match[4]}, Chile`
     }
@@ -44,9 +44,9 @@ module.exports = robot => {
       .search(query)
       .then(data => {
         if (data.businesses.length > 0) {
-          let limiteResultados = 3
+          const limiteResultados = 3
           const results = Array.from(Array(limiteResultados).keys()).map(() => {
-            let business = msg.random(data.businesses)
+            const business = msg.random(data.businesses)
             return `- ${`${business.name} que queda en `}${`${business.location.address}, ${
               business.location.city
             }.\n    Calificación: `}${`${business.rating}/5 por ${
@@ -61,7 +61,7 @@ module.exports = robot => {
           msg.send(':huemul: algo pasó y no sé qué fue. Intenta de nuevo.')
         }
       })
-      .catch(function(err) {
+      .catch(function (err) {
         robot.emit('error', err, msg, 'yelp')
         msg.send(':huemul: algo pasó y no sé qué fue. Intenta de nuevo.')
       })

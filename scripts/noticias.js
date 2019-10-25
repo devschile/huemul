@@ -35,29 +35,29 @@ module.exports = robot =>
       .header('X-Requested-With', 'XMLHttpRequest')
       .header('Referer', 'http://www.ahoranoticias.cl/home/')
       .post(querystring.stringify({ q, ajax: true }))((err, res, body) => {
-      if (err) {
-        robot.emit('error', err, msg, 'noticias')
-      } else {
-        const $ = cheerio.load(body)
-        const results = $('.item')
-          .map((i, el) => {
-            const url = $(el).find('.l a').attr('href')
-            const title = $(el).find('.r h2').text()
-            const date = $(el).find('.r span').text()
-            if (!url || !title || !date) return null
-            return `${i + 1}: <${url}|${title}> (${moment(date, 'DD/MM/YYYY').fromNow()})`
-          })
-          .get()
-          .filter(x => x !== null)
-        const news = results.length > 0 ? results.join('\n') : null
-
-        const head = ':huemul: *News*'
-
-        if (news) {
-          send(`${head}\n${news}\n<http://www.ahoranoticias.cl/buscador/|Sigue buscando en ahoranoticias.cl>`)
+        if (err) {
+          robot.emit('error', err, msg, 'noticias')
         } else {
-          send(`${head}\nNo se han encontrado noticias sobre *${q}*.`)
+          const $ = cheerio.load(body)
+          const results = $('.item')
+            .map((i, el) => {
+              const url = $(el).find('.l a').attr('href')
+              const title = $(el).find('.r h2').text()
+              const date = $(el).find('.r span').text()
+              if (!url || !title || !date) return null
+              return `${i + 1}: <${url}|${title}> (${moment(date, 'DD/MM/YYYY').fromNow()})`
+            })
+            .get()
+            .filter(x => x !== null)
+          const news = results.length > 0 ? results.join('\n') : null
+
+          const head = ':huemul: *News*'
+
+          if (news) {
+            send(`${head}\n${news}\n<http://www.ahoranoticias.cl/buscador/|Sigue buscando en ahoranoticias.cl>`)
+          } else {
+            send(`${head}\nNo se han encontrado noticias sobre *${q}*.`)
+          }
         }
-      }
-    })
+      })
   })

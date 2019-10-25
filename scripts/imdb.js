@@ -61,7 +61,7 @@ module.exports = robot => {
         } else {
           let movieInfo = `Resultados para ${str}: :cabrita:\n`
 
-          movie.results.forEach(function(e) {
+          movie.results.forEach(function (e) {
             if (kind === 'movie') {
               movieInfo += `- ${e.title} (${e.release_date}): ${e.vote_average} puntos\n`
             } else if (kind === 'tv') {

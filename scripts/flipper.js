@@ -13,10 +13,11 @@
 // Author:
 //   @hectorpalmatellez
 
-module.exports = function(robot) {
-  robot.respond(/flip/i, function(msg) {
+module.exports = function (robot) {
+  robot.respond(/flip/i, function (msg) {
     var url = 'http://www.tableflipper.com/json'
-    robot.http(url).get()(function(err, res, body) {
+    robot.http(url).get()(function (err, res, body) {
+      if (err) console.error(err)
       var data = JSON.parse(body)
       msg.send(data.gif.replace('http://', 'http://www.'))
     })

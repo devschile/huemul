@@ -95,7 +95,7 @@ module.exports = robot => {
      * @param  {String}  name
      * @return {Boolean}
      */
-    isGold(name) {
+    isGold (name) {
       const result = getGoldUser(name)
       if (result) {
         return !verifyExpireGold(result.key, result.data).expired

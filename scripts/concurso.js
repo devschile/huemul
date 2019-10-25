@@ -27,8 +27,8 @@
 //    - ganador <usuario sin @>: muestra al ganador con fanfarria y weas
 //    - fin: datos finales de contacto para cobrar el premio
 
-module.exports = function(robot) {
-  return robot.respond(/concurso (txt|inicio|stickers|reglas|premio|surtidos|ganador|fin)?(.*)/i, function(msg) {
+module.exports = function (robot) {
+  return robot.respond(/concurso (txt|inicio|stickers|reglas|premio|surtidos|ganador|fin)?(.*)/i, function (msg) {
     var opcion = msg.match[1]
     var mensaje = msg.match[2]
     var userName = msg.message.user
@@ -63,7 +63,7 @@ module.exports = function(robot) {
     }
 
     // verifica si usuario es uno de los 3 admin. muy rústica la validación, lo sé. prestado de karma.coffee
-    //if( userClean !== 'shell' ) { // localhost test
+    // if( userClean !== 'shell' ) { // localhost test
     if (userClean !== 'jorgeepunan') {
       msg.send('Tienes que ser :jorge: para usar este script.')
     } else {

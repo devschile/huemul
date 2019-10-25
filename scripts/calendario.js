@@ -55,7 +55,7 @@ const getCalendarMatrix = (
   ]
   const isCurrentMonthAndYear = currentMonth === month && currentYear === year
   // Build the calendar table
-  let calendarMatrix = []
+  const calendarMatrix = []
   let day = 1
   let firstDayIsSet = false
   for (let i = 0; i < weeksInMonth(month, year); i++) {
@@ -144,8 +144,8 @@ const isInputValid = (month, year) => {
   return true
 }
 
-module.exports = function(robot) {
-  robot.respond(/calendario(.*)/i, function(msg) {
+module.exports = function (robot) {
+  robot.respond(/calendario(.*)/i, function (msg) {
     const [month, year] = msg.match[1].trim().split(' ')
 
     if (!isInputValid(month, year)) {

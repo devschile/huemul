@@ -88,7 +88,7 @@ module.exports = robot => {
   }
 
   const canUpvote = (user, victim) => {
-    let karmaLimits = robot.brain.get('karmaLimits') || {}
+    const karmaLimits = robot.brain.get('karmaLimits') || {}
     karmaLimits[user.id] = karmaLimits[user.id] || {}
     if (!karmaLimits[user.id][victim.id]) {
       karmaLimits[user.id][victim.id] = new Date()
@@ -117,8 +117,7 @@ module.exports = robot => {
       userForToken(userToken, response)
         .then(targetUser => {
           if (!targetUser) return
-          if (thisUser.name === targetUser.name && op !== '--')
-            return response.send('¡Oe no po, el karma es pa otros no pa ti!')
+          if (thisUser.name === targetUser.name && op !== '--') { return response.send('¡Oe no po, el karma es pa otros no pa ti!') }
           if (targetUser.length === '') return response.send('¡Oe no seai pillo, escribe un nombre!')
           const limit = canUpvote(thisUser, targetUser)
           if (Number.isFinite(limit)) {

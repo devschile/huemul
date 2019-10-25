@@ -59,13 +59,13 @@ const parseMarkdownLinks = (markdown, fallback = false) => {
  * @param {string} channel
  * @returns {Object}
  */
-function findVal(jsonMarkdown, channel) {
+function findVal (jsonMarkdown, channel) {
   const result = Object.entries(jsonMarkdown['Awesome devsChile']).find(([key]) => key === channel)
   if (!result) return
   return result[1]
 }
 
-module.exports = function(robot) {
+module.exports = function (robot) {
   robot.respond(/awesome(\s+\w+)?/i, res => {
     const send = (markdown, channel) => {
       const awesomeLink = 'https://awesome.devschile.cl/'

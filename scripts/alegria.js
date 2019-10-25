@@ -53,8 +53,8 @@ images = [
   'http://i.imgur.com/K9jBg8N.jpg'
 ]
 
-module.exports = function(robot) {
-  robot.respond(/alegr[íi]a|al[ée]grame|felicidad|feliz|\byay\b/gi, function(msg) {
+module.exports = function (robot) {
+  robot.respond(/alegr[íi]a|al[ée]grame|felicidad|feliz|\byay\b/gi, function (msg) {
     msg.send(msg.random(images))
   })
 }

@@ -17,13 +17,13 @@
 // * Author Victor Nizeyimanaa
 // https://github.com/MrDatastorage/Year-Progress-Twitter-Bot/blob/master/bot.js
 
-function repeat(s, i) {
+function repeat (s, i) {
   let r = ''
   for (let j = 0; j < i; j += 1) r += s
   return r
 }
 
-function makeBar(perc, barStyle = '░█') {
+function makeBar (perc, barStyle = '░█') {
   let p = perc
   let d
   let full

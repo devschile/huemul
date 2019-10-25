@@ -18,9 +18,9 @@ const fetch = require('node-fetch')
 
 const LIMITE_DE_EVENTOS = 5
 
-module.exports = function(robot) {
-  robot.respond(/uoct|taco|tr(aá)nsito/i, function(msg) {
-    function sendError(err, message) {
+module.exports = function (robot) {
+  robot.respond(/uoct|taco|tr(aá)nsito/i, function (msg) {
+    function sendError (err, message) {
       if (err) {
         robot.emit('error', err, msg, 'uoct-golden')
       }
@@ -35,7 +35,7 @@ module.exports = function(robot) {
     }
 
     msg.send(
-      `Buscando qué cagá está en esta ciudad :ql:   :walking: :boom: :car: :boom: :blue_car: :boom: :red_car: :boom:          :police_car:`
+      'Buscando qué cagá está en esta ciudad :ql:   :walking: :boom: :car: :boom: :blue_car: :boom: :red_car: :boom:          :police_car:'
     )
 
     const url = 'http://www.uoct.cl/wp/wp-admin/admin-ajax.php'
@@ -62,7 +62,7 @@ module.exports = function(robot) {
 
           const plural = events.length > 1 ? ['s', 's'] : ['', '']
           const resume = 'Encontrado' + plural[0] + ' ' + events.length + ' resultado' + plural[1] + ' :bomb::fire:\n'
-          const more = events.length > LIMITE_DE_EVENTOS ? `\n<http://www.uoct.cl|Ver más resultados>` : ''
+          const more = events.length > LIMITE_DE_EVENTOS ? '\n<http://www.uoct.cl|Ver más resultados>' : ''
           const text = `${resume}${eventList}${more}`
 
           msg.send(text)
@@ -70,7 +70,6 @@ module.exports = function(robot) {
       })
       .catch(err => {
         sendError(err, 'no se pudo obtener eventos')
-        return
       })
   })
 }

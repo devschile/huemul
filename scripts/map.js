@@ -15,7 +15,7 @@
 
 const querystring = require('querystring')
 
-module.exports = function(robot) {
+module.exports = function (robot) {
   if (!process.env.GOOGLE_MAPS_API_KEY) {
     robot.logger.warning('The GOOGLE_MAPS_API_KEY environment variable not set.')
   }

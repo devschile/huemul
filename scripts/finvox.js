@@ -55,7 +55,7 @@ module.exports = robot => {
 
       response.setEncoding('utf-8')
       let data = JSON.parse(body)
-      let date = data.fecha.split('T')[0]
+      const date = data.fecha.split('T')[0]
 
       if (!data && ['dolar', 'usd', 'getonbrd', 'euro', 'eur', 'huemulcoin'].includes(indicador)) {
         return res.send('Sin resultados')

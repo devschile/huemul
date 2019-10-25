@@ -16,8 +16,8 @@
 // Author:
 //   @jorgeepunan
 
-module.exports = function(robot) {
-  return robot.respond(/mi secreto (.*)/i, function(msg) {
+module.exports = function (robot) {
+  return robot.respond(/mi secreto (.*)/i, function (msg) {
     var secreto = msg.match[1]
     var channel = '#random'
     var allowedChannels = process.env.HUBOT_MYSECRET_ALLOWED_CHANNELS || '#random'

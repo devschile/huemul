@@ -13,8 +13,8 @@
 // Author:
 //   @jorgeepunan
 
-module.exports = function(robot) {
-  robot.respond(/siglas (.*)/i, function(msg) {
+module.exports = function (robot) {
+  robot.respond(/siglas (.*)/i, function (msg) {
     /**
      * @param {Array<string>} array - Array of words.
      * @returns {string} - A uniq random word.
