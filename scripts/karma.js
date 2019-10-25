@@ -139,7 +139,7 @@ module.exports = robot => {
       userForToken(userToken, response)
         .then(targetUser => {
           if (!targetUser) return
-          if (thisUser.name === getCleanName(targetUser) && op !== '--')
+          if (thisUser.id === targetUser.id && op !== '--')
             return response.send('¡Oe no po, el karma es pa otros no pa ti!')
           if (targetUser.length === '') return response.send('¡Oe no seai pillo, escribe un nombre!')
           const limit = canUpvote(thisUser, targetUser)
