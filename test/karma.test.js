@@ -17,7 +17,8 @@ test.beforeEach(t => {
       dataStore: {
         getChannelGroupOrDMById: function() {
           return { is_channel: true }
-        }
+        },
+        getDMByName: name => ({ id: name, name })
       }
     },
     web: {
@@ -26,13 +27,14 @@ test.beforeEach(t => {
           return new Promise(function(resolve) {
             resolve({
               members: [
-                { profile: { display_name_normalized: 'jorgeepunan' } },
-                { profile: { display_name_normalized: 'leonardo' } },
-                { profile: { display_name_normalized: 'leon' } },
-                { profile: { display_name_normalized: 'cata' } },
-                { profile: { display_name_normalized: 'dukuo' } },
-                { profile: { display_name_normalized: 'hector' } },
-                { profile: { display_name_normalized: 'ienc' } }
+                { id: 4, profile: { display_name: 'jorgeepunan', display_name_normalized: 'jorgeepunan' } },
+                { id: 5, profile: { display_name: 'leonardo', display_name_normalized: 'leonardo' } },
+                { id: 6, profile: { display_name: 'leon', display_name_normalized: 'leon' } },
+                { id: 7, profile: { display_name: 'cata', display_name_normalized: 'cata' } },
+                { id: 8, profile: { display_name: 'dukuo', display_name_normalized: 'dukuo' } },
+                { id: 9, profile: { display_name: 'hector', display_name_normalized: 'hector' } },
+                { id: 10, profile: { display_name: 'ienc', display_name_normalized: 'ienc' } },
+                { id: 11, profile: { display_name: 'gmq', display_name_normalized: 'gmq' } }
               ]
             })
           })
@@ -42,7 +44,7 @@ test.beforeEach(t => {
   }
 
   const karmaLimits = {
-    user: { 3: new Date() }
+    user: { 11: new Date() }
   }
 
   t.context.room.robot.brain.set('karmaLimits', karmaLimits)
@@ -52,7 +54,7 @@ test.beforeEach(t => {
       name: 'jorgeepunan',
       karma: -1,
       targetName: 'cata',
-      targetId: 4,
+      targetId: 7,
       date: '2016-07-29T15:01:30.633Z',
       msg: 'cata--'
     },
@@ -60,7 +62,7 @@ test.beforeEach(t => {
       name: 'jorgeepunan',
       karma: -1,
       targetName: 'cata',
-      targetId: 4,
+      targetId: 7,
       date: '2016-07-29T15:01:30.633Z',
       msg: 'cata--'
     },
@@ -68,7 +70,7 @@ test.beforeEach(t => {
       name: 'jorgeepunan',
       karma: -1,
       targetName: 'cata',
-      targetId: 4,
+      targetId: 7,
       date: '2016-07-29T15:01:30.633Z',
       msg: 'cata--'
     },
@@ -76,7 +78,7 @@ test.beforeEach(t => {
       name: 'jorgeepunan',
       karma: -1,
       targetName: 'cata',
-      targetId: 4,
+      targetId: 7,
       date: '2016-07-29T15:01:30.633Z',
       msg: 'cata--'
     },
@@ -84,7 +86,7 @@ test.beforeEach(t => {
       name: 'jorgeepunan',
       karma: -1,
       targetName: 'cata',
-      targetId: 4,
+      targetId: 7,
       date: '2016-07-29T15:01:30.633Z',
       msg: 'cata--'
     }
@@ -228,9 +230,9 @@ test.cb.serial('Aplica karma solo si es menos a uno mismo', t => {
   }, 500)
 })
 test.cb.serial('No Debe aplicar karma', t => {
-  t.context.room.user.say('user', 'leon++')
+  t.context.room.user.say('user', 'gmq++')
   setTimeout(() => {
-    t.deepEqual(t.context.room.messages[0], ['user', 'leon++'])
+    t.deepEqual(t.context.room.messages[0], ['user', 'gmq++'])
     t.regex(t.context.room.messages[1][1], /¡No abuses! Intenta en \d+ minutos./)
     t.end()
   }, 500)
@@ -248,10 +250,8 @@ test.cb.serial('Debe mostrar url', t => {
 test.cb.serial('Debe mostrar puntaje y url', t => {
   t.context.room.user.say('user', 'karma leonardo')
   setTimeout(() => {
-    t.deepEqual(t.context.room.messages, [
-      ['user', 'karma leonardo'],
-      ['hubot', `l.eonardo tiene 0 puntos de karma. Más detalles en: ${hubotHost}/hubot/karma/log/leonardo`]
-    ])
+    t.deepEqual(t.context.room.messages[0], ['user', 'karma leonardo'])
+    t.regex(t.context.room.messages[1][1], /l.eonardo tiene 0 puntos de karma. Más detalles en: /)
     t.end()
   }, 500)
 })

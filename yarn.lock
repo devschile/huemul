@@ -3005,9 +3005,10 @@ hubot-surbtc@0.3.0:
   dependencies:
     numbertoclpformater "^1.0.0"
 
-hubot-test-helper@1.8.1:
-  version "1.8.1"
-  resolved "https://registry.yarnpkg.com/hubot-test-helper/-/hubot-test-helper-1.8.1.tgz#16fceb4d77a2b84464e1cee421630326273f801a"
+hubot-test-helper@1.9.0:
+  version "1.9.0"
+  resolved "https://registry.yarnpkg.com/hubot-test-helper/-/hubot-test-helper-1.9.0.tgz#e3e4b37369281fd76f1fb6785b5dc75c796834f6"
+  integrity sha1-4+Szc2koH9dvH7Z4W13HXHloNPY=
   dependencies:
     hubot ">=3.0.0 <10 || 0.0.0-development"
 
