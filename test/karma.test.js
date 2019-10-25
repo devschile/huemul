@@ -251,7 +251,10 @@ test.cb.serial('Debe mostrar puntaje y url', t => {
   t.context.room.user.say('user', 'karma leonardo')
   setTimeout(() => {
     t.deepEqual(t.context.room.messages[0], ['user', 'karma leonardo'])
-    t.regex(t.context.room.messages[1][1], /l.eonardo tiene 0 puntos de karma. Más detalles en: /)
+    t.deepEqual(t.context.room.messages, [
+      ['user', 'karma leonardo'],
+      ['hubot', 'leonardo tiene 0 puntos de karma. Más detalles en: http://localhost:8080/hubot/karma/log/5']
+    ])
     t.end()
   }, 500)
 })
