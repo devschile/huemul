@@ -24,7 +24,7 @@ module.exports = robot => {
   const hubotHost = process.env.HEROKU_URL || process.env.HUBOT_URL || 'http://localhost:8080'
   const hubotWebSite = `${hubotHost}/${robot.name}`
 
-  const getCleanName = user => user.profile.display_name_normalized || user.real_name
+  const getCleanName = user => user.profile.display_name_normalized || user.real_name || 'Usuario desconocido'
 
   const usersForToken = token => {
     return getUsers().then(userList => userFromList(userList, token))
