@@ -109,7 +109,7 @@
     "coffee-script": "1.12.7",
     "hubot-test-helper": "1.9.0",
     "husky": "0.14.3",
-    "lint-staged": "7.1.2",
+    "lint-staged": "9.4.2",
     "nock": "9.2.6",
     "prettier": "1.12.1"
   }
