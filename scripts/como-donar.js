@@ -28,7 +28,7 @@ const PAYMENT_METHODS = new Map([
   ],
   [
     'Débito, Crédito',
-    'Desde el mismo sitio devschile.cl, abajo hay 1 botón para donar a través de Kushki. A menudo vendemos _swags_ de la comunidad (tazones, stickers, posavasos, etc.) y en esos casos el mejor admin @jorgeepunan entrega un botón de pago correspondiente, siempre a través de Kushki.'
+    'Desde el mismo sitio devschile.cl, abajo hay 1 botón para donar a través de Kushki. A menudo vendemos _swag_ de la comunidad (tazones, stickers, posavasos, etc.) y en esos casos el mejor admin @jorgeepunan entrega un botón de pago correspondiente, siempre a través de Kushki.'
   ],
   ['Cryptos', `Recibimos lo equivalente a ${DONATION_AMOUNT} en las wallets:\n₿ \`${WALLET_BTC}\`\nΞ \`${WALLET_ETH}\``]
 ])
