@@ -47,7 +47,27 @@ module.exports = robot => {
   }
 
   const updateUsersCache = () => {
-    return robot.adapter.client.web.users.list().then(userList => {
+    const paginatedGetUsers = cursor => {
+      const limit = 900
+      const params = { limit }
+      if (cursor) {
+        params.cursor = cursor
+      }
+
+      return robot.adapter.client.web.users.list(params).then(userList => {
+        if (userList && userList.response_metadata && userList.response_metadata.next_cursor) {
+          return paginatedGetUsers(userList.response_metadata.next_cursor).then(newUserList => {
+            userList.members = userList.members.concat(newUserList.members)
+
+            return userList
+          })
+        } else {
+          return userList
+        }
+      })
+    }
+
+    return paginatedGetUsers().then(userList => {
       userList.updateDate = new Date()
       robot.brain.set('userListCache', userList)
 
