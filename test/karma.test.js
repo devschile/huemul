@@ -104,8 +104,8 @@ test.cb.serial('Debe añadir karma con @ y comas después del user', t => {
   setTimeout(() => {
     t.deepEqual(t.context.room.messages, [
       ['user', '@dukuo++, cata++'],
-      ['hubot', 'd.ukuo ahora tiene 1 puntos de karma.'],
-      ['hubot', 'c.ata ahora tiene -4 puntos de karma.']
+      ['hubot', 'dukuo ahora tiene 1 puntos de karma.'],
+      ['hubot', 'cata ahora tiene -4 puntos de karma.']
     ])
     t.end()
   }, 500)
@@ -115,7 +115,7 @@ test.cb.serial('Debe aplicar a un usuario', t => {
   setTimeout(() => {
     t.deepEqual(t.context.room.messages, [
       ['user', 'jorgee-- asdf'],
-      ['hubot', 'j.orgeepunan ahora tiene -1 puntos de karma.']
+      ['hubot', 'jorgeepunan ahora tiene -1 puntos de karma.']
     ])
     t.end()
   }, 500)
@@ -125,8 +125,8 @@ test.cb.serial('Debe aplicar a ambos usuarios', t => {
   setTimeout(() => {
     t.deepEqual(t.context.room.messages, [
       ['user', 'jorgee-- leonard++'],
-      ['hubot', 'j.orgeepunan ahora tiene -1 puntos de karma.'],
-      ['hubot', 'l.eonardo ahora tiene 1 puntos de karma.']
+      ['hubot', 'jorgeepunan ahora tiene -1 puntos de karma.'],
+      ['hubot', 'leonardo ahora tiene 1 puntos de karma.']
     ])
     t.end()
   }, 500)
@@ -150,11 +150,11 @@ test.cb.serial('Aplica karma sólo a 5 usuarios', t => {
   setTimeout(() => {
     t.deepEqual(t.context.room.messages, [
       ['user', 'leonardo++ jorgeepunan-- hector++ dukuo++ cata-- seis++'],
-      ['hubot', 'l.eonardo ahora tiene 1 puntos de karma.'],
-      ['hubot', 'j.orgeepunan ahora tiene -1 puntos de karma.'],
-      ['hubot', 'h.ector ahora tiene 1 puntos de karma.'],
-      ['hubot', 'd.ukuo ahora tiene 1 puntos de karma.'],
-      ['hubot', 'c.ata ahora tiene -6 puntos de karma.']
+      ['hubot', 'leonardo ahora tiene 1 puntos de karma.'],
+      ['hubot', 'jorgeepunan ahora tiene -1 puntos de karma.'],
+      ['hubot', 'hector ahora tiene 1 puntos de karma.'],
+      ['hubot', 'dukuo ahora tiene 1 puntos de karma.'],
+      ['hubot', 'cata ahora tiene -6 puntos de karma.']
     ])
     t.end()
   }, 500)
@@ -182,8 +182,8 @@ test.cb.serial('Aplica karma a usuarios y omitir url con "++" y "--"', t => {
         'user',
         'http://placehold.it/200x200/t=++hello leonardo++ jorgeepunan-- https://i.pinimg.com/564x/7c/23/0c/7c230c754f30d6a44ed7a4aad9025a94--meme.jpg'
       ],
-      ['hubot', 'l.eonardo ahora tiene 1 puntos de karma.'],
-      ['hubot', 'j.orgeepunan ahora tiene -1 puntos de karma.']
+      ['hubot', 'leonardo ahora tiene 1 puntos de karma.'],
+      ['hubot', 'jorgeepunan ahora tiene -1 puntos de karma.']
     ])
     t.end()
   }, 500)
@@ -225,7 +225,7 @@ test.cb.serial('No Debe quitar karma para excepciones explícitas', t => {
 test.cb.serial('Aplica karma solo si es menos a uno mismo', t => {
   t.context.room.user.say('ienc', 'ienc--')
   setTimeout(() => {
-    t.deepEqual(t.context.room.messages, [['ienc', 'ienc--'], ['hubot', 'i.enc ahora tiene -1 puntos de karma.']])
+    t.deepEqual(t.context.room.messages, [['ienc', 'ienc--'], ['hubot', 'ienc ahora tiene -1 puntos de karma.']])
     t.end()
   }, 500)
 })
@@ -270,7 +270,7 @@ test.cb.serial('Debe resetar', t => {
   setTimeout(() => {
     t.deepEqual(t.context.room.messages, [
       ['hector', 'karma reset leonardo'],
-      ['hubot', 'l.eonardo ha quedado libre de toda bendición o pecado.']
+      ['hubot', 'leonardo ha quedado libre de toda bendición o pecado.']
     ])
     t.end()
   }, 500)
