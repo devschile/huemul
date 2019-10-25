@@ -69,8 +69,9 @@ module.exports = robot => {
       if (users.length === 1) {
         user = users[0]
       } else if (users.length > 1) {
-        robot.messageRoom(
-          `@${response.message.user.profile.display_name}`,
+        const room = robot.adapter.client.rtm.dataStore.getDMByName(response.message.user.name)
+        robot.send(
+          { room: room.id },
           `Se más específico, hay ${users.length} personas que se parecen a: ${users
             .map(user => user.profile.display_name_normalized)
             .join(', ')}.`
@@ -112,7 +113,7 @@ module.exports = robot => {
       userForToken(userToken, response)
         .then(targetUser => {
           if (!targetUser) return
-          if (thisUser.name === targetUser.name && op !== '--')
+          if (thisUser.name === targetUser.profile.display_name_normalized && op !== '--')
             return response.send('¡Oe no po, el karma es pa otros no pa ti!')
           if (targetUser.length === '') return response.send('¡Oe no seai pillo, escribe un nombre!')
           const limit = canUpvote(thisUser, targetUser)
@@ -125,7 +126,7 @@ module.exports = robot => {
             name: thisUser.name,
             id: thisUser.id,
             karma: modifyingKarma,
-            targetName: targetUser.name,
+            targetName: targetUser.profile.display_name_normalized,
             targetId: targetUser.id,
             date: Date.now(),
             msg: response.envelope.message.text
