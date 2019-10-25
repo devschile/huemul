@@ -24,7 +24,7 @@ module.exports = robot => {
   const hubotHost = process.env.HEROKU_URL || process.env.HUBOT_URL || 'http://localhost:8080'
   const hubotWebSite = `${hubotHost}/${robot.name}`
 
-  const getCleanName = name => `${name[0]}.${name.substr(1)}`
+  const getCleanName = user => user.profile.display_name_normalized || user.real_name
 
   const usersForToken = token => {
     return getUsers().then(userList => userFromList(userList, token))
@@ -80,7 +80,12 @@ module.exports = robot => {
       return userList.filter(user => user.id === token.replace(/[><]/g, ''))
     }
 
-    return userList.filter(user => user.profile.display_name_normalized.toLowerCase().indexOf(token) === 0)
+    return userList.filter(
+      user =>
+        getCleanName(user)
+          .toLowerCase()
+          .indexOf(token) === 0
+    )
   }
 
   const userForToken = (token, response) => {
@@ -93,7 +98,7 @@ module.exports = robot => {
         robot.send(
           { room: room.id },
           `Se más específico, hay ${users.length} personas que se parecen a: ${users
-            .map(user => user.profile.display_name_normalized)
+            .map(user => getCleanName(user))
             .join(', ')}.`
         )
       } else {
@@ -133,7 +138,7 @@ module.exports = robot => {
       userForToken(userToken, response)
         .then(targetUser => {
           if (!targetUser) return
-          if (thisUser.name === targetUser.profile.display_name_normalized && op !== '--')
+          if (thisUser.name === getCleanName(targetUser) && op !== '--')
             return response.send('¡Oe no po, el karma es pa otros no pa ti!')
           if (targetUser.length === '') return response.send('¡Oe no seai pillo, escribe un nombre!')
           const limit = canUpvote(thisUser, targetUser)
@@ -146,18 +151,14 @@ module.exports = robot => {
             name: thisUser.name,
             id: thisUser.id,
             karma: modifyingKarma,
-            targetName: targetUser.profile.display_name_normalized,
+            targetName: getCleanName(targetUser),
             targetId: targetUser.id,
             date: Date.now(),
             msg: response.envelope.message.text
           })
           robot.brain.set('karmaLog', karmaLog)
           robot.brain.save()
-          response.send(
-            `${getCleanName(targetUser.profile.display_name_normalized)} ahora tiene ${getUserKarma(
-              targetUser.id
-            )} puntos de karma.`
-          )
+          response.send(`${getCleanName(targetUser)} ahora tiene ${getUserKarma(targetUser.id)} puntos de karma.`)
         })
         .catch(err => robot.emit('error', err, response, 'karma'))
     }
@@ -232,9 +233,7 @@ module.exports = robot => {
           const karmaLog = robot.brain.get('karmaLog') || []
           const filteredKarmaLog = karmaLog.filter(item => item.targetId !== targetUser.id)
           robot.brain.set('karmaLog', filteredKarmaLog)
-          response.send(
-            `${getCleanName(targetUser.profile.display_name_normalized)} ha quedado libre de toda bendición o pecado.`
-          )
+          response.send(`${getCleanName(targetUser)} ha quedado libre de toda bendición o pecado.`)
           robot.brain.save()
         })
       }
@@ -242,7 +241,7 @@ module.exports = robot => {
       userForToken(targetToken, response).then(targetUser => {
         if (!targetUser) return
         response.send(
-          `${getCleanName(targetUser.profile.display_name_normalized)} tiene ${getUserKarma(
+          `${getCleanName(targetUser)} tiene ${getUserKarma(
             targetUser.id
           )} puntos de karma. Más detalles en: ${hubotWebSite}/karma/log/${targetUser.id}`
         )
