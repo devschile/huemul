@@ -8,11 +8,11 @@ const helper = new Helper('../scripts/calendario.js')
 
 const futureYear = new Date().getFullYear() + 101
 
-function mockDate(year = 2018, month = 10, day = 19) {
+function mockDate (year = 2018, month = 10, day = 19) {
   const defaultDate = new Date(year, month, day)
   const firstDayOfMonth = new Date(year, month, 1)
   const daysInMonth = new Date(year, month, 0)
-  return function(year, month, day) {
+  return function (year, month, day) {
     switch (day) {
       case 0:
         return daysInMonth

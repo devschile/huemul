@@ -8,7 +8,7 @@ const helper = new Helper('../scripts/clima.js')
 const sleep = m => new Promise(resolve => setTimeout(() => resolve(), m))
 
 test.beforeEach(t => {
-  t.context.room = helper.createRoom({httpd: false})
+  t.context.room = helper.createRoom({ httpd: false })
 })
 
 test.afterEach(t => t.context.room.destroy())
@@ -16,7 +16,7 @@ test.afterEach(t => t.context.room.destroy())
 test('Clima Santiago, Chile', async t => {
   nock('http://wttr.in')
     .get('/Santiago')
-    .query({m: ''})
+    .query({ m: '' })
     .replyWithFile(200, path.join(__dirname, 'html', 'clima-200-1.html'))
   t.context.room.user.say('user', 'hubot clima')
   await sleep(500)
@@ -32,7 +32,7 @@ test('Clima Santiago, Chile', async t => {
 test('Clima Paris, France', async t => {
   nock('http://wttr.in')
     .get('/paris')
-    .query({m: ''})
+    .query({ m: '' })
     .replyWithFile(200, path.join(__dirname, 'html', 'clima-200-2.html'))
   t.context.room.user.say('user', 'hubot clima paris')
   await sleep(500)
@@ -48,7 +48,7 @@ test('Clima Paris, France', async t => {
 test('Clima Error 500', async t => {
   nock('http://wttr.in')
     .get('/Santiago')
-    .query({m: ''})
+    .query({ m: '' })
     .reply(500)
   t.context.room.user.say('user', 'hubot clima')
   await sleep(500)
@@ -66,7 +66,7 @@ test('Clima Error 500', async t => {
 test('Clima 301', async t => {
   nock('http://wttr.in')
     .get('/Santiago')
-    .query({m: ''})
+    .query({ m: '' })
     .reply(301)
   t.context.room.user.say('user', 'hubot clima')
   await sleep(500)
@@ -84,7 +84,7 @@ test('Clima 301', async t => {
 test('Clima request error', async t => {
   nock('http://wttr.in')
     .get('/Santiago')
-    .query({m: ''})
+    .query({ m: '' })
     .replyWithFile(200, path.join(__dirname, 'html', 'clima-500.html'))
   t.context.room.user.say('user', 'hubot clima')
   await sleep(500)

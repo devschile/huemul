@@ -7,7 +7,7 @@ const Helper = require('hubot-test-helper')
 const helper = new Helper('../scripts/citas.js')
 
 class NewMockResponse extends Helper.Response {
-  random(items) {
+  random (items) {
     return { quote: 'Lo bien hecho es mejor que lo bien dicho.', author: 'Benjamin Franklin' }
   }
 }

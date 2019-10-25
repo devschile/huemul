@@ -7,7 +7,7 @@ const Helper = require('hubot-test-helper')
 const helper = new Helper('../scripts/beneficios.js')
 
 class NewMockResponse extends Helper.Response {
-  random(items) {
+  random (items) {
     return 'Tómate la tarde libre, proletario.'
   }
 }

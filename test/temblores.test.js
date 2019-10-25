@@ -10,9 +10,9 @@ const helper = new Helper('../scripts/temblor.js')
 test.beforeEach(t => {
   nock('https://earthquake.usgs.gov')
     .get('/fdsnws/event/1/query')
-    .query({format: 'geojson', minmagnitude: 6})
-    .reply(200, {features: []})
-  t.context.room = helper.createRoom({httpd: false})
+    .query({ format: 'geojson', minmagnitude: 6 })
+    .reply(200, { features: [] })
+  t.context.room = helper.createRoom({ httpd: false })
 })
 test.afterEach(t => {
   t.context.room.destroy()

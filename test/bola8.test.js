@@ -7,7 +7,7 @@ const Helper = require('hubot-test-helper')
 const helper = new Helper('../scripts/bola8.js')
 
 class NewMockResponse extends Helper.Response {
-  random(items) {
+  random (items) {
     return 'Sin duda'
   }
 }

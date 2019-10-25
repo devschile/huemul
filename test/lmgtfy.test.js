@@ -7,7 +7,7 @@ const Helper = require('hubot-test-helper')
 const helper = new Helper('../scripts/lmgtfy.js')
 
 class NewMockResponse extends Helper.Response {
-  random(items) {
+  random (items) {
     return '¿Era muy difícil? :wntard:'
   }
 }

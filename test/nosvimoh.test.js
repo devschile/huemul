@@ -7,7 +7,7 @@ const Helper = require('hubot-test-helper')
 const helper = new Helper('../scripts/nosvimoh.js')
 
 class NewMockResponse extends Helper.Response {
-  random(items) {
+  random (items) {
     return 'https://memecrunch.com/meme/B521D/chao-nos-vimo/image.gif'
   }
 }

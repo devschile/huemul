@@ -7,7 +7,7 @@ const Helper = require('hubot-test-helper')
 const helper = new Helper('../scripts/alegria.js')
 
 class NewMockResponse extends Helper.Response {
-  random(items) {
+  random (items) {
     return 'http://i.imgur.com/1CVUXQE.jpg'
   }
 }

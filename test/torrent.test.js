@@ -7,7 +7,7 @@ const helper = new Helper('../scripts/torrent.js')
 const sleep = m => new Promise(resolve => setTimeout(() => resolve(), m))
 
 test.beforeEach(t => {
-  t.context.room = helper.createRoom({httpd: false})
+  t.context.room = helper.createRoom({ httpd: false })
 })
 
 test.afterEach(t => t.context.room.destroy())
@@ -15,13 +15,13 @@ test.afterEach(t => t.context.room.destroy())
 test('Torrent de Titanic', async t => {
   nock('https://yts.am')
     .get('/api/v2/list_movies.json')
-    .query({limit: 5, query_term: 'titanic'})
+    .query({ limit: 5, query_term: 'titanic' })
     .reply(200, {
       data: {
         movie_count: 2,
         movies: [
-          {url: 'https://yts.am/movie/titanic-1997', title: 'Titanic', year: 1997, rating: 7.8},
-          {url: 'https://yts.am/movie/titanic-1953', title: 'Titanic', year: 1953, rating: 7.2}
+          { url: 'https://yts.am/movie/titanic-1997', title: 'Titanic', year: 1997, rating: 7.8 },
+          { url: 'https://yts.am/movie/titanic-1953', title: 'Titanic', year: 1953, rating: 7.2 }
         ]
       }
     })

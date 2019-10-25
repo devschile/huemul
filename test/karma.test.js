@@ -15,15 +15,15 @@ test.beforeEach(t => {
   t.context.room.robot.adapter.client = {
     rtm: {
       dataStore: {
-        getChannelGroupOrDMById: function() {
+        getChannelGroupOrDMById: function () {
           return { is_channel: true }
         }
       }
     },
     web: {
       users: {
-        list: function() {
-          return new Promise(function(resolve) {
+        list: function () {
+          return new Promise(function (resolve) {
             resolve({
               members: [
                 { name: 'jorgeepunan' },
