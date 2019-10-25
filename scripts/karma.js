@@ -82,6 +82,7 @@ module.exports = robot => {
 
     return userList.filter(
       user =>
+        !user.deleted &&
         getCleanName(user)
           .toLowerCase()
           .indexOf(token) === 0
