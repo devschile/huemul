@@ -10,7 +10,8 @@
     "precommit": "lint-staged"
   },
   "lint-staged": {
-    "*.{js,json,css,md}": ["prettier --write", "git add"]
+    "*.{css,md,json}": ["prettier --write", "git add"],
+    "*.{js}": ["./node_modules/.bin/eslint --fix", "git add"]
   },
   "engines": {
     "node": ">=10"
