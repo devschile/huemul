@@ -15,6 +15,9 @@
 
 const md2json = require('md-2-json')
 
+const blah = 'test'
+console.log(blah)
+
 const file = 'https://raw.githubusercontent.com/devschile/awesome-devschile/master/README.md'
 
 /**
