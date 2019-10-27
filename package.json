@@ -11,7 +11,7 @@
   },
   "lint-staged": {
     "*.{css,md,json}": ["prettier --write", "git add"],
-    "*.{js}": ["./node_modules/.bin/eslint --fix", "git add"]
+    "*.{js}": ["eslint --fix", "git add"]
   },
   "engines": {
     "node": ">=10"
