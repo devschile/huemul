@@ -24,48 +24,69 @@ module.exports = robot => {
   const hubotHost = process.env.HEROKU_URL || process.env.HUBOT_URL || 'http://localhost:8080'
   const hubotWebSite = `${hubotHost}/${robot.name}`
 
-  const getCleanName = name => `${name[0]}.${name.substr(1)}`
-
-  const userForMentionName = mentionName => {
-    const users = robot.brain.users()
-    return Object.keys(users)
-      .map(key => users[key])
-      .find(user => mentionName === user.mention_name)
-  }
-
-  const userFromWeb = token => {
-    return robot.adapter.client.web.users.list().then(users => {
-      const localUsers = robot.brain.users()
-      const user1 = users.members.find(x => x.name === token)
-      if (!user1) return
-      return localUsers[user1.id]
-    })
-  }
+  const getCleanName = user => user.profile.display_name_normalized || user.real_name || 'Usuario desconocido'
 
   const usersForToken = token => {
-    return new Promise((resolve, reject) => {
-      let user
-      if ((user = robot.brain.userForName(token))) {
-        return resolve([user])
+    return getUsers().then(userList => userFromList(userList, token))
+  }
+
+  const getUsers = () => {
+    const userListCache = robot.brain.get('userListCache') || {}
+    const cacheLimit = 15
+    let checkCache = true
+    if (userListCache.updateDate) {
+      const timeSinceUpdate = Math.round(new Date().getTime() - userListCache.updateDate.getTime()) / 60000
+      checkCache = timeSinceUpdate > cacheLimit
+    }
+
+    if (checkCache) {
+      return updateUsersCache()
+    } else {
+      return new Promise((resolve, reject) => resolve(userListCache.members))
+    }
+  }
+
+  const updateUsersCache = () => {
+    const paginatedGetUsers = cursor => {
+      const limit = 900
+      const params = { limit }
+      if (cursor) {
+        params.cursor = cursor
       }
-      if ((user = userForMentionName(token))) {
-        return resolve([user])
-      }
-      if (robot.adapter.constructor.name === 'SlackBot') {
-        userFromWeb(token)
-          .then(webUser => {
-            if (webUser) {
-              return resolve([webUser])
-            } else {
-              return resolve(robot.brain.usersForFuzzyName(token))
-            }
+
+      return robot.adapter.client.web.users.list(params).then(userList => {
+        if (userList && userList.response_metadata && userList.response_metadata.next_cursor) {
+          return paginatedGetUsers(userList.response_metadata.next_cursor).then(newUserList => {
+            userList.members = userList.members.concat(newUserList.members)
+
+            return userList
           })
-          .catch(reject)
-      } else {
-        user = robot.brain.usersForFuzzyName(token)
-        resolve(user)
-      }
+        } else {
+          return userList
+        }
+      })
+    }
+
+    return paginatedGetUsers().then(userList => {
+      userList.updateDate = new Date()
+      robot.brain.set('userListCache', userList)
+
+      return userList.members
     })
+  }
+
+  const userFromList = (userList, token) => {
+    if (token.indexOf('<') === 0 && token.indexOf('>') === token.length - 1) {
+      return userList.filter(user => user.id === token.replace(/[><]/g, ''))
+    }
+
+    return userList.filter(
+      user =>
+        !user.deleted &&
+        getCleanName(user)
+          .toLowerCase()
+          .indexOf(token) === 0
+    )
   }
 
   const userForToken = (token, response) => {
@@ -74,10 +95,11 @@ module.exports = robot => {
       if (users.length === 1) {
         user = users[0]
       } else if (users.length > 1) {
-        robot.messageRoom(
-          `@${response.message.user.name}`,
+        const room = robot.adapter.client.rtm.dataStore.getDMByName(response.message.user.name)
+        robot.send(
+          { room: room.id },
           `Se más específico, hay ${users.length} personas que se parecen a: ${users
-            .map(user => user.name)
+            .map(user => getCleanName(user))
             .join(', ')}.`
         )
       } else {
@@ -117,7 +139,8 @@ module.exports = robot => {
       userForToken(userToken, response)
         .then(targetUser => {
           if (!targetUser) return
-          if (thisUser.name === targetUser.name && op !== '--') { return response.send('¡Oe no po, el karma es pa otros no pa ti!') }
+          if (thisUser.id === targetUser.id && op !== '--')
+            return response.send('¡Oe no po, el karma es pa otros no pa ti!')
           if (targetUser.length === '') return response.send('¡Oe no seai pillo, escribe un nombre!')
           const limit = canUpvote(thisUser, targetUser)
           if (Number.isFinite(limit)) {
@@ -129,14 +152,14 @@ module.exports = robot => {
             name: thisUser.name,
             id: thisUser.id,
             karma: modifyingKarma,
-            targetName: targetUser.name,
+            targetName: getCleanName(targetUser),
             targetId: targetUser.id,
             date: Date.now(),
             msg: response.envelope.message.text
           })
           robot.brain.set('karmaLog', karmaLog)
           robot.brain.save()
-          response.send(`${getCleanName(targetUser.name)} ahora tiene ${getUserKarma(targetUser.id)} puntos de karma.`)
+          response.send(`${getCleanName(targetUser)} ahora tiene ${getUserKarma(targetUser.id)} puntos de karma.`)
         })
         .catch(err => robot.emit('error', err, response, 'karma'))
     }
@@ -159,8 +182,13 @@ module.exports = robot => {
     return tokens.filter(token => urls.reduce((acc, url) => acc && url.indexOf(token) === -1, true))
   }
 
-  robot.hear(/([a-zA-Z0-9-_.]|[^,\-\s+$!(){}"'`~%=^:;#°|¡¿?]+?)(\b\+{2}|-{2})([^,]?|\s|$)/g, response => {
-    const tokens = removeURLFromTokens(response.match, response.message.text)
+  const karmaRegex = /([a-zA-Z0-9-_\.]|[^\,\-\s\+$!(){}"'`~%=^:;#°|¡¿?]+?)(\+{2}|-{2})([^,]?|\s|$)/g
+
+  robot.hear(karmaRegex, response => {
+    const textToCheck = response.message.rawText || response.message.text
+    const reFilteredMatch = textToCheck.match(karmaRegex)
+    const tokens = removeURLFromTokens(reFilteredMatch, response.message.text)
+
     if (!tokens) return
     if (robot.adapter.constructor.name === 'SlackBot') {
       if (!robot.adapter.client.rtm.dataStore.getChannelGroupOrDMById(response.envelope.room).is_channel) return
@@ -171,6 +199,7 @@ module.exports = robot => {
       .map(token => {
         const opRegex = /(\+{2}|-{2})/g
         const specialChars = /@/
+
         return {
           userToken: token
             .trim()
@@ -206,7 +235,7 @@ module.exports = robot => {
           const karmaLog = robot.brain.get('karmaLog') || []
           const filteredKarmaLog = karmaLog.filter(item => item.targetId !== targetUser.id)
           robot.brain.set('karmaLog', filteredKarmaLog)
-          response.send(`${getCleanName(targetUser.name)} ha quedado libre de toda bendición o pecado.`)
+          response.send(`${getCleanName(targetUser)} ha quedado libre de toda bendición o pecado.`)
           robot.brain.save()
         })
       }
@@ -214,9 +243,9 @@ module.exports = robot => {
       userForToken(targetToken, response).then(targetUser => {
         if (!targetUser) return
         response.send(
-          `${getCleanName(targetUser.name)} tiene ${getUserKarma(
+          `${getCleanName(targetUser)} tiene ${getUserKarma(
             targetUser.id
-          )} puntos de karma. Más detalles en: ${hubotWebSite}/karma/log/${targetUser.name}`
+          )} puntos de karma. Más detalles en: ${hubotWebSite}/karma/log/${targetUser.id}`
         )
       })
     }
@@ -269,7 +298,7 @@ module.exports = robot => {
     const karmaLog = robot.brain.get('karmaLog') || []
     const filteredKarmaLog = karmaLog.filter(log => {
       if (typeof log !== 'string' && log.msg) {
-        return log.targetName === req.params.user
+        return log.id === req.params.user
       }
     })
     const processedKarmaLog = filteredKarmaLog.map(log => `${new Date(log.date).toJSON()} - ${log.name}: ${log.msg}`)
