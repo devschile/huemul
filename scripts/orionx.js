@@ -15,6 +15,7 @@
 //   hubot orionx dash - Muestra el valor de dash desde OrionX
 //   hubot orionx chaucha|cha - Muestra el valor de chaucha desde OrionX
 //   hubot orionx ripple|xrp - Muestra el valor de ripple desde OrionX
+//   hubot orionx tron|trx - Muestra el valor de tron desde OrionX
 //
 // Author:
 //   @gmq
@@ -39,7 +40,9 @@ module.exports = robot => {
       ripple: 'XRPCLP',
       xrp: 'XRPCLP',
       luk: 'LUKCLP',
-      luka: 'LUKCLP'
+      luka: 'LUKCLP',
+      tron: 'TRXCLP',
+      trx: 'TRXCLP'
     }
 
     return coins[coin]
