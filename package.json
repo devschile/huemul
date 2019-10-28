@@ -85,7 +85,7 @@
     "hubot-tweets": "github:devschile/hubot-tweets",
     "hubot-wikipedia-lang": "1.0.3",
     "hubot-youtube": "1.1.0",
-    "jquery": "3.3.1",
+    "jquery": "3.4.0",
     "mathjs": "4.3.0",
     "md-2-json": "^1.0.5",
     "moment": "2.22.1",
