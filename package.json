@@ -32,6 +32,7 @@
     "cheerio": "1.0.0-rc.2",
     "correos-chile": "^1.2.4",
     "csv-streamify": "4.0.0",
+    "fast-xml-parser": "3.14.0",
     "hubot": "2.19.0",
     "hubot-ascii-art": "1.1.3",
     "hubot-auth": "2.1.0",
@@ -100,6 +101,7 @@
     "rutjs": "0.1.1",
     "string": "3.3.3",
     "superheroes": "1.0.0",
+    "twitter-rss-feed": "1.4.0",
     "uuid": "3.2.1",
     "whilst": "1.0.2",
     "yelp": "1.0.2"
