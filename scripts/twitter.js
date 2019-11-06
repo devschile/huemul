@@ -1,0 +1,92 @@
+// Description:
+//   Obten un feed de Twitter pidiendose lo al :huemul:
+//
+// Dependencies:
+//   twitter-rss-feed
+//   fast-xml-parser
+//
+// Commands:
+//   hubot twitter <usuario> - Obtiene el feed del usuario (los ultimos 5).
+//
+// Author:
+//   @madkoding
+
+const TwitterRSSFeed = require('twitter-rss-feed')
+const parser = require('fast-xml-parser')
+const _map = require('lodash/map')
+const _get = require('lodash/get')
+const tweetsMax = 5
+
+module.exports = function (robot) {
+  return robot.respond(/twitter (.*)/i, async (msg) => {
+    const twitterUser = msg.match[1]
+
+    const trf = new TwitterRSSFeed({
+      consumer_key: process.env.HUBOT_TWITTER_CONSUMER_KEY,
+      consumer_secret: process.env.HUBOT_TWITTER_CONSUMER_SECRET,
+      token: process.env.HUBOT_TWITTER_ACCESS_TOKEN,
+      token_secret: process.env.HUBOT_TWITTER_ACCESS_TOKEN_SECRET
+    })
+
+    // parameters for Twitter API (GET statuses/user_timeline)
+    const params = {
+      screen_name: twitterUser,
+      count: tweetsMax,
+      tweet_mode: 'extended'
+    }
+
+    // information of RSS feed
+    const info = {
+      channel: {
+        title: `Feed de ${twitterUser}`,
+        description: `Feed de ${twitterUser}`,
+        link: `https://twitter.com/${twitterUser}`
+      }
+    }
+
+    // create formatter function
+    const tweetFormat = function (tweet) {
+      const text = tweet.full_text ? tweet.full_text : tweet.text
+      return {
+        title: '@' + tweet.user.screen_name + ': "' + text + '" / Twitter',
+        description: text,
+        link: 'https://twitter.com/' + tweet.user.screen_name + '/status/' + tweet.id_str,
+        date: new Date(tweet.created_at)
+      }
+    }
+
+    // set your formatter to opts.formatter
+    const opts = {
+      formatter: tweetFormat
+    }
+
+    let jsonObj = {}
+
+    // create RSS feed
+    const rss = await trf.statuses_user_timeline(params, info, opts)
+    if (parser.validate(rss) === true) {
+      jsonObj = parser.parse(rss)
+    }
+
+    const feeds = _map(_get(jsonObj, 'rss.channel.item', []), (feed) => {
+      return {
+        title: feed.title,
+        value: feed.link,
+        short: true
+      }
+    })
+
+    const attachment = {
+      attachments: [
+        {
+          fallback: `Estos son los ultimos ${tweetsMax} tweets de ${twitterUser}`,
+          color: '#00acee',
+          text: `<https://twitter.com/${twitterUser}|Link al perfil>`,
+          fields: feeds
+        }
+      ]
+    }
+
+    return msg.send(attachment)
+  })
+}
