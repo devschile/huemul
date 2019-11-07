@@ -9,6 +9,9 @@
 //
 // Commands:
 //   hubot un beneficio - Retorna un beneficio otorgado por :huemul:
+//
+// Author:
+//   @juanbrujo
 
 var beneficios = [
   'Tómate la tarde libre, proletario.',

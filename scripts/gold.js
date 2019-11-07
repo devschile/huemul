@@ -13,6 +13,9 @@
 //   hubot gold add <user> - Dar la membresía golden a un usuario
 //   hubot gold remove <user> - Quitar la membresía golden a un usuario
 //   hubot gold list - Listar todos los miembros golden
+//
+// Author:
+//   @lgaticaq
 
 module.exports = robot => {
   /**

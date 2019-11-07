@@ -9,6 +9,9 @@
 //
 // Commands:
 //   hubot pregunta|consejo - Retorna un consejo random
+//
+// Author:
+//   @juanbrujo
 
 var consejos = [
   'En mi opinión, sí',

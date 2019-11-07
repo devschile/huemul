@@ -9,6 +9,9 @@
 //
 // Commands:
 //   hubot random gmq - Obtiene el nombre completo de gmq
+//
+// Author:
+//   @lgaticaq
 
 const https = require('https')
 const csv = require('csv-streamify')

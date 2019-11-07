@@ -9,6 +9,9 @@
 //
 // Commands:
 //   None
+//
+// Author:
+//   @lgaticaq
 
 const Raven = require('raven')
 

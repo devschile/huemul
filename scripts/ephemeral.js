@@ -9,6 +9,9 @@
 //
 // Commands:
 //   None
+//
+// Author:
+//   @lgaticaq
 
 module.exports = robot => {
   /**

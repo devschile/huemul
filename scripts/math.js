@@ -15,7 +15,7 @@
 //   + info: http://mathjs.org/examples/expressions.js.html
 //
 // Author:
-//   :huemul:
+//   @juanbrujo
 
 module.exports = function (robot) {
   robot.respond(/(calcula|convierte|math|conv)( me)? (.*)/i, function (msg) {
