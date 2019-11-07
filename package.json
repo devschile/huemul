@@ -1,5 +1,5 @@
 {
-  "name": "Huemul",
+  "name": "huemul",
   "version": "2.0.0",
   "description": "Animal salvaje nivel 20",
   "main": "bin/hubot",
@@ -7,7 +7,8 @@
     "start": "bin/hubot -a slack",
     "dev": "bin/hubot",
     "test": "ava test",
-    "precommit": "lint-staged"
+    "precommit": "lint-staged",
+    "prepush": "ava test"
   },
   "lint-staged": {
     "*.{css,md,json}": ["prettier --write", "git add"],
