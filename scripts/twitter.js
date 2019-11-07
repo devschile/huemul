@@ -46,11 +46,14 @@ module.exports = function (robot) {
 
     // create formatter function
     const tweetFormat = function (tweet) {
-      const text = tweet.full_text ? tweet.full_text : tweet.text
+      const text = _get(tweet, 'text')
+      const description = _get(tweet, 'full_text', text)
+      const userName = _get(tweet, 'user.screen_name')
+      const id = _get(tweet, 'id_str')
       return {
-        title: '@' + tweet.user.screen_name + ': "' + text + '" / Twitter',
-        description: text,
-        link: 'https://twitter.com/' + tweet.user.screen_name + '/status/' + tweet.id_str,
+        title: `@${userName}: "${text}" / Twitter`,
+        description,
+        link: `https://twitter.com/${userName}/status/${id}`,
         date: new Date(tweet.created_at)
       }
     }
