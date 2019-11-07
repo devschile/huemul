@@ -15,7 +15,7 @@ const TwitterRSSFeed = require('twitter-rss-feed')
 const parser = require('fast-xml-parser')
 const _map = require('lodash/map')
 const _get = require('lodash/get')
-const tweetsMax = 5
+const tweetsMax = 4
 
 module.exports = function (robot) {
   return robot.respond(/twitter (.*)/i, async (msg) => {
@@ -46,15 +46,12 @@ module.exports = function (robot) {
 
     // create formatter function
     const tweetFormat = function (tweet) {
-      const text = _get(tweet, 'text')
-      const description = _get(tweet, 'full_text', text)
+      const description = _get(tweet, 'full_text')
       const userName = _get(tweet, 'user.screen_name')
       const id = _get(tweet, 'id_str')
       return {
-        title: `@${userName}: "${text}" / Twitter`,
-        description,
-        link: `https://twitter.com/${userName}/status/${id}`,
-        date: new Date(tweet.created_at)
+        title: description,
+        link: `<https://twitter.com/${userName}/status/${id}|Leer mas...>`
       }
     }
 
@@ -84,7 +81,7 @@ module.exports = function (robot) {
         {
           fallback: `Estos son los ultimos ${tweetsMax} tweets de ${twitterUser}`,
           color: '#00acee',
-          text: `<https://twitter.com/${twitterUser}|Link al perfil>`,
+          text: `Estos son los ultimos ${tweetsMax} tweets de ${twitterUser}`,
           fields: feeds
         }
       ]
