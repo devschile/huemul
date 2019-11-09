@@ -51,7 +51,7 @@ module.exports = function (robot) {
       const id = _get(tweet, 'id_str')
       return {
         title: description,
-        link: `<https://twitter.com/${userName}/status/${id}|Leer mas...>`
+        link: `https://twitter.com/${userName}/status/${id}>`
       }
     }
 
@@ -71,7 +71,7 @@ module.exports = function (robot) {
     const feeds = _map(_get(jsonObj, 'rss.channel.item', []), (feed) => {
       return {
         title: feed.title,
-        value: feed.link,
+        value: `<${feed.link}|Leer mas...>`,
         short: true
       }
     })
