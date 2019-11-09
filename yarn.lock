@@ -1811,6 +1811,11 @@ deep-equal@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/deep-equal/-/deep-equal-1.0.1.tgz#f5d260292b660e084eff4cdbc9f08ad3247448b5"
 
+deep-extend@^0.5.0:
+  version "0.5.1"
+  resolved "https://registry.yarnpkg.com/deep-extend/-/deep-extend-0.5.1.tgz#b894a9dd90d3023fbf1c55a394fb858eb2066f1f"
+  integrity sha512-N8vBdOa+DF7zkRrDCsaOXoCs/E2fJfx9B9MrKnnSiHNh4ws7eSys6YQE4KvT1cecKmOASYQBhbKjeuDD9lT81w==
+
 deep-extend@^0.6.0:
   version "0.6.0"
   resolved "https://registry.yarnpkg.com/deep-extend/-/deep-extend-0.6.0.tgz#c4fa7c95404a17a9c3e8ca7e1537312b736330ac"
@@ -2557,6 +2562,11 @@ fast-levenshtein@~2.0.4:
   version "2.0.6"
   resolved "https://registry.yarnpkg.com/fast-levenshtein/-/fast-levenshtein-2.0.6.tgz#3d8a5c66883a16a30ca8643e851f19baa7797917"
 
+fast-xml-parser@3.14.0:
+  version "3.14.0"
+  resolved "https://registry.yarnpkg.com/fast-xml-parser/-/fast-xml-parser-3.14.0.tgz#6fc1e927d13ac2e2ff8ccc5812c4f881fbc91284"
+  integrity sha512-3SzQnPNtMVqaBVDzYqYt0BTaaLwkd45wTbsUsH1eiE9dnyc4b8mYcm1Q0Rcx9AWkeTj5UZFTTm55Io5yVWS1tg==
+
 fastq@^1.6.0:
   version "1.6.0"
   resolved "https://registry.yarnpkg.com/fastq/-/fastq-1.6.0.tgz#4ec8a38f4ac25f21492673adb7eae9cfef47d1c2"
@@ -2575,6 +2585,14 @@ fd-slicer@~1.0.1:
   resolved "https://registry.yarnpkg.com/fd-slicer/-/fd-slicer-1.0.1.tgz#8b5bcbd9ec327c5041bf9ab023fd6750f1177e65"
   dependencies:
     pend "~1.2.0"
+
+feed@^2.0.4:
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/feed/-/feed-2.0.4.tgz#14cd71b3bae1e965b81f7e0c5927e8941de996f8"
+  integrity sha512-sWatfulDP6d18qVaWcu34qmq9ml6UeN6nHSBJpNZ2muBqxjPAdT375whPYAHP+gqLfyabtYU5qf2Dv4nqtlp0w==
+  dependencies:
+    luxon "^1.3.3"
+    xml "^1.0.1"
 
 figlet@^1.1.1:
   version "1.2.1"
@@ -4319,6 +4337,11 @@ lru-cache@^4.0.1:
     pseudomap "^1.0.2"
     yallist "^2.1.2"
 
+luxon@^1.3.3:
+  version "1.21.1"
+  resolved "https://registry.yarnpkg.com/luxon/-/luxon-1.21.1.tgz#00c9c9e624e66cfef745a8476c4ead14a3966a61"
+  integrity sha512-3zxaKX7mj7eA80TU0sm4CfNEtiUZ2QXGjMc80rfG4d1dOnnOOWz63U9j4nYR7+1w716DYtWfdOeVhDXYlH+D4w==
+
 make-dir@^1.0.0:
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/make-dir/-/make-dir-1.3.0.tgz#79c1033b80515bd6d24ec9933e860ca75ee27f0c"
@@ -5776,7 +5799,7 @@ request-progress@^2.0.1:
     tough-cookie "~2.3.0"
     tunnel-agent "~0.4.1"
 
-request@^2.51.0, request@^2.55.0, request@^2.67.0, request@^2.81.0:
+request@^2.51.0, request@^2.55.0, request@^2.67.0, request@^2.72.0, request@^2.81.0:
   version "2.88.0"
   resolved "https://registry.yarnpkg.com/request/-/request-2.88.0.tgz#9c2fca4f7d35b592efe57c7f0a55e81052124fef"
   dependencies:
@@ -6703,6 +6726,22 @@ twit@1.1.x:
   dependencies:
     oauth "0.9.9"
 
+twitter-rss-feed@1.4.0:
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/twitter-rss-feed/-/twitter-rss-feed-1.4.0.tgz#6ddbe43d70886c70a96fe31c6395f088e5c60117"
+  integrity sha512-2QstkfX9p4CD31d7e0DK07jA8xUtVHvydTAondoEo/hy4OuqjbKUsICVTTqTXjqdN/xGKjv6vb8niiwXvV359A==
+  dependencies:
+    feed "^2.0.4"
+    twitter "^1.7.1"
+
+twitter@^1.7.1:
+  version "1.7.1"
+  resolved "https://registry.yarnpkg.com/twitter/-/twitter-1.7.1.tgz#0762378f1dc1c050e48f666aca904e24b1a962f4"
+  integrity sha1-B2I3jx3BwFDkj2ZqypBOJLGpYvQ=
+  dependencies:
+    deep-extend "^0.5.0"
+    request "^2.72.0"
+
 type-check@~0.3.2:
   version "0.3.2"
   resolved "https://registry.yarnpkg.com/type-check/-/type-check-0.3.2.tgz#5884cab512cf1d355e3fb784f30804b2b520db72"
@@ -7060,6 +7099,11 @@ xdg-basedir@^3.0.0:
 "xml-name-validator@>= 2.0.1 < 3.0.0":
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/xml-name-validator/-/xml-name-validator-2.0.1.tgz#4d8b8f1eccd3419aa362061becef515e1e559635"
+
+xml@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/xml/-/xml-1.0.1.tgz#78ba72020029c5bc87b8a81a3cfcd74b4a2fc1e5"
+  integrity sha1-eLpyAgApxbyHuKgaPPzXS0ovweU=
 
 xtend@^4.0.0, xtend@~4.0.1:
   version "4.0.1"
