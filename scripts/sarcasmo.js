@@ -10,6 +10,10 @@
 // Commands:
 //   hubot sarcasmo <texto> - Traduce le texto a sarcasmo
 //
+// Example:
+//   hubot sarcasmo todos los admin de devschile son bakanes
+//   tOdOs lOs aDmIn dE DeVsChIlE SoN BaKaNeS
+//
 // Author:
 //   @madkoding
 
