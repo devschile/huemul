@@ -20,7 +20,7 @@
 module.exports = function (robot) {
   robot.respond(/iii (.*)/i, function (msg) {
     const text = msg.match[1]
-    const iii = text.replace(/[aAeEoOuU]/ig, 'i')
+    const iii = text.replace(/[aeou]/ig, 'i')
     msg.send(iii)
   })
 }
