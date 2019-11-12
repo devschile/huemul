@@ -51,7 +51,7 @@ module.exports = function (robot) {
       const id = _get(tweet, 'id_str')
       return {
         title: description,
-        link: `https://twitter.com/${userName}/status/${id}>`
+        link: `https://twitter.com/${userName}/status/${id}`
       }
     }
 
