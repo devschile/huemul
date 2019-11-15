@@ -13,7 +13,7 @@
 // Author:
 //   @jorgeepunan
 
-function flipString(aString) {
+function flipString (aString) {
   var last = aString.length - 1
   var result = new Array(aString.length)
   for (var i = last; i >= 0; --i) {
@@ -35,10 +35,10 @@ var flipTable = {
   '\u0027': '\u002C',
   '\u0028': '\u0029',
   '\u002E': '\u02D9',
-  '\u0033': '\u0190',
-  '\u0034': '\u152D',
-  '\u0036': '\u0039',
-  '\u0037': '\u2C62',
+  3: '\u0190',
+  4: '\u152D',
+  6: '\u0039',
+  7: '\u2C62',
   '\u003B': '\u061B',
   '\u003C': '\u003E',
   '\u003F': '\u00BF',
@@ -88,11 +88,11 @@ var flipTable = {
   '\u2234': '\u2235'
 }
 
-module.exports = function(robot) {
-  robot.respond(/invierte (.*)/i, function(res) {
+module.exports = function (robot) {
+  robot.respond(/invierte (.*)/i, function (res) {
     var frase = res.match[1]
 
-    msg = flipString(frase)
+    const msg = flipString(frase)
     res.send(msg)
   })
 }

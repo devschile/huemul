@@ -33,8 +33,8 @@ var consejos = [
   'Muy dudoso'
 ]
 
-module.exports = function(robot) {
-  robot.respond(/pregunta|consejo/gi, function(res) {
+module.exports = function (robot) {
+  robot.respond(/pregunta|consejo/gi, function (res) {
     res.send(':huemul: ~ ' + res.random(consejos))
   })
 }

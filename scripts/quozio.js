@@ -15,9 +15,9 @@
 
 module.exports = robot => {
   const getRandomTheme = () => {
-    const min = Math.ceil(1000);
-    const max = Math.floor(2000);
-    return Math.floor(Math.random() * (max - min)) + min;
+    const min = Math.ceil(1000)
+    const max = Math.floor(2000)
+    return Math.floor(Math.random() * (max - min)) + min
   }
 
   robot.respond(/quozio (.+) dijo (.+)/i, res => {

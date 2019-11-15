@@ -13,10 +13,10 @@
 // Author:
 //   @eljojo
 
-let rand = array => array[Math.floor(Math.random() * array.length)]
+const rand = array => array[Math.floor(Math.random() * array.length)]
 
 class Juliiiiiiito {
-  constructor(msg) {
+  constructor (msg) {
     this.lyrics = this.lyrics.bind(this)
     this.dondebuscar = this.dondebuscar.bind(this)
     this.persona_mujer = this.persona_mujer.bind(this)
@@ -36,7 +36,7 @@ class Juliiiiiiito {
     this.msg = msg
   }
 
-  lyrics() {
+  lyrics () {
     return rand([
       'a ella le gusta la gasolina',
       'nada tiene de especial, dos mujeres que se dan la mano',
@@ -51,7 +51,7 @@ class Juliiiiiiito {
     ])
   }
 
-  dondebuscar() {
+  dondebuscar () {
     return rand([
       'bajar arez',
       'bajar taringa',
@@ -65,7 +65,7 @@ class Juliiiiiiito {
     ])
   }
 
-  persona_mujer() {
+  personaMujer () {
     return rand([
       'paty maldonado',
       'patti maldonado',
@@ -88,7 +88,7 @@ class Juliiiiiiito {
     ])
   }
 
-  persona_hombre() {
+  personaHombre () {
     return rand([
       'luciano bello',
       'tata pinocho',
@@ -115,11 +115,11 @@ class Juliiiiiiito {
     ])
   }
 
-  persona_cualquiera() {
-    return rand([this.persona_mujer(), this.persona_hombre(), this.msg.message.user.name])
+  personaCualquiera () {
+    return rand([this.personaMujer(), this.personaHombre(), this.msg.message.user.name])
   }
 
-  significado() {
+  significado () {
     return rand([
       'fake',
       'bacan',
@@ -135,7 +135,7 @@ class Juliiiiiiito {
     ])
   }
 
-  preguntas_significado() {
+  preguntasSignificado () {
     return rand([
       'por que los niños dicen',
       'por que los lolos dicen',
@@ -147,7 +147,7 @@ class Juliiiiiiito {
     ])
   }
 
-  cosa_desconocida() {
+  cosaDesconocida () {
     return rand([
       'youtube',
       'twitter',
@@ -164,11 +164,11 @@ class Juliiiiiiito {
     ])
   }
 
-  usar_cosa_desconocida() {
+  usarCosaDesconocida () {
     return rand(['como usar', 'que es un', 'como funciona el', 'como jotear lolitas en', 'donde esta el chat en'])
   }
 
-  cosa_para_hacer() {
+  cosaParaHacer () {
     return rand([
       'hakear correo latinmail',
       'alejar a ex novio resentido',
@@ -192,11 +192,11 @@ class Juliiiiiiito {
     ])
   }
 
-  tutorial() {
+  tutorial () {
     return rand(['tutorial taringa', 'tutorial paso a paso', 'guia con fotos', 'tutorial youtube', 'tutorial bananero'])
   }
 
-  accion() {
+  accion () {
     return rand([
       'cantando en el baño',
       'gritando en la alameda',
@@ -211,7 +211,7 @@ class Juliiiiiiito {
     ])
   }
 
-  lugar() {
+  lugar () {
     return rand([
       'verano 94 pichidangui',
       'verano 83 cajon del maipo',
@@ -220,14 +220,14 @@ class Juliiiiiiito {
       'detras de escenas cachureos',
       'evento anime 2004',
       'malón privada equipo mekano',
-      `malón campo dichato de ${this.persona_cualquiera()}`,
+      `malón campo dichato de ${this.personaCualquiera()}`,
       'playa nudista miami',
       'festival de viña 74',
       'estudio de grabacion pase lo que pase',
       'detras de escena alo ely',
       'verano 2006 costa varua',
       'verano 97 cachagua',
-      `cumpleaños 2000 ${this.persona_cualquiera()}`,
+      `cumpleaños 2000 ${this.personaCualquiera()}`,
       'ensayos japennin con já',
       'galpon persa biobio',
       'porlaputa',
@@ -238,7 +238,7 @@ class Juliiiiiiito {
     ])
   }
 
-  accion_una_persona_a_otra() {
+  accionUnaPersonaAOtra () {
     return rand([
       'besando a',
       'entregando su flor',
@@ -254,43 +254,43 @@ class Juliiiiiiito {
     ])
   }
 
-  hacer_pregunta() {
+  hacerPregunta () {
     return rand([
-      `${this.usar_cosa_desconocida()} ${this.cosa_desconocida()} pregunta`,
-      `que significa \"${this.msg.message.text}\" pregunta`
+      `${this.usarCosaDesconocida()} ${this.cosaDesconocida()} pregunta`,
+      `que significa "${this.msg.message.text}" pregunta`
     ])
   }
 
   // "#{@msg.message.text} #{@msg.message.user.name}"
-  yapo() {
+  yapo () {
     return rand([
-      `video prohibido ${this.persona_cualquiera()} ${this.accion()} sin ropa online`,
+      `video prohibido ${this.personaCualquiera()} ${this.accion()} sin ropa online`,
       `fotos de ${this.msg.message.user.name} ${this.accion()} empelota`,
       `${this.lyrics()} ${this.dondebuscar()}`,
-      `${this.persona_hombre()} ${this.accion_una_persona_a_otra()} ${this.persona_mujer()} ${this.lugar()} video prohibido`,
-      `${this.preguntas_significado()} \"${this.significado()}\"`,
-      `${this.usar_cosa_desconocida()} ${this.cosa_desconocida()} pregunta`,
-      `como ${this.cosa_para_hacer()} ${this.tutorial()}`,
-      `${this.persona_cualquiera()} cantando ${this.lyrics()} ${this.lugar()}`,
-      `que significa \"${this.msg.message.text}\" pregunta`
+      `${this.personaHombre()} ${this.accionUnaPersonaAOtra()} ${this.personaMujer()} ${this.lugar()} video prohibido`,
+      `${this.preguntasSignificado()} "${this.significado()}"`,
+      `${this.usarCosaDesconocida()} ${this.cosa_desconocida()} pregunta`,
+      `como ${this.cosaParaHacer()} ${this.tutorial()}`,
+      `${this.personaCualquiera()} cantando ${this.lyrics()} ${this.lugar()}`,
+      `que significa "${this.msg.message.text}" pregunta`
     ])
   }
 }
 
 module.exports = robot => {
   // robot.enter (msg) ->
-  robot.respond(/(videla|taringa)/i, function(msg) {
+  robot.respond(/(videla|taringa)/i, function (msg) {
     // console.log msg
     // msg.send msg.random enterReplies
     // msg.send "Bienvenido a *#{msg.message.room}*"
-    let respuesta = new Juliiiiiiito(msg)
+    const respuesta = new Juliiiiiiito(msg)
     msg.send(respuesta.yapo())
   })
 
   // tranquilein john wayne
-  robot.respond(/pregunta/i, function(msg) {
+  robot.respond(/pregunta/i, function (msg) {
     if (Math.random() * 10 > 7) {
-      let respuesta = new Juliiiiiiito(msg)
+      const respuesta = new Juliiiiiiito(msg)
       msg.send(respuesta.hacer_pregunta())
     }
   })

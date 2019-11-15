@@ -17,7 +17,7 @@
 // Author:
 //   @javier
 
-module.exports = function lastFm(robot) {
+module.exports = function lastFm (robot) {
   var url = require('url')
   // last.fm API methods
   var lastMethods = {
@@ -28,7 +28,7 @@ module.exports = function lastFm(robot) {
     artistTracks: 'artist.getTopTracks'
   }
   // hubot respond func
-  robot.respond(/(lastfm)\s(similar|como|top)\s?(.*)/i, function(msg) {
+  robot.respond(/(lastfm)\s(similar|como|top)\s?(.*)/i, function (msg) {
     var type = msg.match[2]
     var search = msg.match[3]
     // if similar || como they need a valid search
@@ -48,7 +48,7 @@ module.exports = function lastFm(robot) {
       .concat(type === 'similar' ? '&artist=' : '&tag=')
       .concat(search)
     // request to last.fm
-    robot.http(lastUrl).get()(function(err, res, body) {
+    robot.http(lastUrl).get()(function (err, res, body) {
       if (err || res.statusCode !== 200) {
         return robot.emit('error', err || new Error(`Status code ${res.statusCode}`), msg, 'last-fm')
       }
@@ -56,17 +56,17 @@ module.exports = function lastFm(robot) {
       var json = JSON.parse(body)
       if (type === 'similar' && json.error !== 6) {
         respond = 'Si te gusta *' + search + '* te podrian interesar: \n'
-        json.similarartists.artist.forEach(function(elem) {
+        json.similarartists.artist.forEach(function (elem) {
           return (respond += elem.name + '\n')
         })
       } else if (type === 'como' && json.topartists.artist.length > 0) {
         respond = 'Si te gusta la musica *' + search + '* te podrian interesar: \n'
-        json.topartists.artist.forEach(function(elem) {
+        json.topartists.artist.forEach(function (elem) {
           return (respond += elem.name + '\n')
         })
       } else if (type === 'top' && json.tracks.track.length > 0) {
         respond = 'Lo más escuchado esta semana en last.fm es: \n'
-        json.tracks.track.forEach(function(elem) {
+        json.tracks.track.forEach(function (elem) {
           return (respond += '*' + elem.name + '* de ' + elem.artist.name + '\n')
         })
       } else {

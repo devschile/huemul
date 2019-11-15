@@ -25,8 +25,7 @@ module.exports = robot => {
 
     fetch.get()((error, response, body) => {
       if (error) return robot.emit('error', error, res, 'temblor')
-      if (response.statusCode !== 200)
-        return robot.emit('error', new Error(`Response statusCode is ${response.statusCode}`), res, 'temblor')
+      if (response.statusCode !== 200) { return robot.emit('error', new Error(`Response statusCode is ${response.statusCode}`), res, 'temblor') }
       const { features: earthquakes } = JSON.parse(body)
 
       const earthquakesFilter = earthquakes.filter(({ properties: { place } }) => {

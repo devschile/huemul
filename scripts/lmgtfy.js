@@ -1,23 +1,23 @@
 // Description:
-// 	Para quienes les da flojera buscar en Google, Huemul lo hace de la manera menos amable posible
+// Para quienes les da flojera buscar en Google, Huemul lo hace de la manera menos amable posible
 //
 // Dependencies:
-// 	None
+// None
 //
 // Configuration:
-// 	None
+// None
 //
 // Commands:
-// 	hubot lmgtfy|google <consulta> - Muestra como buscar en Google
-// 	hubot lmgtfy|google <@usuario> <consulta> - Mustra como buscar en Google
+// hubot lmgtfy|google <consulta> - Muestra como buscar en Google
+// hubot lmgtfy|google <@usuario> <consulta> - Mustra como buscar en Google
 //
 // Author:
-// 	@ravenous
+// @ravenous
 
 var rude = ['¿Era muy difícil? :wntard:', '¿En serio no sabías eso? :mufasatard:', 'Bienvenido a la Internet :lol2:']
 
-module.exports = function(robot) {
-  robot.respond(/(?:lmgtfy|google)\s(?:@(\w*))?\s?(.+)/i, function(res) {
+module.exports = function (robot) {
+  robot.respond(/(?:lmgtfy|google)\s(?:@(\w*))?\s?(.+)/i, function (res) {
     var lmgtfy, message
     lmgtfy = 'http://lmgtfy.com/?q='
 

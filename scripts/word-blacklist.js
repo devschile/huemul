@@ -17,18 +17,18 @@ const moment = require('moment')
 
 moment.locale('es')
 
-module.exports = function(robot) {
+module.exports = function (robot) {
   const timeouts = robot.brain.get('hubotTimeouts') || {}
   const timeUnitWords = {
     h: 'horas',
     m: 'minutos'
   }
 
-  function getUser(userName) {
+  function getUser (userName) {
     return robot.adapter.client.web.users.list().then(users => users.members.find(x => x.name === userName))
   }
 
-  function isUserPunished(user) {
+  function isUserPunished (user) {
     if (timeouts[user.id]) {
       const oldDate = timeouts[user.id]
       if (moment().isSameOrAfter(moment(oldDate), 'minutes')) {
@@ -41,7 +41,7 @@ module.exports = function(robot) {
     return timeouts[user.id]
   }
 
-  function punishUser(user, time = 5, timeUnit = 'm') {
+  function punishUser (user, time = 5, timeUnit = 'm') {
     const timeUnitMoment = {
       h: 'hours',
       m: 'minutes'
@@ -53,19 +53,21 @@ module.exports = function(robot) {
     robot.brain.save()
   }
 
-  function forgiveUser(user) {
+  function forgiveUser (user) {
     timeouts[user.id] = undefined
     robot.brain.set('hubotTimeouts', timeouts)
     robot.brain.save()
   }
 
-  function isAuthorized(user) {
+  function isAuthorized (user) {
     const authorizedUsers = process.env.HUBOT_AUTH_ADMIN ? process.env.HUBOT_AUTH_ADMIN.split(',') : []
 
     return authorizedUsers.indexOf(user.id) !== -1
   }
 
+  // done needed for callback
   robot.listenerMiddleware((context, next, done) => {
+    //eslint-disable-line
     if (isAuthorized(context.response.message.user)) {
       next()
     } else if (!isUserPunished(context.response.message.user)) {

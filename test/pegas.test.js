@@ -8,7 +8,7 @@ const helper = new Helper('../scripts/pegas.js')
 const sleep = m => new Promise(resolve => setTimeout(() => resolve(), m))
 
 test.beforeEach(t => {
-  t.context.room = helper.createRoom({httpd: false})
+  t.context.room = helper.createRoom({ httpd: false })
 })
 
 test.afterEach(t => t.context.room.destroy())

@@ -14,20 +14,20 @@
 // Author:
 //   @alvaroveliz
 
-module.exports = function(robot) {
-  robot.respond(/vapor (.*)/i, function(msg) {
+module.exports = function (robot) {
+  robot.respond(/vapor (.*)/i, function (msg) {
     var i, len, letter, letters, ref, str
     letters = {
-      '1': '１',
-      '2': '２',
-      '3': '３',
-      '4': '４',
-      '5': '５',
-      '6': '６',
-      '7': '７',
-      '8': '８',
-      '9': '９',
-      '0': '０',
+      1: '１',
+      2: '２',
+      3: '３',
+      4: '４',
+      5: '５',
+      6: '６',
+      7: '７',
+      8: '８',
+      9: '９',
+      0: '０',
       ':': '：',
       ';': '；',
       '=': '＝',

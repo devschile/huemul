@@ -15,24 +15,26 @@ test.beforeEach(t => {
   t.context.room.robot.adapter.client = {
     rtm: {
       dataStore: {
-        getChannelGroupOrDMById: function() {
+        getChannelGroupOrDMById: function () {
           return { is_channel: true }
-        }
+        },
+        getDMByName: name => ({ id: name, name })
       }
     },
     web: {
       users: {
-        list: function() {
-          return new Promise(function(resolve) {
+        list: function () {
+          return new Promise(function (resolve) {
             resolve({
               members: [
-                { name: 'jorgeepunan' },
-                { name: 'leonardo' },
-                { name: 'leon' },
-                { name: 'cata' },
-                { name: 'dukuo' },
-                { name: 'hector' },
-                { name: 'ienc' }
+                { id: 4, profile: { display_name: 'jorgeepunan', display_name_normalized: 'jorgeepunan' } },
+                { id: 5, profile: { display_name: 'leonardo', display_name_normalized: 'leonardo' } },
+                { id: 6, profile: { display_name: 'leon', display_name_normalized: 'leon' } },
+                { id: 7, profile: { display_name: 'cata', display_name_normalized: 'cata' } },
+                { id: 8, profile: { display_name: 'dukuo', display_name_normalized: 'dukuo' } },
+                { id: 9, profile: { display_name: 'hector', display_name_normalized: 'hector' } },
+                { id: 10, profile: { display_name: 'ienc', display_name_normalized: 'ienc' } },
+                { id: 11, profile: { display_name: 'gmq', display_name_normalized: 'gmq' } }
               ]
             })
           })
@@ -40,36 +42,9 @@ test.beforeEach(t => {
       }
     }
   }
-  t.context.room.robot.brain.userForId('jorgeepunan', {
-    name: 'jorgeepunan',
-    id: 1
-  })
-  t.context.room.robot.brain.userForId('leonardo', {
-    name: 'leonardo',
-    id: 2
-  })
-  t.context.room.robot.brain.userForId('leon', {
-    name: 'leon',
-    id: 3
-  })
-  t.context.room.robot.brain.userForId('cata', {
-    name: 'cata',
-    id: 4
-  })
-  t.context.room.robot.brain.userForId('dukuo', {
-    name: 'dukuo',
-    id: 5
-  })
-  t.context.room.robot.brain.userForId('hector', {
-    name: 'hector',
-    id: 6
-  })
-  t.context.room.robot.brain.userForId('ienc', {
-    name: 'ienc',
-    id: 7
-  })
+
   const karmaLimits = {
-    user: { 3: new Date() }
+    user: { 11: new Date() }
   }
 
   t.context.room.robot.brain.set('karmaLimits', karmaLimits)
@@ -79,7 +54,7 @@ test.beforeEach(t => {
       name: 'jorgeepunan',
       karma: -1,
       targetName: 'cata',
-      targetId: 4,
+      targetId: 7,
       date: '2016-07-29T15:01:30.633Z',
       msg: 'cata--'
     },
@@ -87,7 +62,7 @@ test.beforeEach(t => {
       name: 'jorgeepunan',
       karma: -1,
       targetName: 'cata',
-      targetId: 4,
+      targetId: 7,
       date: '2016-07-29T15:01:30.633Z',
       msg: 'cata--'
     },
@@ -95,7 +70,7 @@ test.beforeEach(t => {
       name: 'jorgeepunan',
       karma: -1,
       targetName: 'cata',
-      targetId: 4,
+      targetId: 7,
       date: '2016-07-29T15:01:30.633Z',
       msg: 'cata--'
     },
@@ -103,7 +78,7 @@ test.beforeEach(t => {
       name: 'jorgeepunan',
       karma: -1,
       targetName: 'cata',
-      targetId: 4,
+      targetId: 7,
       date: '2016-07-29T15:01:30.633Z',
       msg: 'cata--'
     },
@@ -111,7 +86,7 @@ test.beforeEach(t => {
       name: 'jorgeepunan',
       karma: -1,
       targetName: 'cata',
-      targetId: 4,
+      targetId: 7,
       date: '2016-07-29T15:01:30.633Z',
       msg: 'cata--'
     }
@@ -129,8 +104,8 @@ test.cb.serial('Debe añadir karma con @ y comas después del user', t => {
   setTimeout(() => {
     t.deepEqual(t.context.room.messages, [
       ['user', '@dukuo++, cata++'],
-      ['hubot', 'd.ukuo ahora tiene 1 puntos de karma.'],
-      ['hubot', 'c.ata ahora tiene -4 puntos de karma.']
+      ['hubot', 'dukuo ahora tiene 1 puntos de karma.'],
+      ['hubot', 'cata ahora tiene -4 puntos de karma.']
     ])
     t.end()
   }, 500)
@@ -140,7 +115,7 @@ test.cb.serial('Debe aplicar a un usuario', t => {
   setTimeout(() => {
     t.deepEqual(t.context.room.messages, [
       ['user', 'jorgee-- asdf'],
-      ['hubot', 'j.orgeepunan ahora tiene -1 puntos de karma.']
+      ['hubot', 'jorgeepunan ahora tiene -1 puntos de karma.']
     ])
     t.end()
   }, 500)
@@ -150,8 +125,8 @@ test.cb.serial('Debe aplicar a ambos usuarios', t => {
   setTimeout(() => {
     t.deepEqual(t.context.room.messages, [
       ['user', 'jorgee-- leonard++'],
-      ['hubot', 'j.orgeepunan ahora tiene -1 puntos de karma.'],
-      ['hubot', 'l.eonardo ahora tiene 1 puntos de karma.']
+      ['hubot', 'jorgeepunan ahora tiene -1 puntos de karma.'],
+      ['hubot', 'leonardo ahora tiene 1 puntos de karma.']
     ])
     t.end()
   }, 500)
@@ -175,11 +150,11 @@ test.cb.serial('Aplica karma sólo a 5 usuarios', t => {
   setTimeout(() => {
     t.deepEqual(t.context.room.messages, [
       ['user', 'leonardo++ jorgeepunan-- hector++ dukuo++ cata-- seis++'],
-      ['hubot', 'l.eonardo ahora tiene 1 puntos de karma.'],
-      ['hubot', 'j.orgeepunan ahora tiene -1 puntos de karma.'],
-      ['hubot', 'h.ector ahora tiene 1 puntos de karma.'],
-      ['hubot', 'd.ukuo ahora tiene 1 puntos de karma.'],
-      ['hubot', 'c.ata ahora tiene -6 puntos de karma.']
+      ['hubot', 'leonardo ahora tiene 1 puntos de karma.'],
+      ['hubot', 'jorgeepunan ahora tiene -1 puntos de karma.'],
+      ['hubot', 'hector ahora tiene 1 puntos de karma.'],
+      ['hubot', 'dukuo ahora tiene 1 puntos de karma.'],
+      ['hubot', 'cata ahora tiene -6 puntos de karma.']
     ])
     t.end()
   }, 500)
@@ -207,8 +182,8 @@ test.cb.serial('Aplica karma a usuarios y omitir url con "++" y "--"', t => {
         'user',
         'http://placehold.it/200x200/t=++hello leonardo++ jorgeepunan-- https://i.pinimg.com/564x/7c/23/0c/7c230c754f30d6a44ed7a4aad9025a94--meme.jpg'
       ],
-      ['hubot', 'l.eonardo ahora tiene 1 puntos de karma.'],
-      ['hubot', 'j.orgeepunan ahora tiene -1 puntos de karma.']
+      ['hubot', 'leonardo ahora tiene 1 puntos de karma.'],
+      ['hubot', 'jorgeepunan ahora tiene -1 puntos de karma.']
     ])
     t.end()
   }, 500)
@@ -224,7 +199,7 @@ test.cb.serial('No Debe aplicar karma', t => {
   }, 500)
 })
 test.cb.serial('No Debe aplicar karma', t => {
-  t.context.room.user.say('leonardo', 'leonardo++')
+  t.context.room.user.say('leonardo', 'leonardo++', { id: 5 })
   setTimeout(() => {
     t.deepEqual(t.context.room.messages, [
       ['leonardo', 'leonardo++'],
@@ -248,16 +223,16 @@ test.cb.serial('No Debe quitar karma para excepciones explícitas', t => {
   }, 500)
 })
 test.cb.serial('Aplica karma solo si es menos a uno mismo', t => {
-  t.context.room.user.say('ienc', 'ienc--')
+  t.context.room.user.say('ienc', 'ienc--', { id: 10 })
   setTimeout(() => {
-    t.deepEqual(t.context.room.messages, [['ienc', 'ienc--'], ['hubot', 'i.enc ahora tiene -1 puntos de karma.']])
+    t.deepEqual(t.context.room.messages, [['ienc', 'ienc--'], ['hubot', 'ienc ahora tiene -1 puntos de karma.']])
     t.end()
   }, 500)
 })
 test.cb.serial('No Debe aplicar karma', t => {
-  t.context.room.user.say('user', 'leon++')
+  t.context.room.user.say('user', 'gmq++')
   setTimeout(() => {
-    t.deepEqual(t.context.room.messages[0], ['user', 'leon++'])
+    t.deepEqual(t.context.room.messages[0], ['user', 'gmq++'])
     t.regex(t.context.room.messages[1][1], /¡No abuses! Intenta en \d+ minutos./)
     t.end()
   }, 500)
@@ -275,9 +250,10 @@ test.cb.serial('Debe mostrar url', t => {
 test.cb.serial('Debe mostrar puntaje y url', t => {
   t.context.room.user.say('user', 'karma leonardo')
   setTimeout(() => {
+    t.deepEqual(t.context.room.messages[0], ['user', 'karma leonardo'])
     t.deepEqual(t.context.room.messages, [
       ['user', 'karma leonardo'],
-      ['hubot', `l.eonardo tiene 0 puntos de karma. Más detalles en: ${hubotHost}/hubot/karma/log/leonardo`]
+      ['hubot', 'leonardo tiene 0 puntos de karma. Más detalles en: http://localhost:8080/hubot/karma/log/5']
     ])
     t.end()
   }, 500)
@@ -297,7 +273,7 @@ test.cb.serial('Debe resetar', t => {
   setTimeout(() => {
     t.deepEqual(t.context.room.messages, [
       ['hector', 'karma reset leonardo'],
-      ['hubot', 'l.eonardo ha quedado libre de toda bendición o pecado.']
+      ['hubot', 'leonardo ha quedado libre de toda bendición o pecado.']
     ])
     t.end()
   }, 500)

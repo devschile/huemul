@@ -1,4 +1,4 @@
-function theme(title = 'Karma', description = '', content = null) {
+function theme (title = 'Karma', description = '', content = null) {
   return `
 <html>
 <head>

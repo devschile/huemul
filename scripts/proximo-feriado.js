@@ -17,43 +17,43 @@
 // Co-Author:
 //   @jorgeepunan
 
-function days_diff(now, date) {
-  var date1 = new Date(date + 'T00:00:00-04:00'),
-    date2 = new Date(now + 'T00:00:00-04:00'),
-    timeDiff = Math.abs(date2.getTime() - date1.getTime()),
-    diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24))
+function daysDiff (now, date) {
+  var date1 = new Date(date + 'T00:00:00-04:00')
+  var date2 = new Date(now + 'T00:00:00-04:00')
+  var timeDiff = Math.abs(date2.getTime() - date1.getTime())
+  var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24))
 
   return diffDays
 }
 
-function humanizeMonth(month) {
-  var month = month - 1,
-    monthNames = [
-      'Enero',
-      'Febrero',
-      'Marzo',
-      'Abril',
-      'Mayo',
-      'Junio',
-      'Julio',
-      'Agosto',
-      'Sedtiembre',
-      'Octubre',
-      'Noviembre',
-      'Diciembre'
-    ]
+function humanizeMonth (month) {
+  const monthNumber = month - 1
+  const monthNames = [
+    'Enero',
+    'Febrero',
+    'Marzo',
+    'Abril',
+    'Mayo',
+    'Junio',
+    'Julio',
+    'Agosto',
+    'Sedtiembre',
+    'Octubre',
+    'Noviembre',
+    'Diciembre'
+  ]
 
-  return monthNames[month]
+  return monthNames[monthNumber]
 }
 
-function humanizeDay(day) {
+function humanizeDay (day) {
   var dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
 
   return dayNames[day]
 }
 
-module.exports = function(robot) {
-  robot.respond(/pr(o|ó)ximo feriado/i, function(msg) {
+module.exports = function (robot) {
+  robot.respond(/pr(o|ó)ximo feriado/i, function (msg) {
     var today = new Date(
       [
         new Date().getFullYear(),
@@ -61,25 +61,25 @@ module.exports = function(robot) {
         ('0' + new Date().getDate()).slice(-2)
       ].join('-') + 'T00:00:00-04:00'
     )
-    robot.http('https://www.feriadosapp.com/api/holidays.json').get()(function(err, res, body) {
+    robot.http('https://www.feriadosapp.com/api/holidays.json').get()(function (err, res, body) {
       if (err || res.statusCode !== 200) {
         return robot.emit('error', err || new Error(`Status code ${res.statusCode}`), msg, 'proximo-feriado')
       }
-      var ok = false,
-        body = JSON.parse(body)
+      var ok = false
+      var bodyParsed = JSON.parse(body)
 
-      body.data.forEach(function(holiday, index) {
-        var date = new Date(holiday.date + 'T00:00:00-04:00'),
-          humanDate = holiday.date.split('-'),
-          humanDay = humanDate[2].replace(/^0+/, ''),
-          humanMonth = humanDate[1],
-          humanWeekDay = humanizeDay(date.getDay()),
-          message = holiday.title + ' (_' + holiday.extra.toLowerCase() + '_)'
+      bodyParsed.data.forEach(function (holiday) {
+        var date = new Date(holiday.date + 'T00:00:00-04:00')
+        var humanDate = holiday.date.split('-')
+        var humanDay = humanDate[2].replace(/^0+/, '')
+        var humanMonth = humanDate[1]
+        var humanWeekDay = humanizeDay(date.getDay())
+        var message = holiday.title + ' (_' + holiday.extra.toLowerCase() + '_)'
 
-        if (ok == false && date.getTime() >= today.getTime()) {
+        if (ok === false && date.getTime() >= today.getTime()) {
           ok = true
 
-          var dias = days_diff(
+          var dias = daysDiff(
             [today.getFullYear(), ('0' + (today.getMonth() + 1)).slice(-2), ('0' + today.getDate()).slice(-2)].join(
               '-'
             ),

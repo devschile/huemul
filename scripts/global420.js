@@ -32,8 +32,8 @@ var jokes = [
   '¿Quién tiene quequitos mágicos?'
 ]
 
-module.exports = function(huemul) {
-  huemul.respond(/420/i, function(res) {
+module.exports = function (huemul) {
+  huemul.respond(/420/i, function (res) {
     var info = global420.next420()
     var message = ''
     var places = ''

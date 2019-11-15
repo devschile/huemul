@@ -21,13 +21,13 @@ const LANGUAGES = {
   italiano: 'it'
 }
 
-var detectLanguage = function(phrase) {
+var detectLanguage = function (phrase) {
   const languageDetected = Object.keys(LANGUAGES).filter(language => phrase.indexOf(`en ${language}`) !== -1)
   return languageDetected.length > 0 ? languageDetected[0] : false
 }
 
-module.exports = function(robot) {
-  robot.respond(/pronuncia(.*)/i, function(msg) {
+module.exports = function (robot) {
+  robot.respond(/pronuncia(.*)/i, function (msg) {
     if (robot.golden.isGold(msg.message.user.name)) {
       const baseURL = 'https://forvo.com/search'
       const palabra = msg.match[1].split(' ')[1]
@@ -43,15 +43,15 @@ module.exports = function(robot) {
 
       msg.send(`Buscando pronunciación a *${palabra}* en ${language || DEFAULT_LANGUAGE}... :loading:`)
 
-      robot.http(url).get()(function(err, res, body) {
+      robot.http(url).get()(function (err, res, body) {
+        if (err) console.error(err)
         const $ = cheerio.load(body)
-        const title = $('.title_holder h1')
         const results = $('.title_holder .more')
         const resultQty = results.text().split(' ')[0]
-        let resultados = []
+        const resultados = []
 
         if (resultQty > 0) {
-          $('.search_words ul li.list-words ul li').each(function() {
+          $('.search_words ul li.list-words ul li').each(function () {
             const resultWrd = $(this)
               .find('.word')
               .text()

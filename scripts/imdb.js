@@ -15,16 +15,6 @@
 
 const apiKey = process.env.THEMOVIEDB_API_KEY
 
-function checkValue(value) {
-  const emptyMsg = ['NA', 'N/A']
-
-  if (value != null && emptyMsg.includes(value) === false) {
-    return true
-  }
-
-  return false
-}
-
 module.exports = robot => {
   if (!apiKey) {
     robot.logger.warning('The THEMOVIEDB_API_KEY environment variable not set.')
@@ -34,7 +24,6 @@ module.exports = robot => {
     const str = msg.match[2]
     const type = msg.match[1]
     let title = str
-    let year = ''
     let kind = ''
 
     if (type === 'movie') {
@@ -54,7 +43,6 @@ module.exports = robot => {
         .slice(0, -5)
         .split(' ')
         .join('+')
-      year = str.slice(-4)
     } else {
       title = str.split(' ').join('+')
     }
@@ -73,7 +61,7 @@ module.exports = robot => {
         } else {
           let movieInfo = `Resultados para ${str}: :cabrita:\n`
 
-          movie.results.forEach(function(e) {
+          movie.results.forEach(function (e) {
             if (kind === 'movie') {
               movieInfo += `- ${e.title} (${e.release_date}): ${e.vote_average} puntos\n`
             } else if (kind === 'tv') {

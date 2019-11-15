@@ -117,7 +117,7 @@ const quotes = [
   { quote: 'Ganar no lo es todo, pero el deseo de ganar si lo es.', author: 'Vince Lombardi' }
 ]
 
-module.exports = function(robot) {
+module.exports = function (robot) {
   return robot.respond(/una cita/i, msg => {
     /**
      * @param {string} iconUrl

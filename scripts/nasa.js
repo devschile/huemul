@@ -17,7 +17,7 @@
 var url = 'https://api.nasa.gov/planetary/apod'
 var apikey = 'fCSASHvV7aQWommjx56XrfPwijEpHPeDkbHIPySi'
 
-function currentDate() {
+function currentDate () {
   var today = new Date()
   var dd = today.getDate()
   var mm = today.getMonth() + 1
@@ -29,16 +29,15 @@ function currentDate() {
   if (mm < 10) {
     mm = '0' + mm
   }
-  var today = yyyy + '-' + mm + '-' + dd
-  return today
+  return yyyy + '-' + mm + '-' + dd
 }
 
-module.exports = function(robot) {
-  robot.respond(/foto del d[ií]a/i, function(res) {
+module.exports = function (robot) {
+  robot.respond(/foto del d[ií]a/i, function (res) {
     var fullURL = url + '?api_key=' + apikey
 
-    robot.http(fullURL).get()(function(error, response, body) {
-      if (!error && response.statusCode == 200) {
+    robot.http(fullURL).get()(function (error, response, body) {
+      if (!error && response.statusCode === 200) {
         var data = JSON.parse(body)
 
         res.send(data.title + ' [' + currentDate() + ']')

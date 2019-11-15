@@ -15,68 +15,67 @@
 //   @carsonmcdonald
 //   @drdamour
 
-
-const zlib = require('zlib');
+const zlib = require('zlib')
 
 // API keys are public for Stackapps
-let hubot_stackapps_apikey = 'zprHb6)163sIQewYlxUQgw((';
+const hubotStackappsApikey = 'zprHb6)163sIQewYlxUQgw(('
 
 module.exports = robot => {
-  return robot.respond(/sosearch( me)? (.*)/i, function(msg) {
-    let re = RegExp("(.*) -tags (.*)", "i");
-    let opts = msg.match[2].match(re);
+  return robot.respond(/sosearch( me)? (.*)/i, function (msg) {
+    const re = RegExp('(.*) -tags (.*)', 'i')
+    const opts = msg.match[2].match(re)
 
     if (opts != null) {
-      return soSearch(msg, opts[1], opts[2].split(','));
+      return soSearch(msg, opts[1], opts[2].split(','))
     } else {
-      return soSearch(msg, msg.match[2], []);
+      return soSearch(msg, msg.match[2], [])
     }
-});
-};
+  })
+}
 
-var soSearch = function(msg, search, tags) {
-
-  let data = "";
-  return msg.http("https://api.stackexchange.com/2.2/search")
+var soSearch = function (msg, search, tags) {
+  let data = ''
+  return msg.http('https://api.stackexchange.com/2.2/search')
     .query({
-      site: "stackoverflow",
+      site: 'stackoverflow',
       intitle: search,
-      key: hubot_stackapps_apikey,
+      key: hubotStackappsApikey,
       tagged: tags.join(';'),
-      filter: "!9YdnSQVoS", // add total to response,
-      sort: "relevance"}).get( (err, req)=>
-      req.addListener("response", function(res){
-        let output = res;
+      filter: '!9YdnSQVoS', // add total to response,
+      sort: 'relevance'
+    }).get((err, req) => {
+      if (err) console.log(err)
+      req.addListener('response', function (res) {
+        let output = res
 
-        //pattern stolen from http://stackoverflow.com/questions/10207762/how-to-use-request-or-http-module-to-read-gzip-page-into-a-string
+        // pattern stolen from http://stackoverflow.com/questions/10207762/how-to-use-request-or-http-module-to-read-gzip-page-into-a-string
         if (res.headers['content-encoding'] === 'gzip') {
-          output = zlib.createGunzip();
-          res.pipe(output);
+          output = zlib.createGunzip()
+          res.pipe(output)
         }
 
-        output.on('data', d=> data += d.toString('utf-8'));
+        output.on('data', d => { data += d.toString('utf-8') })
 
-        return output.on('end', function(){
-          let parsedData = JSON.parse(data);
+        return output.on('end', function () {
+          const parsedData = JSON.parse(data)
           if (parsedData.error) {
-            msg.send(`Error searching stack overflow: ${parsedData.error.message}`);
-            return;
+            msg.send(`Error searching stack overflow: ${parsedData.error.message}`)
+            return
           }
 
           if (parsedData.total > 0) {
-            let qs = Array.from(parsedData.items.slice(0, 6)).map((question) =>
-              `http://www.stackoverflow.com/questions/${question.question_id} - ${question.title}`);
-            if ((parsedData.total-5) > 0) {
-              qs.push(`${parsedData.total-5} more...`);
+            const qs = Array.from(parsedData.items.slice(0, 6)).map((question) =>
+              `http://www.stackoverflow.com/questions/${question.question_id} - ${question.title}`)
+            if ((parsedData.total - 5) > 0) {
+              qs.push(`${parsedData.total - 5} more...`)
             }
             return Array.from(qs).map((ans) =>
-              msg.send(ans));
+              msg.send(ans))
           } else {
-            return msg.reply("No questions found matching that search.");
+            return msg.reply('No questions found matching that search.')
           }
-      });
-    })
-    )();
-};
-
-
+        })
+      })
+    }
+    )()
+}

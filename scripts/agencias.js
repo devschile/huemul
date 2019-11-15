@@ -67,7 +67,7 @@ module.exports = robot => {
     res.send(`Go to ${hubotHost}/agencias/all`)
   })
 
-  robot.router.use(express['static'](path.join(__dirname, '..', 'public')))
+  robot.router.use(express.static(path.join(__dirname, '..', 'public')))
   robot.router.set('views', path.join(__dirname, '..', 'views'))
   robot.router.set('view engine', 'pug')
 
@@ -138,9 +138,9 @@ module.exports = robot => {
       .http('https://id.heroku.com/oauth/token')
       .header('Content-Type', 'application/x-www-form-urlencoded')
       .post(data)((err, resp, body) => {
-      if (err) return res.redirect('/agencias/all')
-      body = JSON.parse(body)
-      res.redirect(`/agencias/all?token=${body.access_token}`)
-    })
+        if (err) return res.redirect('/agencias/all')
+        body = JSON.parse(body)
+        res.redirect(`/agencias/all?token=${body.access_token}`)
+      })
   })
 }

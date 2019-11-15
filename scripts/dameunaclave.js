@@ -15,8 +15,8 @@
 
 var generatePassword = require('password-generator')
 
-module.exports = function(robot) {
-  robot.respond(/dame una (clave|password|contraseña)( [0-9]{1,2})?/i, function(msg) {
+module.exports = function (robot) {
+  robot.respond(/dame una (clave|password|contraseña)( [0-9]{1,2})?/i, function (msg) {
     var length, password, resp
     length = 10
 

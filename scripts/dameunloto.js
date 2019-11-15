@@ -17,8 +17,8 @@ const MAX_NUMBER = 41
 const lotoNumbers = [...Array(MAX_NUMBER).keys()].map(i => i + 1)
 
 const getRandomLotoNumbers = lotoNumbers => {
-  let lotoNumbersCopy = lotoNumbers.concat([])
-  let winningNumbers = []
+  const lotoNumbersCopy = lotoNumbers.concat([])
+  const winningNumbers = []
   for (let i = 0; i < 6; i++) {
     const randomIndex = Math.floor(Math.random() * lotoNumbersCopy.length)
     const winningNumber = lotoNumbersCopy[randomIndex]

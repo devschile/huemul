@@ -14,8 +14,7 @@ const Raven = require('raven')
 
 module.exports = robot => {
   if (!process.env.SENTRY_DSN) {
-    robot.logger.warning(
-      'The SENTRY_DSN environment variable not set. Sentry not configured.')
+    robot.logger.warning('The SENTRY_DSN environment variable not set. Sentry not configured.')
   }
 
   Raven.config().install()
@@ -31,14 +30,14 @@ module.exports = robot => {
             username: res.message.user.name,
             email: res.message.user.email
           },
-          script
+          script: null
         }
         if (scriptName) context.script = scriptName
         Raven.setContext(context)
       }
     }
     const room = process.env.SENTRY_CHANNEL || '#random'
-    robot.send({room: room}, `${prefix}An error has occurred: \`${err.message}\``)
+    robot.send({ room: room }, `${prefix}An error has occurred: \`${err.message}\``)
     Raven.captureException(err)
   })
 }

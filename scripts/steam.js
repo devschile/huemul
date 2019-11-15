@@ -18,7 +18,7 @@ const cheerio = require('cheerio')
 const { numberToCLPFormater } = require('numbertoclpformater')
 
 const commands = [
-  `Comandos de Steam:`,
+  'Comandos de Steam:',
   '`huemul steam daily` - Muestra la oferta del día.',
   '`huemul steam [Nombre Juego]` - Muestra información básica de un juego.'
 ]
@@ -44,7 +44,7 @@ module.exports = robot => {
       const $ = cheerio.load(body)
       const games = $('.search_result_row')
         .slice(0, 1)
-        .map(function() {
+        .map(function () {
           return $(this).attr('data-ds-appid')
         })
         .get()
@@ -102,13 +102,13 @@ module.exports = robot => {
         const desc = game.short_description
         const name = game.name
         const genres = game.genres.map(el => el.description).join(', ')
-        //sugar
+        // sugar
         const meta = !game.metacritic ? 0 : game.metacritic.score
-        //price process
+        // price process
         const itsfree = game.is_free
         const price = itsfree ? 0 : game.price_overview
         const final = !game.release_date.coming_soon ? price.final / 100 : 0
-        //Important!
+        // Important!
         const dev = game.developers
         const editor = game.publishers
         const release = game.release_date.coming_soon ? 'Coming Soon' : game.release_date.date
@@ -148,7 +148,7 @@ module.exports = robot => {
       msg.send(text)
     } else {
       msg.send('Actualmente _Steam_ no responde.')
-      robot.emit('error', err || new Error(`Status code ${res.statusCode}`), msg, 'steam')
+      robot.emit('error', err, msg, 'steam')
     }
   }
 
@@ -179,10 +179,10 @@ module.exports = robot => {
       .then(getDesc)
       .then(data => {
         if (data.type !== 'game') {
-          return msg.send(`¡Cuek!, no encontré el juego`)
+          return msg.send('¡Cuek!, no encontré el juego')
         }
-        let meta = data.meta === 0 ? 'No Registra' : data.meta
-        let genres = data.genres
+        const meta = data.meta === 0 ? 'No Registra' : data.meta
+        const genres = data.genres
         const fields = [
           `Nombre del Juego: *${data.name}*`,
           `Desarrollador: *${data.dev}*`,

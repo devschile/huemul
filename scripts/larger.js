@@ -20,20 +20,19 @@ const apiKey = process.env.LARGERIO_API_KEY
 
 module.exports = robot => {
   robot.respond(/larger (.*)/i, res => {
-    let siteUrl = res.match[1]
+    const siteUrl = res.match[1]
 
     robot.http(`${url}search/key/${apiKey}?domain=${siteUrl}`).get()((error, response, body) => {
-      if (!error && response.statusCode == 200) {
-        let data = JSON.parse(body)
-        let alexa = data.alexa
-        let info = data.apps
-        let _regalos = new Array()
+      if (!error && response.statusCode === 200) {
+        const data = JSON.parse(body)
+        const info = data.apps
+        const _regalos = []
 
         for (let i = 0; i < info.length; i++) {
           _regalos.push(` - ${data.apps[i].name}`)
         }
 
-        let msg = `El sitio ${data.url} utiliza las siguentes tecnologías:\n${_regalos.join('\n')}`
+        const msg = `El sitio ${data.url} utiliza las siguentes tecnologías:\n${_regalos.join('\n')}`
 
         res.send(msg)
       } else {

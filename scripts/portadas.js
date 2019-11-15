@@ -13,7 +13,7 @@
 
 const moment = require('moment')
 const whilst = require('whilst')
-const cheerio = require('cheerio')
+// const cheerio = require('cheerio')
 
 const endpointHxh = 'http://www.hoyxhoy.cl/endpoints/for-soy.php?action=get-latest&size=550'
 
@@ -284,7 +284,7 @@ const sendPortadaDate = (res, date) => {
     sameElse: '[del] DD/MM/YYYY'
   })
   // Solo se muestra la fecha de la portada si no es del dia actual
-  portadaDate.indexOf('hoy a las') === -1 ? res.send(`Esta portada es ${portadaDate}`) : undefined
+  portadaDate.indexOf('hoy a las') === -1 && res.send(`Esta portada es ${portadaDate}`)
 }
 
 const getPortada = (res, diario) => {
@@ -305,34 +305,34 @@ const getPortada = (res, diario) => {
             .http(testUrl)
             .timeout(2000)
             .get()((err, response, body) => {
-            if (err) return reject(err)
-            switch (response.statusCode) {
-              case 404:
-                daysPast++
-                resolve(testUrl)
-                break
-              case 200:
-                ready = false
-                if (testUrl === endpointHxh) {
-                  try {
-                    var jsonHxh = JSON.parse(body)
-                    testUrl = jsonHxh[0].esPortadaFalsa || diario.forcePortada ? jsonHxh[3].img : jsonHxh[0].img
-                    const dateFromHxh = testUrl && testUrl.split('/')[4]
-                    dateFromHxh && sendPortadaDate(res, moment(dateFromHxh, 'DDMMYY').toDate())
-                    resolve(testUrl)
-                  } catch (err) {
-                    reject(err)
-                  }
-                } else {
-                  sendPortadaDate(res, fecha)
+              if (err) return reject(err)
+              switch (response.statusCode) {
+                case 404:
+                  daysPast++
                   resolve(testUrl)
-                }
-                break
-              default:
-                resolve()
-                break
-            }
-          })
+                  break
+                case 200:
+                  ready = false
+                  if (testUrl === endpointHxh) {
+                    try {
+                      var jsonHxh = JSON.parse(body)
+                      testUrl = jsonHxh[0].esPortadaFalsa || diario.forcePortada ? jsonHxh[3].img : jsonHxh[0].img
+                      const dateFromHxh = testUrl && testUrl.split('/')[4]
+                      dateFromHxh && sendPortadaDate(res, moment(dateFromHxh, 'DDMMYY').toDate())
+                      resolve(testUrl)
+                    } catch (err) {
+                      reject(err)
+                    }
+                  } else {
+                    sendPortadaDate(res, fecha)
+                    resolve(testUrl)
+                  }
+                  break
+                default:
+                  resolve()
+                  break
+              }
+            })
         })
       }
     }

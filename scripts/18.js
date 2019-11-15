@@ -29,7 +29,7 @@ module.exports = robot => {
 
     const daysleft = eventDate.diff(todaysDate, 'days')
     if (daysleft === 0) {
-      msg.send(`:flag-cl: ¡Hoy es 18! ¡A emborracharte!`)
+      msg.send(':flag-cl: ¡Hoy es 18! ¡A emborracharte!')
     } else {
       msg.send(`:flag-cl: Quedan ${daysleft} días pa'l 18 de septiembre.`)
       msg.send(`:huemul-huaso: ${msg.random(frases)}`)

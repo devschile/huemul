@@ -20,6 +20,7 @@ module.exports = robot => {
     const searchUrl = `${url}${keyword}`
 
     robot.http(searchUrl).get()((err, res, body) => {
+      if (err) console.error(err)
       if (!body.includes('Error')) {
         const data = JSON.parse(body)
         msg.send(data.emoji)

@@ -14,19 +14,19 @@
 
 var phantom = require('phantom')
 var cheerio = require('cheerio')
-var _ph, _page, _outObj
+var _ph, _page
 
-function textPopulated() {
+function textPopulated () {
   return _page
-    .evaluate(function() {
+    .evaluate(function () {
       return document.querySelector('#app').outerHTML
     })
-    .then(function(html) {
+    .then(function (html) {
       return html
     })
 }
 
-function waitState(state, timeout) {
+function waitState (state, timeout) {
   // timeout in seconds is optional
 
   var limitTime = timeout * 1000 || 20000
@@ -35,11 +35,11 @@ function waitState(state, timeout) {
 
   return wait()
 
-  function wait() {
+  function wait () {
     return state()
-      .then(function(result) {
+      .then(function (result) {
         if (result) {
-          return
+          // Nothing happends
         } else if (new Date() - startTime > limitTime) {
           var errorMessage = 'Timeout state: ' + state.name
           throw new Error(errorMessage)
@@ -47,21 +47,21 @@ function waitState(state, timeout) {
           return sleep(50).then(wait)
         }
       })
-      .catch(function(error) {
+      .catch(function (error) {
         throw error
       })
   }
 }
 
-module.exports = function(robot) {
-  robot.respond(/knasta (.*)/i, function(msg) {
+module.exports = function (robot) {
+  robot.respond(/knasta (.*)/i, function (msg) {
     msg.send('Buscando en Knasta... :gift:')
 
     var busqueda = msg.match[1]
     var domain = 'http://knasta.cl/results/'
     var url = domain + busqueda.split(' ').join('%20')
 
-    robot.http(url).get()(function(err, res, body) {
+    robot.http(url).get()(function () {
       phantom
         .create()
         .then(ph => {
@@ -72,7 +72,7 @@ module.exports = function(robot) {
           _page = page
           return _page.open(url)
         })
-        .then(status => {
+        .then(() => {
           return waitState(textPopulated, 3)
         })
         .then(() => {
@@ -83,7 +83,7 @@ module.exports = function(robot) {
           var resultados = []
 
           if (!$('.fa-meh-o').length) {
-            $('.item.panel.panel-default').each(function() {
+            $('.item.panel.panel-default').each(function () {
               var title = $(this)
                 .find('.title')
                 .text()
@@ -114,7 +114,7 @@ module.exports = function(robot) {
                 text += 'Otros resultados en: *<' + url + '|knasta>*\n'
               }
 
-              //msg.send(text); // test local, descomentar y comentar las siguientes 2 líneas
+              // msg.send(text); // test local, descomentar y comentar las siguientes 2 líneas
               var options = { unfurl_links: false, as_user: true }
               robot.adapter.client.web.chat.postMessage(msg.message.room, text, options)
             } else {

@@ -13,13 +13,13 @@
 // Author:
 //   @jorgeepunan
 
-function batman() {
+function batman () {
   return Array(16).join('wat' - 1) + ' Batman! ~ :huemul:'
 }
 
-module.exports = function(robot) {
-  robot.hear(/NaN/, function(res) {
-    msg = batman()
+module.exports = function (robot) {
+  robot.hear(/NaN/, function (res) {
+    const msg = batman()
     res.send(msg)
   })
 }

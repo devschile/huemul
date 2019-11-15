@@ -53,7 +53,7 @@ module.exports = robot => {
   /**
    * @returns {Promise<object>}
    */
-  function getQuote() {
+  function getQuote () {
     const url = 'https://api.graph.cool/simple/v1/cjitlaam22g9g0108oo6g43b8/graphql'
     const query = `{
       tweet {
@@ -68,18 +68,18 @@ module.exports = robot => {
         .http(url)
         .header('Content-Type', 'application/json')
         .post(data)((err, res, body) => {
-        if (err) return reject(err)
-        try {
-          const json = JSON.parse(body)
-          if (json.data && json.data.tweet.result) {
-            resolve(json.data.tweet)
-          } else {
-            resolve(null)
+          if (err) return reject(err)
+          try {
+            const json = JSON.parse(body)
+            if (json.data && json.data.tweet.result) {
+              resolve(json.data.tweet)
+            } else {
+              resolve(null)
+            }
+          } catch (err) {
+            reject(err)
           }
-        } catch (err) {
-          reject(err)
-        }
-      })
+        })
     })
   }
 }

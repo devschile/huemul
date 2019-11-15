@@ -15,7 +15,7 @@
 
 const querystring = require('querystring')
 
-module.exports = function(robot) {
+module.exports = function (robot) {
   if (!process.env.GOOGLE_MAPS_API_KEY) {
     robot.logger.warning('The GOOGLE_MAPS_API_KEY environment variable not set.')
   }
@@ -44,7 +44,7 @@ module.exports = function(robot) {
           if (err) {
             reject(err)
           } else if (resp.statusCode !== 200) {
-            reject(new Error(`Ìnvalid statusCode: ${statusCode}`))
+            reject(new Error(`Ìnvalid statusCode: ${resp.statusCode}`))
           } else if (body.status !== 'OK') {
             reject(new Error(body.error_message))
           } else {
@@ -88,7 +88,8 @@ module.exports = function(robot) {
         if (resp.headers['x-staticmap-api-warning'] === 'Error geocoding: center') {
           reject(new Error(resp.headers['x-staticmap-api-warning']))
         } else if (resp.statusCode !== 200 || err) {
-          reject(new Error(`Ìnvalid statusCode: ${statusCode}`))
+          const error = resp.statusCode !== 200 ? resp.statusCode : err
+          reject(new Error(`Ìnvalid statusCode: ${error}`))
         } else if (err) {
           reject(err)
         } else {

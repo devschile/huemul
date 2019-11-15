@@ -8,7 +8,7 @@ const helper = new Helper('../scripts/recetas.js')
 const sleep = m => new Promise(resolve => setTimeout(() => resolve(), m))
 
 test.beforeEach(t => {
-  t.context.room = helper.createRoom({httpd: false})
+  t.context.room = helper.createRoom({ httpd: false })
 })
 
 test.afterEach(t => t.context.room.destroy())
@@ -16,7 +16,7 @@ test.afterEach(t => t.context.room.destroy())
 test('Recetas de empanada', async t => {
   nock('https://www.recetasgratis.net')
     .get('/busqueda')
-    .query({q: 'empanadas'})
+    .query({ q: 'empanadas' })
     .replyWithFile(200, path.join(__dirname, 'html', 'recetas-200.html'))
   t.context.room.user.say('user', 'hubot recetas empanadas')
   await sleep(500)

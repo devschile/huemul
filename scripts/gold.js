@@ -21,8 +21,7 @@ module.exports = robot => {
    */
   const getGoldUsers = () => {
     const goldUsers = JSON.parse(robot.brain.get('gold_users') || '{}')
-    return Object.keys(goldUsers)
-      .map(key => ({key: key, data: goldUsers[key]}))
+    return Object.keys(goldUsers).map(key => ({ key: key, data: goldUsers[key] }))
   }
 
   /**
@@ -43,13 +42,16 @@ module.exports = robot => {
     const goldUsers = JSON.parse(robot.brain.get('gold_users') || '{}')
     const now = new Date()
     const expireDate = new Date(data.expire)
-    const expire = expireDate.toISOString().split('T').shift()
+    const expire = expireDate
+      .toISOString()
+      .split('T')
+      .shift()
     if (now <= expireDate) {
-      return {expired: false, date: expire}
+      return { expired: false, date: expire }
     } else {
       delete goldUsers[key]
       robot.brain.set('gold_users', JSON.stringify(goldUsers))
-      return {expired: true, date: expire}
+      return { expired: true, date: expire }
     }
   }
 
@@ -61,12 +63,12 @@ module.exports = robot => {
    * @param  {String} key
    * @return {Void}
    */
-  const addUser = (name, days, channelId=null, key=null) => {
+  const addUser = (name, days, channelId = null, key = null) => {
     const goldUsers = JSON.parse(robot.brain.get('gold_users') || '{}')
     const diff = 1000 * 60 * 60 * 24 * days
     let now
     if (Object.keys(goldUsers).includes(name)) {
-      date = new Date(goldUsers[name].expire)
+      const date = new Date(goldUsers[name].expire)
       if (Object.prototype.toString.call(date) === '[object Date]') {
         if (!isNaN(date.getTime())) {
           now = date
@@ -75,7 +77,7 @@ module.exports = robot => {
     }
     if (!now) now = new Date()
     const expire = new Date(now.getTime() + diff)
-    goldUsers[name] = {user: name, expire: expire}
+    goldUsers[name] = { user: name, expire: expire }
     let message = ':clap2: eres miembro golden :monea: por 1 mes!'
     if (key === null) {
       channelId = robot.adapter.client.rtm.dataStore.getChannelByName(process.env.GOLD_CHANNEL || '#random').id
@@ -84,7 +86,7 @@ module.exports = robot => {
       goldUsers[name].key = key
     }
     robot.brain.set('gold_users', JSON.stringify(goldUsers))
-    robot.send({room: channelId}, message)
+    robot.send({ room: channelId }, message)
   }
 
   class Golden {
@@ -119,7 +121,8 @@ module.exports = robot => {
   robot.respond(/gold list/i, res => {
     const users = getGoldUsers()
       .filter(result => !verifyExpireGold(result.key, result.data).expired)
-      .map(result => result.data.user).join(', ')
+      .map(result => result.data.user)
+      .join(', ')
     if (users === '') {
       res.send('No hay usuarios golden :monea:')
     } else {
@@ -178,13 +181,16 @@ module.exports = robot => {
           message += 'golden :monea:.\nEste mensaje fue enviado a todos los '
           message += 'administradores de DevsChile.'
           admins.split(',').forEach(admin => {
-            robot.send({room: admin}, message)
+            robot.send({ room: admin }, message)
           })
         }
       }
       res.send('Ok')
     } else {
-      robot.emit('error', new Error(`Se envió un request inválido con el siguiente email: ${req.body.email}`, null, 'gold'))
+      robot.emit(
+        'error',
+        new Error(`Se envió un request inválido con el siguiente email: ${req.body.email}`, null, 'gold')
+      )
       res.send('Error')
     }
   })

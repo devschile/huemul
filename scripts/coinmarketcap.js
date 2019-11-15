@@ -16,12 +16,12 @@
 
 const CLP = require('numbertoclpformater').numberToCLPFormater
 
-module.exports = function(robot) {
-  robot.respond(/(cmc|coinmarketcap) (.*)/i, function(msg) {
+module.exports = function (robot) {
+  robot.respond(/(cmc|coinmarketcap) (.*)/i, function (msg) {
     const currency = msg.match[2]
     const url = `https://api.coinmarketcap.com/v1/ticker/${currency}/?convert=CLP`
 
-    robot.http(url).get()(function(err, res, body) {
+    robot.http(url).get()(function (err, res, body) {
       if (robot.golden.isGold(msg.message.user.name)) {
         if (currency === 'help') {
           msg.send('Ejemplos de comando: \n * `huemul coinmarketcap bitcoin` \n * `huemul cmc htmlcoin`')

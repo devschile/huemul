@@ -22,8 +22,8 @@ var beneficios = [
   'Permisos para celebrar y compartir la :beerjs:'
 ]
 
-module.exports = function(robot) {
-  robot.respond(/un beneficio/gi, function(res) {
+module.exports = function (robot) {
+  robot.respond(/un beneficio/gi, function (res) {
     res.send(res.random(beneficios))
   })
 }

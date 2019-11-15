@@ -17,22 +17,8 @@
 // Author:
 //   :huemul:
 
-var mathjs = require("mathjs");
-
-module.exports = function(robot) {
-
-  robot.respond(/(calcula|convierte|math|conv)( me)? (.*)/i, function(msg) {
-    var error, error1, result;
-
-    try {
-      msg.send("DEPRECADO PORQUE TAMALO");
-
-    } catch (error) {
-
-      msg.send('No se ha podido ejecutar correctamente el cálculo.');
-
-    }
-
-  });
-
-};
+module.exports = function (robot) {
+  robot.respond(/(calcula|convierte|math|conv)( me)? (.*)/i, function (msg) {
+    msg.send('DEPRECADO PORQUE TAMALO')
+  })
+}

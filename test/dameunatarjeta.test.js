@@ -5,7 +5,6 @@ import path from 'path'
 import nock from 'nock'
 
 const helper = new Helper('../scripts/dameunatarjeta.js')
-const sleep = m => new Promise(resolve => setTimeout(() => resolve(), m))
 const nockIsDone = n =>
   new Promise(resolve => {
     const poller = setInterval(() => {

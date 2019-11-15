@@ -33,14 +33,14 @@ module.exports = robot => {
       if (data.length === 0) {
         msg.send('¿Seguro que ese es el nombre? ¡Tienes que elegir una serie que exista! :retard:')
       } else {
-        const show_name = data[0].show.name
-        const ep_link = data[0].show._links.nextepisode
+        const showName = data[0].show.name
+        const epLink = data[0].show._links.nextepisode
 
-        if (!ep_link) {
-          msg.send(show_name + ' no tiene más fechas! :llora:')
+        if (!epLink) {
+          msg.send(showName + ' no tiene más fechas! :llora:')
         } else {
           // Send request to the tvmaze episode API
-          robot.http(ep_link.href).get()((err, res, body) => {
+          robot.http(epLink.href).get()((err, res, body) => {
             if (err || res.statusCode !== 200) {
               return robot.emit('error', err || new Error(`Status code ${res.statusCode}`), msg, 'shows-countdown')
             }
@@ -50,11 +50,11 @@ module.exports = robot => {
             if (!data) {
               msg.send('¿Seguro que ese es el nombre? ¡Tienes que elegir una serie que exista! :retard:')
             } else {
-              const ep_name = data.name
-              const ep_date = data.airstamp
-              const ep_tag = +data.season + 'x' + data.number
+              const epName = data.name
+              const epDate = data.airstamp
+              const epTag = +data.season + 'x' + data.number
 
-              const distance = new Date(ep_date) - new Date()
+              const distance = new Date(epDate) - new Date()
               const _second = 1000
               const _minute = _second * 60
               const _hour = _minute * 60
@@ -66,7 +66,7 @@ module.exports = robot => {
               const seconds = Math.floor((distance % _minute) / _second)
               const count = days + 'd ' + hours + 'h ' + minutes + 'm y ' + seconds + 's :popcorn:'
               const result =
-                'El siguiente episodio de ' + show_name + ' (' + ep_tag + ': ' + ep_name + ') se estrena en ' + count
+                'El siguiente episodio de ' + showName + ' (' + epTag + ': ' + epName + ') se estrena en ' + count
 
               msg.send(result)
             }

@@ -1,0 +1,5 @@
+# Code owners for all files
+*       @devschile/org
+
+# Scripts owners
+scripts/quozio.js @lgaticaq

@@ -18,7 +18,7 @@
 //   @whitman
 
 class Reminders {
-  constructor(robot) {
+  constructor (robot) {
     this.robot = robot
     this.cache = []
     this.current_timeout = null
@@ -32,7 +32,7 @@ class Reminders {
     })
   }
 
-  add(reminder) {
+  add (reminder) {
     this.cache.push(reminder)
     this.cache.sort((a, b) => a.due - b.due)
     this.robot.brain.set('reminders', this.cache)
@@ -40,25 +40,25 @@ class Reminders {
     return this.queue()
   }
 
-  removeFirst() {
-    let reminder = this.cache.shift()
+  removeFirst () {
+    const reminder = this.cache.shift()
     this.robot.brain.set('reminders', this.cache)
     this.robot.brain.save()
     return reminder
   }
 
-  queue() {
+  queue () {
     if (this.current_timeout) {
       clearTimeout(this.current_timeout)
     }
     if (this.cache.length > 0) {
-      let now = new Date().getTime()
+      const now = new Date().getTime()
       while (this.cache.length !== 0 && !(this.cache[0].due > now)) {
         this.removeFirst()
       }
       if (this.cache.length > 0) {
-        let trigger = () => {
-          let reminder = this.removeFirst()
+        const trigger = () => {
+          const reminder = this.removeFirst()
           if (reminder) {
             this.robot.reply(
               reminder.msg_envelope,
@@ -82,13 +82,13 @@ class Reminders {
 }
 
 class Reminder {
-  constructor(msg_envelope, time, action) {
-    this.msg_envelope = msg_envelope
+  constructor (msgEnvelope, time, action) {
+    this.msg_envelope = msgEnvelope
     this.time = time
     this.action = action
     this.time.replace(/^\s+|\s+$/g, '')
 
-    let periods = {
+    const periods = {
       weeks: {
         value: 0,
         regex: 'semanas?'
@@ -111,9 +111,9 @@ class Reminder {
       }
     }
 
-    for (let period in periods) {
-      let pattern = new RegExp(`^.*?([\\d\\.]+)\\s*(?:(?:${periods[period].regex})).*$`, 'i')
-      let matches = pattern.exec(this.time)
+    for (const period in periods) {
+      const pattern = new RegExp(`^.*?([\\d\\.]+)\\s*(?:(?:${periods[period].regex})).*$`, 'i')
+      const matches = pattern.exec(this.time)
       if (matches) {
         periods[period].value = parseInt(matches[1])
       }
@@ -129,23 +129,23 @@ class Reminder {
       1000
   }
 
-  dueDate() {
-    let dueDate = new Date(this.due)
+  dueDate () {
+    const dueDate = new Date(this.due)
     return dueDate.toLocaleString()
   }
 }
 
 module.exports = robot => {
-  let reminders = new Reminders(robot)
+  const reminders = new Reminders(robot)
 
   robot.respond(
     /recu[eé]rdame en ((?:(?:\d+) (?:semanas?|dias?|horas?|hrs?|minutos?|mins?|segundos?|segs?)[ ,]*(?:and)? +)+)que tengo que (.*)/i,
-    function(msg) {
-      let time = msg.match[1]
-      let action = msg.match[2]
-      let envelope = Object.assign({}, msg.envelope)
+    function (msg) {
+      const time = msg.match[1]
+      const action = msg.match[2]
+      const envelope = Object.assign({}, msg.envelope)
       delete envelope.message.rawMessage
-      let reminder = new Reminder(envelope, time, action)
+      const reminder = new Reminder(envelope, time, action)
       reminders.add(reminder)
       msg.send(`Te recordaré que tienes que ${action} a las ${reminder.dueDate()}`)
     }

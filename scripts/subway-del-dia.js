@@ -24,8 +24,8 @@ const sandwiches = [
 ]
 const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
 
-module.exports = function(robot) {
-  robot.respond(/subway/i, function(res) {
+module.exports = function (robot) {
+  robot.respond(/subway/i, function (res) {
     const currentWeekDayNum = new Date().getDay()
     res.send(
       `Hoy *${days[currentWeekDayNum]}* el sandwich del día en todos los Subway es el *${

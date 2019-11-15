@@ -77,8 +77,8 @@ const parseEvents = (events, fallback = false) => {
     }, '')
 }
 
-module.exports = function(robot) {
-  robot.respond(/uoct|taco|tr(aá)nsito/i, function(msg) {
+module.exports = function (robot) {
+  robot.respond(/uoct|taco|tr(aá)nsito/i, function (msg) {
     const send = options => {
       if (['SlackBot', 'Room'].includes(robot.adapter.constructor.name)) {
         robot.adapter.client.web.chat.postMessage(msg.message.room, null, options)
@@ -87,7 +87,7 @@ module.exports = function(robot) {
       }
     }
 
-    function sendError(err, message, options) {
+    function sendError (err, message, options) {
       if (err) {
         robot.emit('error', err, msg, 'uoct-golden')
       }
@@ -158,7 +158,6 @@ module.exports = function(robot) {
       })
       .catch(err => {
         sendError(err, 'no se pudo obtener eventos', options)
-        return
       })
   })
 }
