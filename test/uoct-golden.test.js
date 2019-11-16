@@ -23,13 +23,13 @@ const payload = `{"data":[{
   "post_modified_gmt": "2019-10-12 17:28:26",
   "post_content_filtered": "",
   "post_parent": 0,
-  "guid": "http://www.uoct.cl/?post_type=estado_de_transito&#038;p=128527",
+  "guid": "https://www.uoct.cl/?post_type=estado_de_transito&#038;p=128527",
   "menu_order": 0,
   "post_type": "estado_de_transito",
   "post_mime_type": "",
   "comment_count": "0",
   "filter": "raw",
-  "url": "http://www.uoct.cl/estado_de_transito/a-las-1000-hrs-del-domingo-se-realizara-corrida-brooks-en-vitacura-habra-contenciones-y-desvios-detalles-del-recorrido-en-la-nota/",
+  "url": "https://www.uoct.cl/estado_de_transito/a-las-1000-hrs-del-domingo-se-realizara-corrida-brooks-en-vitacura-habra-contenciones-y-desvios-detalles-del-recorrido-en-la-nota/",
   "time": "12 · 10 · 2019 - 14:28"
 }]}`
 
@@ -91,7 +91,7 @@ test('UOCT - cuando no retorna eventos, se responde todo normal', async t => {
     isGold: () => true
   }
 
-  nock('http://www.uoct.cl')
+  nock('https://www.uoct.cl')
     .post('/wp/wp-admin/admin-ajax.php')
     .times(7)
     .reply(200, emptyPayload, { 'content-type': 'text/html; charset=UTF-8' })
@@ -114,11 +114,11 @@ test('UOCT - cuando hay un evento imprime correctamente', async t => {
     isGold: () => true
   }
 
-  nock('http://www.uoct.cl')
+  nock('https://www.uoct.cl')
     .post('/wp/wp-admin/admin-ajax.php', body => body.zone !== 'zona-norte')
     .times(6)
     .reply(200, emptyPayload, { 'content-type': 'text/html; charset=UTF-8' })
-  nock('http://www.uoct.cl')
+  nock('https://www.uoct.cl')
     .post('/wp/wp-admin/admin-ajax.php', body => body.zone === 'zona-norte')
     .reply(200, payload, { 'content-type': 'text/html; charset=UTF-8' })
 
@@ -131,7 +131,7 @@ test('UOCT - cuando hay un evento imprime correctamente', async t => {
       fallback:
         'Encontrado 1 resultado :bomb::fire:\n2019-10-12 14:28:26: A partir de las 10:00 hrs. de este domingo 13 se realizará Corrida Brooks en Vitacura. Habrá contenciones y desvíos. Detalles del recorrido en la nota.\n',
       text:
-        '<http://www.uoct.cl/estado_de_transito/a-las-1000-hrs-del-domingo-se-realizara-corrida-brooks-en-vitacura-habra-contenciones-y-desvios-detalles-del-recorrido-en-la-nota/|2019-10-12 14:28:26: A partir de las 10:00 hrs. de este domingo 13 se realizará Corrida Brooks en Vitacura. Habrá contenciones y desvíos. Detalles del recorrido en la nota.>\n',
+        '<https://www.uoct.cl/estado_de_transito/a-las-1000-hrs-del-domingo-se-realizara-corrida-brooks-en-vitacura-habra-contenciones-y-desvios-detalles-del-recorrido-en-la-nota/|2019-10-12 14:28:26: A partir de las 10:00 hrs. de este domingo 13 se realizará Corrida Brooks en Vitacura. Habrá contenciones y desvíos. Detalles del recorrido en la nota.>\n',
       title: 'Estado del tránsito'
     }
   ])
@@ -142,7 +142,7 @@ test('UOCT - cuando más de 5, solo muestra 5 ', async t => {
     isGold: () => true
   }
 
-  nock('http://www.uoct.cl')
+  nock('https://www.uoct.cl')
     .post('/wp/wp-admin/admin-ajax.php')
     .times(7)
     .reply(200, payload, { 'content-type': 'text/html; charset=UTF-8' })
@@ -156,7 +156,7 @@ test('UOCT - cuando más de 5, solo muestra 5 ', async t => {
       fallback:
         'Encontrados 7 resultados :bomb::fire:\n2019-10-12 14:28:26: A partir de las 10:00 hrs. de este domingo 13 se realizará Corrida Brooks en Vitacura. Habrá contenciones y desvíos. Detalles del recorrido en la nota.\n2019-10-12 14:28:26: A partir de las 10:00 hrs. de este domingo 13 se realizará Corrida Brooks en Vitacura. Habrá contenciones y desvíos. Detalles del recorrido en la nota.\n2019-10-12 14:28:26: A partir de las 10:00 hrs. de este domingo 13 se realizará Corrida Brooks en Vitacura. Habrá contenciones y desvíos. Detalles del recorrido en la nota.\n2019-10-12 14:28:26: A partir de las 10:00 hrs. de este domingo 13 se realizará Corrida Brooks en Vitacura. Habrá contenciones y desvíos. Detalles del recorrido en la nota.\n2019-10-12 14:28:26: A partir de las 10:00 hrs. de este domingo 13 se realizará Corrida Brooks en Vitacura. Habrá contenciones y desvíos. Detalles del recorrido en la nota.\n2019-10-12 14:28:26: A partir de las 10:00 hrs. de este domingo 13 se realizará Corrida Brooks en Vitacura. Habrá contenciones y desvíos. Detalles del recorrido en la nota.\n2019-10-12 14:28:26: A partir de las 10:00 hrs. de este domingo 13 se realizará Corrida Brooks en Vitacura. Habrá contenciones y desvíos. Detalles del recorrido en la nota.\n',
       text:
-        '<http://www.uoct.cl/estado_de_transito/a-las-1000-hrs-del-domingo-se-realizara-corrida-brooks-en-vitacura-habra-contenciones-y-desvios-detalles-del-recorrido-en-la-nota/|2019-10-12 14:28:26: A partir de las 10:00 hrs. de este domingo 13 se realizará Corrida Brooks en Vitacura. Habrá contenciones y desvíos. Detalles del recorrido en la nota.>\n<http://www.uoct.cl/estado_de_transito/a-las-1000-hrs-del-domingo-se-realizara-corrida-brooks-en-vitacura-habra-contenciones-y-desvios-detalles-del-recorrido-en-la-nota/|2019-10-12 14:28:26: A partir de las 10:00 hrs. de este domingo 13 se realizará Corrida Brooks en Vitacura. Habrá contenciones y desvíos. Detalles del recorrido en la nota.>\n<http://www.uoct.cl/estado_de_transito/a-las-1000-hrs-del-domingo-se-realizara-corrida-brooks-en-vitacura-habra-contenciones-y-desvios-detalles-del-recorrido-en-la-nota/|2019-10-12 14:28:26: A partir de las 10:00 hrs. de este domingo 13 se realizará Corrida Brooks en Vitacura. Habrá contenciones y desvíos. Detalles del recorrido en la nota.>\n<http://www.uoct.cl/estado_de_transito/a-las-1000-hrs-del-domingo-se-realizara-corrida-brooks-en-vitacura-habra-contenciones-y-desvios-detalles-del-recorrido-en-la-nota/|2019-10-12 14:28:26: A partir de las 10:00 hrs. de este domingo 13 se realizará Corrida Brooks en Vitacura. Habrá contenciones y desvíos. Detalles del recorrido en la nota.>\n<http://www.uoct.cl/estado_de_transito/a-las-1000-hrs-del-domingo-se-realizara-corrida-brooks-en-vitacura-habra-contenciones-y-desvios-detalles-del-recorrido-en-la-nota/|2019-10-12 14:28:26: A partir de las 10:00 hrs. de este domingo 13 se realizará Corrida Brooks en Vitacura. Habrá contenciones y desvíos. Detalles del recorrido en la nota.>\n<http://www.uoct.cl/estado_de_transito/a-las-1000-hrs-del-domingo-se-realizara-corrida-brooks-en-vitacura-habra-contenciones-y-desvios-detalles-del-recorrido-en-la-nota/|2019-10-12 14:28:26: A partir de las 10:00 hrs. de este domingo 13 se realizará Corrida Brooks en Vitacura. Habrá contenciones y desvíos. Detalles del recorrido en la nota.>\n<http://www.uoct.cl/estado_de_transito/a-las-1000-hrs-del-domingo-se-realizara-corrida-brooks-en-vitacura-habra-contenciones-y-desvios-detalles-del-recorrido-en-la-nota/|2019-10-12 14:28:26: A partir de las 10:00 hrs. de este domingo 13 se realizará Corrida Brooks en Vitacura. Habrá contenciones y desvíos. Detalles del recorrido en la nota.>\n',
+        '<https://www.uoct.cl/estado_de_transito/a-las-1000-hrs-del-domingo-se-realizara-corrida-brooks-en-vitacura-habra-contenciones-y-desvios-detalles-del-recorrido-en-la-nota/|2019-10-12 14:28:26: A partir de las 10:00 hrs. de este domingo 13 se realizará Corrida Brooks en Vitacura. Habrá contenciones y desvíos. Detalles del recorrido en la nota.>\n<https://www.uoct.cl/estado_de_transito/a-las-1000-hrs-del-domingo-se-realizara-corrida-brooks-en-vitacura-habra-contenciones-y-desvios-detalles-del-recorrido-en-la-nota/|2019-10-12 14:28:26: A partir de las 10:00 hrs. de este domingo 13 se realizará Corrida Brooks en Vitacura. Habrá contenciones y desvíos. Detalles del recorrido en la nota.>\n<https://www.uoct.cl/estado_de_transito/a-las-1000-hrs-del-domingo-se-realizara-corrida-brooks-en-vitacura-habra-contenciones-y-desvios-detalles-del-recorrido-en-la-nota/|2019-10-12 14:28:26: A partir de las 10:00 hrs. de este domingo 13 se realizará Corrida Brooks en Vitacura. Habrá contenciones y desvíos. Detalles del recorrido en la nota.>\n<https://www.uoct.cl/estado_de_transito/a-las-1000-hrs-del-domingo-se-realizara-corrida-brooks-en-vitacura-habra-contenciones-y-desvios-detalles-del-recorrido-en-la-nota/|2019-10-12 14:28:26: A partir de las 10:00 hrs. de este domingo 13 se realizará Corrida Brooks en Vitacura. Habrá contenciones y desvíos. Detalles del recorrido en la nota.>\n<https://www.uoct.cl/estado_de_transito/a-las-1000-hrs-del-domingo-se-realizara-corrida-brooks-en-vitacura-habra-contenciones-y-desvios-detalles-del-recorrido-en-la-nota/|2019-10-12 14:28:26: A partir de las 10:00 hrs. de este domingo 13 se realizará Corrida Brooks en Vitacura. Habrá contenciones y desvíos. Detalles del recorrido en la nota.>\n<https://www.uoct.cl/estado_de_transito/a-las-1000-hrs-del-domingo-se-realizara-corrida-brooks-en-vitacura-habra-contenciones-y-desvios-detalles-del-recorrido-en-la-nota/|2019-10-12 14:28:26: A partir de las 10:00 hrs. de este domingo 13 se realizará Corrida Brooks en Vitacura. Habrá contenciones y desvíos. Detalles del recorrido en la nota.>\n<https://www.uoct.cl/estado_de_transito/a-las-1000-hrs-del-domingo-se-realizara-corrida-brooks-en-vitacura-habra-contenciones-y-desvios-detalles-del-recorrido-en-la-nota/|2019-10-12 14:28:26: A partir de las 10:00 hrs. de este domingo 13 se realizará Corrida Brooks en Vitacura. Habrá contenciones y desvíos. Detalles del recorrido en la nota.>\n',
       title: 'Estado del tránsito'
     }
   ])
@@ -167,7 +167,7 @@ test('UOCT - cuando 404 entrega mensaje de error', async t => {
     isGold: () => true
   }
 
-  nock('http://www.uoct.cl')
+  nock('https://www.uoct.cl')
     .post('/wp/wp-admin/admin-ajax.php')
     .times(7)
     .reply(404)
@@ -190,7 +190,7 @@ test('UOCT - cuando 500 entrega mensaje de error', async t => {
     isGold: () => true
   }
 
-  nock('http://www.uoct.cl')
+  nock('https://www.uoct.cl')
     .post('/wp/wp-admin/admin-ajax.php')
     .times(7)
     .reply(500)
