@@ -35,10 +35,10 @@ const payload = `{"data":[{
 
 const helper = new Helper('../scripts/uoct-golden.js')
 const sleep = m => new Promise(resolve => setTimeout(() => resolve(), m))
-const nockIsDone = m =>
+const nockIsDone = scope =>
   new Promise(resolve => {
     const poller = setInterval(() => {
-      if (nock.isDone()) {
+      if (scope.isDone()) {
         clearInterval(poller)
         resolve()
       }
@@ -91,13 +91,13 @@ test('UOCT - cuando no retorna eventos, se responde todo normal', async t => {
     isGold: () => true
   }
 
-  nock('https://www.transporteinforma.cl')
+  const scope = nock('https://www.transporteinforma.cl')
     .post('/wp/wp-admin/admin-ajax.php')
     .times(7)
     .reply(200, emptyPayload, { 'content-type': 'text/html; charset=UTF-8' })
 
   t.context.room.user.say('user', 'hubot uoct')
-  await nockIsDone()
+  await nockIsDone(scope)
 
   t.deepEqual(t.context.room.messages, [['user', 'hubot uoct']])
   t.deepEqual(t.context.postMessage.options.attachments, [
@@ -114,16 +114,17 @@ test('UOCT - cuando hay un evento imprime correctamente', async t => {
     isGold: () => true
   }
 
-  nock('https://www.transporteinforma.cl')
+  const scope1 = nock('https://www.transporteinforma.cl')
     .post('/wp/wp-admin/admin-ajax.php', body => body.zone !== 'zona-norte')
     .times(6)
     .reply(200, emptyPayload, { 'content-type': 'text/html; charset=UTF-8' })
-  nock('https://www.transporteinforma.cl')
+  const scope2 = nock('https://www.transporteinforma.cl')
     .post('/wp/wp-admin/admin-ajax.php', body => body.zone === 'zona-norte')
     .reply(200, payload, { 'content-type': 'text/html; charset=UTF-8' })
 
   t.context.room.user.say('user', 'hubot uoct')
-  await nockIsDone()
+  await nockIsDone(scope1)
+  await nockIsDone(scope2)
 
   t.deepEqual(t.context.room.messages, [['user', 'hubot uoct']])
   t.deepEqual(t.context.postMessage.options.attachments, [
@@ -142,13 +143,13 @@ test('UOCT - cuando más de 5, solo muestra 5 ', async t => {
     isGold: () => true
   }
 
-  nock('https://www.transporteinforma.cl')
+  const scope = nock('https://www.transporteinforma.cl')
     .post('/wp/wp-admin/admin-ajax.php')
     .times(7)
     .reply(200, payload, { 'content-type': 'text/html; charset=UTF-8' })
 
   t.context.room.user.say('user', 'hubot uoct')
-  await sleep(500)
+  await nockIsDone(scope)
 
   t.deepEqual(t.context.room.messages, [['user', 'hubot uoct']])
   t.deepEqual(t.context.postMessage.options.attachments, [
@@ -167,13 +168,13 @@ test('UOCT - cuando 404 entrega mensaje de error', async t => {
     isGold: () => true
   }
 
-  nock('https://www.transporteinforma.cl')
+  const scope = nock('https://www.transporteinforma.cl')
     .post('/wp/wp-admin/admin-ajax.php')
     .times(7)
     .reply(404)
 
   t.context.room.user.say('user', 'hubot uoct')
-  await nockIsDone()
+  await nockIsDone(scope)
 
   t.deepEqual(t.context.room.messages, [['user', 'hubot uoct']])
   t.deepEqual(t.context.postMessage.options.attachments, [
@@ -190,13 +191,13 @@ test('UOCT - cuando 500 entrega mensaje de error', async t => {
     isGold: () => true
   }
 
-  nock('https://www.transporteinforma.cl')
+  const scope = nock('https://www.transporteinforma.cl')
     .post('/wp/wp-admin/admin-ajax.php')
     .times(7)
     .reply(500)
 
   t.context.room.user.say('user', 'hubot uoct')
-  await nockIsDone()
+  await nockIsDone(scope)
 
   t.deepEqual(t.context.room.messages, [['user', 'hubot uoct']])
   t.deepEqual(t.context.postMessage.options.attachments, [
