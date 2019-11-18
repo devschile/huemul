@@ -120,7 +120,7 @@ module.exports = function (robot) {
       return send(options)
     }
 
-    const url = 'https://www.uoct.cl/wp/wp-admin/admin-ajax.php'
+    const url = 'https://www.transporteinforma.cl/wp/wp-admin/admin-ajax.php'
     const zones = ['sur', 'suroriente', 'surponiente', 'norte', 'nororiente', 'norponiente', 'centro']
     const requests = zones.map(zone => {
       const params = new URLSearchParams(`action=home_incident_zone&zone=zona-${zone}`)
