@@ -70,7 +70,6 @@ const attachmentText = event => `<${event.url}|${event.post_modified}: ${event.p
 const parseEvents = (events, fallback = false) => {
   const parser = fallback ? fallbackText : attachmentText
   return events
-    .sort((firstEvent, secondEvent) => firstEvent.post_modified < secondEvent.post_modified)
     .reduce((text, event) => {
       text += parser(event)
       return text
@@ -137,7 +136,7 @@ module.exports = function (robot) {
           .reduce((/** @type {Array<Event>} */ events, event) => {
             return events.concat(event.data)
           }, [])
-          .sort((firstEvent, secondEvent) => firstEvent.post_modified < secondEvent.post_modified)
+          .sort((firstEvent, secondEvent) => new Date(secondEvent.post_modified) - new Date(firstEvent.post_modified))
       })
       .then(events => {
         if (events.length === 0) {
