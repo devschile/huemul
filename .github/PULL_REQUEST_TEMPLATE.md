@@ -1,17 +1,7 @@
----
-name: Nuevo script
-about: Usa esta plantilla para crear PRs de nuevos scripts.
-title: "[new script]: [FEATURE NAME]"
-labels: new script
-assignees: devschile/org
----
-
 ## Descripción
-
 <!--- Proporcione un resumen general de que hace el nuevo script -->
 
 ## Ejemplo de comportamiento
-
 <!---
 Proporcione un snippet indicando un ejemplo del comportamiento.
 Ejemplo:
