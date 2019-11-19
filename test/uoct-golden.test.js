@@ -72,7 +72,7 @@ test('UOCT - restringido para usuarios gold', async t => {
   t.context.room.robot.golden = {
     isGold: () => false
   }
-  t.context.room.user.say('user', 'hubot uoct')
+  await t.context.room.user.say('user', 'hubot uoct')
   await sleep(500)
   t.deepEqual(t.context.room.messages, [['user', 'hubot uoct']])
   t.deepEqual(t.context.postMessage.options.attachments, [
@@ -96,8 +96,9 @@ test('UOCT - cuando no retorna eventos, se responde todo normal', async t => {
     .times(7)
     .reply(200, emptyPayload, { 'content-type': 'text/html; charset=UTF-8' })
 
-  t.context.room.user.say('user', 'hubot uoct')
+  await t.context.room.user.say('user', 'hubot uoct')
   await nockIsDone(scope)
+  await sleep(500)
 
   t.deepEqual(t.context.room.messages, [['user', 'hubot uoct']])
   t.deepEqual(t.context.postMessage.options.attachments, [
@@ -122,9 +123,10 @@ test('UOCT - cuando hay un evento imprime correctamente', async t => {
     .post('/wp/wp-admin/admin-ajax.php', body => body.zone === 'zona-norte')
     .reply(200, payload, { 'content-type': 'text/html; charset=UTF-8' })
 
-  t.context.room.user.say('user', 'hubot uoct')
+  await t.context.room.user.say('user', 'hubot uoct')
   await nockIsDone(scope1)
   await nockIsDone(scope2)
+  await sleep(500)
 
   t.deepEqual(t.context.room.messages, [['user', 'hubot uoct']])
   t.deepEqual(t.context.postMessage.options.attachments, [
@@ -148,8 +150,9 @@ test('UOCT - cuando más de 5, solo muestra 5 ', async t => {
     .times(7)
     .reply(200, payload, { 'content-type': 'text/html; charset=UTF-8' })
 
-  t.context.room.user.say('user', 'hubot uoct')
+  await t.context.room.user.say('user', 'hubot uoct')
   await nockIsDone(scope)
+  await sleep(500)
 
   t.deepEqual(t.context.room.messages, [['user', 'hubot uoct']])
   t.deepEqual(t.context.postMessage.options.attachments, [
@@ -173,8 +176,9 @@ test('UOCT - cuando 404 entrega mensaje de error', async t => {
     .times(7)
     .reply(404)
 
-  t.context.room.user.say('user', 'hubot uoct')
+  await t.context.room.user.say('user', 'hubot uoct')
   await nockIsDone(scope)
+  await sleep(500)
 
   t.deepEqual(t.context.room.messages, [['user', 'hubot uoct']])
   t.deepEqual(t.context.postMessage.options.attachments, [
@@ -196,8 +200,9 @@ test('UOCT - cuando 500 entrega mensaje de error', async t => {
     .times(7)
     .reply(500)
 
-  t.context.room.user.say('user', 'hubot uoct')
+  await t.context.room.user.say('user', 'hubot uoct')
   await nockIsDone(scope)
+  await sleep(500)
 
   t.deepEqual(t.context.room.messages, [['user', 'hubot uoct']])
   t.deepEqual(t.context.postMessage.options.attachments, [
