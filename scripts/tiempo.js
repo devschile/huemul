@@ -1,19 +1,19 @@
 // Description:
-//   Obtiene info del clima desde donde el usuario haga la consulta, la manda
+//   Obtiene info del tiempo desde donde el usuario haga la consulta, la manda
 //   a Wttr.in y muestra el resultado en Slack.
 //
 // Dependencies:
 //   None
 //
 // Commands:
-//   hubot clima - Obtiene el clima de Santiago
-//   hubot clima <ciudad> - Obtiene el clima de la ciudad indicada
+//   hubot tiempo - Obtiene el tiempo de Santiago
+//   hubot tiempo <ciudad> - Obtiene el tiempo de la ciudad indicada
 //
 // Author:
 //   @jorgeepunan
 
 module.exports = robot => {
-  robot.respond(/clima\s?(.*)/i, msg => {
+  robot.respond(/clima|tiempo\s?(.*)/i, msg => {
     const city = msg.match[1] || 'Santiago'
     robot
       .http(`http://wttr.in/${city}?m`)
@@ -21,7 +21,7 @@ module.exports = robot => {
       .header('User-Agent', 'curl/7.43.0')
       .get()((err, res, body) => {
         if (err || res.statusCode !== 200 || body === 'ERROR' || /sorry/gi.test(body)) {
-          if (err) robot.emit('error', err, msg, 'clima')
+          if (err) robot.emit('error', err, msg, 'tiempo')
           return msg.reply('ocurrió un error con la búsqueda')
         }
         const raw = body.split('\n')
