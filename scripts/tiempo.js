@@ -15,7 +15,7 @@
 module.exports = robot => {
   robot.respond(/(clima|weather|tiempo)\s?(.*)/i, msg => {
     const defaultCity = 'Santiago, Chile'
-    let city = msg.match[2] || defaultCity
+    let city = msg.match[2].trim() || defaultCity
 
     // Si ciudad ingresada es S|santiago, retorna a: Santiago, Chile
     city = city.toLowerCase() === 'santiago' ? defaultCity : city
