@@ -13,8 +13,8 @@
 //   @jorgeepunan
 
 module.exports = robot => {
-  robot.respond(/clima|weather|tiempo\s?(.*)/i, msg => {
-    const city = msg.match[1] || 'Santiago, Chile'
+  robot.respond(/(clima|weather|tiempo)\s?(.*)/i, msg => {
+    const city = msg.match[2] || 'Santiago, Chile'
     robot
       .http(`http://wttr.in/${city}?m`)
       .header('Accept', '*/*')
