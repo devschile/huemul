@@ -15,7 +15,7 @@ test.afterEach(t => t.context.room.destroy())
 
 test('Tiempo Santiago, Chile', async t => {
   nock('http://wttr.in')
-    .get('/Santiago')
+    .get('/Santiago,%20Chile')
     .query({ m: '' })
     .replyWithFile(200, path.join(__dirname, 'html', 'tiempo-200-1.html'))
   t.context.room.user.say('user', 'hubot tiempo')
