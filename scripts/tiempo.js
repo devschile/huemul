@@ -19,7 +19,7 @@ module.exports = robot => {
 
     // Si ciudad ingresada es S|santiago, retorna a: Santiago, Chile
     city = city.toLowerCase() === 'santiago' ? defaultCity : city
-    
+
     robot
       .http(`http://wttr.in/${city}?m`)
       .header('Accept', '*/*')
