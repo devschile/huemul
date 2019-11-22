@@ -6,7 +6,7 @@
 //   None
 //
 // Commands:
-//   hubot tiempo - Obtiene el tiempo de Santiago
+//   hubot tiempo|weather|clima - Obtiene el tiempo de Santiago
 //   hubot tiempo <ciudad> - Obtiene el tiempo de la ciudad indicada
 //
 // Author:
