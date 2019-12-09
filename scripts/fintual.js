@@ -10,32 +10,33 @@
 //   @cvallejos
 
 const CLP = require('numbertoclpformater').numberToCLPFormater
-const FINTUAL_REAL_ASSETS_API_URL = process.env.API_URL || 'https://fintual.cl/api/real_assets/'
+const FINTUAL_REAL_ASSETS_API_URL = 'https://fintual.cl/api/real_assets/'
 const NORMALIZE_AMOUNT = 100000
-var NORRIS_A = 'risky norris'
-var NORRIS_APV = 'norris-apv'
-var PITT_A = 'moderate pitt'
-var PITT_APV = 'pitt-apv'
-var CLOONEY_A = 'conservative clooney'
-var CLOONEY_APV = 'clooney-apv'
-var STREEP_A = 'conservative streep'
+const NORRIS_A = 'risky norris'
+const NORRIS_APV = 'norris-apv'
+const PITT_A = 'moderate pitt'
+const PITT_APV = 'pitt-apv'
+const CLOONEY_A = 'conservative clooney'
+const CLOONEY_APV = 'clooney-apv'
+const STREEP_A = 'conservative streep'
 
-const series = []
-series[NORRIS_A] = 186
-series[NORRIS_APV] = 245
-series[PITT_A] = 187
-series[PITT_APV] = 246
-series[CLOONEY_A] = 188
-series[CLOONEY_APV] = 247
-series[STREEP_A] = 15077
+const series = {
+  [NORRIS_A]: 186,
+  [NORRIS_APV]: 245,
+  [PITT_A]: 187,
+  [PITT_APV]: 246,
+  [CLOONEY_A]: 188,
+  [CLOONEY_APV]: 247,
+  [STREEP_A]: 15077
+}
 
-const comands = [NORRIS_A, NORRIS_APV, PITT_A, PITT_APV, CLOONEY_A, CLOONEY_APV, STREEP_A]
+const fundsName = [NORRIS_A, NORRIS_APV, PITT_A, PITT_APV, CLOONEY_A, CLOONEY_APV, STREEP_A]
 
 module.exports = robot => {
   robot.respond(/fintual \b(risky norris|moderate pitt|conservative clooney|conservative streep)\b/i, res => {
     let uri
     const fund = res.match[0].replace('huemul fintual ', '').toLowerCase()
-    if (comands.includes(fund)) {
+    if (fundsName.includes(fund)) {
       const today = new Date()
       const endDate = new Date()
       endDate.setDate(today.getDate())
@@ -55,7 +56,7 @@ module.exports = robot => {
       }
       response.setEncoding('utf-8')
       const data = JSON.parse(body)
-      if (!data && comands.includes(fund)) {
+      if (!data && fundsName.includes(fund)) {
         return res.send('Sin resultados')
       }
       const firstElement = data.data[0]
