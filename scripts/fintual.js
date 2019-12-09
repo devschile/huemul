@@ -10,7 +10,7 @@
 //   @cvallejos
 
 const CLP = require('numbertoclpformater').numberToCLPFormater
-const API_URL = process.env.API_URL || 'https://fintual.cl/api/real_assets/'
+const FINTUAL_REAL_ASSETS_API_URL = process.env.API_URL || 'https://fintual.cl/api/real_assets/'
 const NORMALIZE_AMOUNT = 100000
 var NORRIS_A = 'risky norris'
 var NORRIS_APV = 'norris-apv'
@@ -40,7 +40,7 @@ module.exports = robot => {
       const endDate = new Date()
       endDate.setDate(today.getDate())
       endDate.setYear(today.getFullYear() - 1)
-      uri = API_URL + series[fund] + '/days?from_date=' + endDate.toISOString().slice(0, 10) + '&to_date=' + today.toISOString().slice(0, 10)
+      uri = FINTUAL_REAL_ASSETS_API_URL + series[fund] + '/days?from_date=' + endDate.toISOString().slice(0, 10) + '&to_date=' + today.toISOString().slice(0, 10)
     } else {
       res.send(
         'Mis comandos son:\n\n * `fintual ' + NORRIS_A + '|' + NORRIS_APV + '`\n * `fintual ' + PITT_A + '|' + PITT_APV + '`\n * `fintual ' + CLOONEY_A + '|' + CLOONEY_APV + '`\n * `fintual ' + STREEP_A + '`\n'

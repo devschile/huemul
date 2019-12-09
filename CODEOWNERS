@@ -209,3 +209,4 @@ scripts/word-blacklist.js @gmq
 test/word.test-blacklist.js @gmq
 scripts/yelp.js @juanbrujo
 test/yelp.test.js @juanbrujo
+scripts/fintual.js @CrsOne
