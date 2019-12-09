@@ -4,7 +4,7 @@
 //
 // Commands:
 //   hubot fintual help - Imprime la ayuda
-//   hubot fintual risky-a|risky-apv|clooney-a|clooney-apv|streep - Obtiene el valor del fondo seleccionado
+//   hubot fintual risky norris|moderate pitt|conservative clooney|conservative streep - Obtiene el valor del fondo seleccionado
 //
 // Author:
 //   @cvallejos
