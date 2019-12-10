@@ -73,13 +73,12 @@ module.exports = robot => {
               const emojisemester = semester > NORMALIZE_AMOUNT ? ':chart_with_upwards_trend:' : ':chart_with_downwards_trend:'
               const year = (returnLastYear * NORMALIZE_AMOUNT)
               const emojiYear = year > NORMALIZE_AMOUNT ? ':patrones:' : ':money_with_wings:'
-              res.send(`${fund.toUpperCase()}: Si hubieras invertido *${CLP(NORMALIZE_AMOUNT)}* \n- Hace un año, hoy tendrías: *${CLP(year)}*(${parseFloat((returnLastYear - 1) * 100).toFixed(2)}%) ${emojiYear} \n- Hace 6 meses, hoy esas 100 lucas serían *${CLP(semester)}*(${parseFloat((returnLastSemester - 1) * 100).toFixed(2)}%) ${emojisemester} \n- Hace un mes esas luquitas hoy serían *${CLP(month)}*(${parseFloat((returnLastMonth - 1) * 100).toFixed(2)}%) ${emojiMonth}`)
+              res.send(`${fund.toUpperCase()}: Si hubieras invertido *${CLP(NORMALIZE_AMOUNT)}* \n- Hace un año, hoy tendrías: *${CLP(year)}* (${parseFloat((returnLastYear - 1) * 100).toFixed(2)}%) ${emojiYear} \n- Hace 6 meses, hoy esas 100 lucas serían *${CLP(semester)}* (${parseFloat((returnLastSemester - 1) * 100).toFixed(2)}%) ${emojisemester} \n- Hace un mes esas luquitas hoy serían *${CLP(month)}* (${parseFloat((returnLastMonth - 1) * 100).toFixed(2)}%) ${emojiMonth}`)
             } else {
               res.send('Error, intenta nuevamente *:c3:*.')
             }
           }
         } catch (error) {
-          console.log(error)
           return res.send('Oops!, algo salió mal.')
         }
       })
