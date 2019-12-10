@@ -79,6 +79,7 @@ module.exports = robot => {
             }
           }
         } catch (error) {
+          robot.emit('error', error, res, 'fintual-status')
           return res.send('Oops!, algo salió mal.')
         }
       })
