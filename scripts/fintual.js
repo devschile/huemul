@@ -28,21 +28,22 @@ const series = new Map([
 const seriesNames = Array.from(series.keys())
 
 module.exports = robot => {
-  robot.respond(/fintual (risky norris|moderate pitt|conservative clooney|conservative streep)$/i, res => {
-    var uri
+  robot.respond(/fintual (risky norris|moderate pitt|conservative clooney|conservative streep|help)$/i, res => {
+    let uri
     const fund = res.match[1]
+    if (fund === 'help') {
+      const commands = seriesNames.map(function (i) {
+        return `fintual ${i}`
+      }).join('\n')
+      res.send(`Mis comandos son:\n ${commands}`)
+      return false
+    }
     if (seriesNames.includes(fund)) {
       const today = new Date()
       const endDate = new Date()
       endDate.setDate(today.getDate())
       endDate.setYear(today.getFullYear() - 1)
       uri = FINTUAL_REAL_ASSETS_API_URL + series.get(fund) + '/days?' + querystring.stringify({ from_date: endDate.toISOString().slice(0, 10), to_date: today.toISOString().slice(0, 10) })
-    } else {
-      const commands = seriesNames.map(function (i) {
-        return `fintual ${i}`
-      }).join('\n')
-      res.send(`Mis comandos son:\n ${commands}`)
-      return false
     }
     robot.http(uri)
       .get()((err, response, body) => {
