@@ -39,6 +39,7 @@ scripts/concurso.js @juanbrujo
 test/concurso.test.js @juanbrujo
 scripts/correos.js @hectorpalmatellez
 test/correos.test.js @hectorpalmatellez
+scripts/covid19.js @lgaticaq
 scripts/dameunaclave.js @quest
 test/dameunaclave.test.js @quest
 scripts/dameunaexcusa.js @juanbrujo
