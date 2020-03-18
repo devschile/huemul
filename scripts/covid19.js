@@ -13,12 +13,15 @@
 //
 // Author:
 //   @lgaticaq
+const moment = require('moment')
 
 module.exports = robot => {
-  robot.respond(/(covid19|coronavirus)$/i, res => {
-    const country = 'Chile'
-    const send = (confirmed, recovered, deaths) => {
-      const fallback = `Hay ${confirmed} casos confirmados, ${recovered} recuperados y ${deaths} muertes en ${country}`
+  robot.respond(/(covid19|coronavirus) ?(.*)$/i, (res) => {
+    const country = res.match[2] || 'Chile'
+
+    const send = (confirmed, recovered, deaths, lastUpdate) => {
+      const updated = moment(lastUpdate).format('MMMM DD h:mm A')
+      const fallback = `Hay ${confirmed} casos confirmados, ${recovered} recuperados y ${deaths} muertes en ${country}. \nLast updated: ${updated}`
       if (['SlackBot', 'Room'].includes(robot.adapter.constructor.name)) {
         const options = {
           as_user: false,
@@ -43,20 +46,26 @@ module.exports = robot => {
                 {
                   title: `${deaths} :skull_and_crossbones:`,
                   short: true
+                },
+                {
+                  title: `:clock: last updated: ${updated}`,
+                  short: true
                 }
               ]
             }
           ]
         }
+
         robot.adapter.client.web.chat.postMessage(res.message.room, null, options)
       } else {
         res.send(fallback)
       }
     }
 
+    const url = `https://covid19.mathdro.id/api/countries/${country}`
     const errorMessage = 'Ocurrió un error al hacer la búsqueda'
 
-    robot.http(`https://covid19.mathdro.id/api/countries/${country}`).get()((err, response, body) => {
+    robot.http(url).get()((err, response, body) => {
       if (err) {
         robot.emit('error', err, res, 'covid19')
         robot.emit('slack.ephemeral', errorMessage, res.message.room, res.message.user.id)
@@ -65,7 +74,7 @@ module.exports = robot => {
       } else {
         try {
           const data = JSON.parse(body)
-          send(data.confirmed.value, data.recovered.value, data.deaths.value)
+          send(data.confirmed.value, data.recovered.value, data.deaths.value, data.lastUpdate)
         } catch (err) {
           robot.emit('error', err, res, 'covid19')
           robot.emit('slack.ephemeral', errorMessage, res.message.room, res.message.user.id)
