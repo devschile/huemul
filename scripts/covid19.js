@@ -21,7 +21,7 @@ module.exports = robot => {
 
     const send = (confirmed, recovered, deaths, lastUpdate) => {
       const updated = moment(lastUpdate).format('MMMM DD h:mm A')
-      const fallback = `Hay ${confirmed} casos confirmados, ${recovered} recuperados y ${deaths} muertes en ${country}. \nLast updated: ${updated}`
+      const fallback = `Hay ${confirmed} casos confirmados, ${recovered} recuperados y ${deaths} muertes en ${country}. \nÙltima actualización: ${updated}`
       if (['SlackBot', 'Room'].includes(robot.adapter.constructor.name)) {
         const options = {
           as_user: false,
@@ -48,7 +48,7 @@ module.exports = robot => {
                   short: true
                 },
                 {
-                  title: `:clock: last updated: ${updated}`,
+                  title: `:clock: Última actualización: ${updated}`,
                   short: true
                 }
               ]
