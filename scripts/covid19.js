@@ -41,13 +41,13 @@ module.exports = robot => {
               title: `Resumen de casos confirmados de Covid 19 en ${country} ${countryFlag}`,
               fields: [
                 {
-                  title: `:face_with_thermometer: ${confirmed}`
+                  title: `:face_with_thermometer: Confirmados: ${confirmed}`
                 },
                 {
-                  title: `:muscle: ${recovered}`
+                  title: `:muscle: Recuperados: ${recovered}`
                 },
                 {
-                  title: `:skull_and_crossbones: ${deaths}`
+                  title: `:skull_and_crossbones: Muertos: ${deaths}`
                 },
                 {
                   title: `:clock1: Última actualización: ${updated}`
