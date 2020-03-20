@@ -1619,6 +1619,11 @@ cosmiconfig@^5.2.1:
   version "2.6.0"
   resolved "https://registry.yarnpkg.com/countdown/-/countdown-2.6.0.tgz#677fb8e3a9d4cc4e76415901ba253b518af34177"
 
+country-emoji@^1.5.0:
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/country-emoji/-/country-emoji-1.5.0.tgz#5140f82fea49ed7e5c65c6e336c5a7fb878f2a87"
+  integrity sha512-aLAFkrOR0mp1+Moi/G282smnAm3hybQOkhnu5e3NR1pj/LclN2qaJlcQ1zK0K6pQmRBdkddgVboeEa5UIU/Wcg==
+
 crc@3.3.0:
   version "3.3.0"
   resolved "https://registry.yarnpkg.com/crc/-/crc-3.3.0.tgz#fa622e1bc388bf257309082d6b65200ce67090ba"

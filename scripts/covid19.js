@@ -14,14 +14,16 @@
 // Author:
 //   @lgaticaq
 const moment = require('moment')
+const { flag } = require('country-emoji')
 
 module.exports = robot => {
-  robot.respond(/(covid19|coronavirus) ?(.*)$/i, (res) => {
+  robot.respond(/(covid19|coronavirus|covid|corona) ?(.*)$/i, (res) => {
     const country = res.match[2] || 'Chile'
 
     const send = (confirmed, recovered, deaths, lastUpdate) => {
       const updated = moment(lastUpdate).format('MMMM DD h:mm A')
-      const fallback = `Hay ${confirmed} casos confirmados, ${recovered} recuperados y ${deaths} muertes en ${country}. \nÙltima actualización: ${updated}`
+      const countryFlag = flag(country)
+      const fallback = `Hay ${confirmed} casos confirmados, ${recovered} recuperados y ${deaths} muertes en ${country} ${countryFlag} \nÙltima actualización: ${updated}`
       if (['SlackBot', 'Room'].includes(robot.adapter.constructor.name)) {
         const options = {
           as_user: false,
@@ -33,23 +35,19 @@ module.exports = robot => {
             {
               fallback,
               color: 'danger',
-              title: `Resumen de casos confirmados de Covid 19 en ${country}`,
+              title: `Resumen de casos confirmados de Covid 19 en ${country} ${countryFlag}`,
               fields: [
                 {
-                  title: `${confirmed} :face_with_thermometer:`,
-                  short: true
+                  title: `:face_with_thermometer:: ${confirmed}`
                 },
                 {
-                  title: `${recovered} :muscle:`,
-                  short: true
+                  title: `:muscle:: ${recovered}`
                 },
                 {
-                  title: `${deaths} :skull_and_crossbones:`,
-                  short: true
+                  title: `:skull_and_crossbones:: ${deaths}`
                 },
                 {
-                  title: `:clock: Última actualización: ${updated}`,
-                  short: true
+                  title: `:clock1: Última actualización: ${updated}`
                 }
               ]
             }

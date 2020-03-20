@@ -32,6 +32,7 @@
     "bip": "3.0.2",
     "cheerio": "1.0.0-rc.2",
     "correos-chile": "^1.2.4",
+    "country-emoji": "^1.5.0",
     "csv-streamify": "4.0.0",
     "fast-xml-parser": "3.14.0",
     "hubot": "2.19.0",
