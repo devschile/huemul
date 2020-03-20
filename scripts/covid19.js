@@ -8,11 +8,14 @@
 //   None
 //
 // Commands:
+//   hubot covid - Retorna la cantidad de casos de covid19 en Chile.
+//   hubot corona - Retorna la cantidad de casos de covid19 en Chile.
 //   hubot covid19 - Retorna la cantidad de casos de covid19 en Chile.
 //   hubot coronavirus - Retorna la cantidad de casos de covid19 en Chile.
 //
 // Author:
 //   @lgaticaq
+
 const moment = require('moment')
 const { flag } = require('country-emoji')
 
@@ -38,13 +41,13 @@ module.exports = robot => {
               title: `Resumen de casos confirmados de Covid 19 en ${country} ${countryFlag}`,
               fields: [
                 {
-                  title: `:face_with_thermometer:: ${confirmed}`
+                  title: `:face_with_thermometer: ${confirmed}`
                 },
                 {
-                  title: `:muscle:: ${recovered}`
+                  title: `:muscle: ${recovered}`
                 },
                 {
-                  title: `:skull_and_crossbones:: ${deaths}`
+                  title: `:skull_and_crossbones: ${deaths}`
                 },
                 {
                   title: `:clock1: Última actualización: ${updated}`
