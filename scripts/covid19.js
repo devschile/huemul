@@ -8,10 +8,10 @@
 //   None
 //
 // Commands:
-//   hubot covid - Retorna la cantidad de casos de covid19 en Chile.
-//   hubot corona - Retorna la cantidad de casos de covid19 en Chile.
-//   hubot covid19 - Retorna la cantidad de casos de covid19 en Chile.
-//   hubot coronavirus - Retorna la cantidad de casos de covid19 en Chile.
+//   hubot covid <pais> - Retorna la cantidad de casos de covid19 en <pais>, Chile por defecto.
+//   hubot corona <pais> - Retorna la cantidad de casos de covid19 en <pais>, Chile por defecto.
+//   hubot covid19 <pais> - Retorna la cantidad de casos de covid19 en <pais>, Chile por defecto.
+//   hubot coronavirus <pais> - Retorna la cantidad de casos de covid19 en <pais>, Chile por defecto.
 //
 // Author:
 //   @lgaticaq
