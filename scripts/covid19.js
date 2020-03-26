@@ -19,14 +19,22 @@
 const moment = require('moment')
 const { flag } = require('country-emoji')
 
+function formatNumber(number) {
+  return number.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.')
+}
+
 module.exports = robot => {
   robot.respond(/(covid19|coronavirus|covid|corona) ?(.*)$/i, (res) => {
     const country = res.match[2] || 'Chile'
 
     const send = (confirmed, recovered, deaths, lastUpdate) => {
+      confirmed = formatNumber(confirmed)
+      recovered = formatNumber(recovered)
+      deaths = formatNumber(deaths)
       const updated = moment(lastUpdate).format('MMMM DD h:mm A')
       const countryFlag = flag(country)
       const fallback = `Hay ${confirmed} casos confirmados, ${recovered} recuperados y ${deaths} muertes en ${country} ${countryFlag} \nÙltima actualización: ${updated}`
+
       if (['SlackBot', 'Room'].includes(robot.adapter.constructor.name)) {
         const options = {
           as_user: false,
