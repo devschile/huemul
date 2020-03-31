@@ -52,17 +52,14 @@ module.exports = robot => {
       } else {
         try {
           const dom = load(body)
-          const section = dom(dom('section').get(3))
-          const creditCardNumber = section.find('p.resalta').html()
-          const cvv = dom(section.find('p.centrado em').get(0))
-            .html()
-            .split(': ')[1]
-          const expireDate = dom(section.find('p.centrado em').get(1))
-            .html()
-            .split(': ')[1]
+          const creditCardNumberNode = dom('.venta')
+          const creditCardNumber = creditCardNumberNode.text()
+          const cvv = creditCardNumberNode.next().text().split(': ')[1]
+          const expireDate = creditCardNumberNode.next().next().text().split(': ')[1]
 
           msg.send(`Nº: ${creditCardNumber}, CVV2/VCV2: ${cvv}, Vence: ${fixExpireDate(expireDate)}`)
         } catch (error) {
+          robot.emit('error', error, msg, 'dameunatarjeta')
           msg.send('La API esta mala')
         }
       }
