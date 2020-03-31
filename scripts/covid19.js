@@ -74,21 +74,33 @@ module.exports = robot => {
     const url = `https://covid19.mathdro.id/api/countries/${country}`
     const errorMessage = 'Ocurrió un error al hacer la búsqueda'
 
-    robot.http(url).get()((err, response, body) => {
-      if (err) {
-        robot.emit('error', err, res, 'covid19')
-        robot.emit('slack.ephemeral', errorMessage, res.message.room, res.message.user.id)
-      } else if (response.statusCode !== 200) {
-        robot.emit('slack.ephemeral', errorMessage, res.message.room, res.message.user.id)
-      } else {
-        try {
-          const data = JSON.parse(body)
-          send(data.confirmed.value, data.recovered.value, data.deaths.value, data.lastUpdate)
-        } catch (err) {
+    // WAKANDA FOREVA
+
+    if(/wakanda/i.test(country.split(" ")[0])) {
+      const rnd = Math.random()
+      const conf = 0
+      const recv = Math.floor(rnd * 1e5)
+      const deaths = Math.floor(rnd * 1e6) * -1
+      const lastUpdate = (new Date()).toISOString()
+      
+      send(conf, recv, deaths, lastUpdate)
+    } else {
+      robot.http(url).get()((err, response, body) => {
+        if (err) {
           robot.emit('error', err, res, 'covid19')
           robot.emit('slack.ephemeral', errorMessage, res.message.room, res.message.user.id)
+        } else if (response.statusCode !== 200) {
+          robot.emit('slack.ephemeral', errorMessage, res.message.room, res.message.user.id)
+        } else {
+          try {
+            const data = JSON.parse(body)
+            send(data.confirmed.value, data.recovered.value, data.deaths.value, data.lastUpdate)
+          } catch (err) {
+            robot.emit('error', err, res, 'covid19')
+            robot.emit('slack.ephemeral', errorMessage, res.message.room, res.message.user.id)
+          }
         }
-      }
-    })
+      })
+    }  
   })
 }
