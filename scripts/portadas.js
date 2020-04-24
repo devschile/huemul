@@ -323,6 +323,11 @@ const getPortada = (res, diario) => {
                   resolve(testUrl)
                 }
                 break
+              case 302:
+                ready = false
+                sendPortadaDate(res, fecha)
+                resolve(testUrl)
+                break
               default:
                 resolve()
                 break
