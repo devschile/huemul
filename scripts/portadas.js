@@ -2,7 +2,7 @@
 //   Muestra las portadas de hoy de diversos diarios de Chile.
 //
 // Dependencies:
-//   moment, whilst
+//   moment, axios
 //
 // Configuration:
 //   hubot portada <diario> - Muestra las portada de hoy del diario seleccionado.
@@ -10,10 +10,8 @@
 //
 // Author:
 //   @rotvulpix, @pottersys
-
+const axios = require('axios')
 const moment = require('moment')
-const whilst = require('whilst')
-// const cheerio = require('cheerio')
 
 const endpointHxh = 'http://www.hoyxhoy.cl/endpoints/for-soy.php?action=get-latest&size=550'
 
@@ -61,220 +59,79 @@ const listaPortadas = () => {
   `
 }
 
-const diarios = {
-  segunda: {
-    url: 'http://img.kiosko.net/#DATE#/cl/cl_segunda.750.jpg',
-    noSlashes: false
-  },
-  tipografo: {
-    url: 'http://img.kiosko.net/#DATE#/cl/cl_tipografo.750.jpg',
-    noSlashes: false
-  },
-  trabajo: {
-    url: 'http://www.eltrabajo.cl/slide/eltrabajo%20(1).jpg',
-    noSlashes: false
-  },
-  trabajosanfelipe: {
-    url: 'http://www.eltrabajo.cl/slide/eltrabajo%20(1).jpg',
-    noSlashes: false
-  },
-  lun: {
-    url: 'http://img.kiosko.net/#DATE#/cl/cl_ultimas_noticias.750.jpg',
-    noSlashes: false
-  },
-  mercurio: {
-    url: 'http://img.kiosko.net/#DATE#/cl/cl_mercurio.750.jpg',
-    noSlashes: false
-  },
-  tercera: {
-    url:
-      'https://edition.pagesuite-professional.co.uk/get_image.aspx?w=550&pbid=33084897-397a-48cc-b3c0-3ce1ec447137&pnum=01&nocache=#DATE#',
-    noSlashes: true
-  },
-  cuarta: {
-    url:
-      'https://edition.pagesuite-professional.co.uk/get_image.aspx?w=550&pbid=a94a1c16-2ebc-4ecc-b2bc-d60709ea4c26&pnum=01&nocache=#DATE#',
-    noSlashes: true
-  },
-  estrellaarica: {
-    url: 'http://edicionimpresa.soychile.cl/portadas/EstrellaArica/01-550.jpg?fecha=#DATE#',
-    noSlashes: true
-  },
-  estrellaiquique: {
-    url: 'http://edicionimpresa.soychile.cl/portadas/EstellaIquique/01-550.jpg?fecha=#DATE#',
-    noSlashes: true
-  },
-  mercuriocalama: {
-    url: 'http://edicionimpresa.soychile.cl/portadas/MercurioCalama/01-550.jpg?fecha=#DATE#',
-    noSlashes: true
-  },
-  estrellaloa: {
-    url: 'http://edicionimpresa.soychile.cl/portadas/EstrellaLoa/01-550.jpg?fecha=#DATE#',
-    noSlashes: true
-  },
-  estrellatocopilla: {
-    url: 'http://edicionimpresa.soychile.cl/portadas/EstrellaTocopilla/01-550.jpg?fecha=#DATE#',
-    noSlashes: true
-  },
-  mercurioantofa: {
-    url: 'http://edicionimpresa.soychile.cl/portadas/ElMercuriodeAntofagasta/01-550.jpg?fecha=#DATE#',
-    noSlashes: true
-  },
-  estrellaantofa: {
-    url: 'http://edicionimpresa.soychile.cl/portadas/EstrellaAntofagasta/01-550.jpg?fecha=#DATE#',
-    noSlashes: true
-  },
-  diarioatacama: {
-    url: 'http://edicionimpresa.soychile.cl/portadas/DiarioAtacama/01-550.jpg?fecha=#DATE#',
-    noSlashes: true
-  },
-  mercuriovalpo: {
-    url: 'http://edicionimpresa.soychile.cl/portadas/MercurioValparaiso/01-550.jpg?fecha=#DATE#',
-    noSlashes: true
-  },
-  estrellavalpo: {
-    url: 'http://edicionimpresa.soychile.cl/portadas/EstrellaValparaiso/01-550.jpg?fecha=#DATE#',
-    noSlashes: true
-  },
-  estrellaquillota: {
-    url: 'http://edicionimpresa.soychile.cl/portadas/EstrellaQuillota/01-550.jpg?fecha=#DATE#',
-    noSlashes: true
-  },
-  lider: {
-    url: 'http://edicionimpresa.soychile.cl/portadas/LiderSanAntonio/01-550.jpg?fecha=#DATE#',
-    noSlashes: true
-  },
-  lidersanantonio: {
-    url: 'http://edicionimpresa.soychile.cl/portadas/LiderSanAntonio/01-550.jpg?fecha=#DATE#',
-    noSlashes: true
-  },
-  hoyxhoy: {
-    url: endpointHxh,
-    noSlashes: false
-  },
-  hoyxhoylpm: {
-    url: endpointHxh,
-    noSlashes: false,
-    forcePortada: true
-  },
-  hxh: {
-    url: endpointHxh,
-    noSlashes: false
-  },
-  hxhlpm: {
-    url: endpointHxh,
-    noSlashes: false,
-    forcePortada: true
-  },
-  sur: {
-    url: 'http://edicionimpresa.soychile.cl/portadas/ElSur/01-550.jpg?fecha=#DATE#',
-    noSlashes: true
-  },
-  estrellaconce: {
-    url: 'http://edicionimpresa.soychile.cl/portadas/EstrellaConcepcion/01-550.jpg?fecha=#DATE#',
-    noSlashes: true
-  },
-  cronicachillan: {
-    url: 'http://edicionimpresa.soychile.cl/portadas/CronicaChillan/01-550.jpg?fecha=#DATE#',
-    noSlashes: true
-  },
-  australtemuco: {
-    url: 'http://edicionimpresa.soychile.cl/portadas/AustralTemuco/01-550.jpg?fecha=#DATE#',
-    noSlashes: true
-  },
-  australlosrios: {
-    url: 'http://edicionimpresa.soychile.cl/portadas/AustralValdivia/01-550.jpg?fecha=#DATE#',
-    noSlashes: true
-  },
-  australvaldivia: {
-    url: 'http://edicionimpresa.soychile.cl/portadas/AustralValdivia/01-550.jpg?fecha=#DATE#',
-    noSlashes: true
-  },
-  australosorno: {
-    url: 'http://edicionimpresa.soychile.cl/portadas/AustralOsorno/01-550.jpg?fecha=#DATE#',
-    noSlashes: true
-  },
-  llanquihue: {
-    url: 'http://edicionimpresa.soychile.cl/portadas/Llanquihue/01-550.jpg?fecha=#DATE#',
-    noSlashes: true
-  },
-  estrellachiloe: {
-    url: 'http://edicionimpresa.soychile.cl/portadas/EstrellaChiloe/01-550.jpg?fecha=#DATE#',
-    noSlashes: true
-  },
-  globo: {
-    url: 'http://img.kiosko.net/#DATE#/br/br_oglobo.750.jpg',
-    noSlashes: false
-  },
-  folha: {
-    url: 'http://img.kiosko.net/#DATE#/br/br_folha_spaulo.750.jpg',
-    noSlashes: false
-  },
-  tiempo: {
-    url: 'http://img.kiosko.net/#DATE#/co/co_eltiempo.750.jpg',
-    noSlashes: false
-  },
-  espectador: {
-    url: 'http://img.kiosko.net/#DATE#/co/co_espectador.750.jpg',
-    noSlashes: false
-  },
-  paisuruguay: {
-    url: 'http://www.elpais.com.uy/printed-home/#DATE#/portada_impresa.jpg',
-    noSlashes: true
-  },
-  paisuru: {
-    url: 'http://www.elpais.com.uy/printed-home/#DATE#/portada_impresa.jpg',
-    noSlashes: true
-  },
-  paisuy: {
-    url: 'http://www.elpais.com.uy/printed-home/#DATE#/portada_impresa.jpg',
-    noSlashes: true
-  },
-  financiero: {
-    url: 'http://img.kiosko.net/#DATE#/mx/mx_financiero.750.jpg',
-    noSlashes: false
-  },
-  wallstreetjournal: {
-    url: 'http://img.kiosko.net/#DATE#/eur/wsj.750.jpg',
-    noSlashes: false
-  },
-  wsj: {
-    url: 'http://img.kiosko.net/#DATE#/eur/wsj.750.jpg',
-    noSlashes: false
-  },
-  washingtonpost: {
-    url: 'http://img.kiosko.net/#DATE#/us/washington_post.750.jpg',
-    noSlashes: false
-  },
-  usatoday: {
-    url: 'http://img.kiosko.net/#DATE#/us/usa_today.750.jpg',
-    noSlashes: false
-  },
-  monde: {
-    url: 'http://www.lemonde.fr/journalelectronique/donnees/libre/#DATE#/QUO/img_pleinepage/1.jpg',
-    noSlashes: true
-  },
-  pais: {
-    url: 'http://img.kiosko.net/#DATE#/es/elpais.750.jpg',
-    noSlashes: false
-  },
-  corrieredellasera: {
-    url: 'http://img.kiosko.net/#DATE#/it/corriere_della_sera.750.jpg',
-    noSlashes: false
-  },
-  corriere: {
-    url: 'http://img.kiosko.net/#DATE#/it/corriere_della_sera.750.jpg',
-    noSlashes: false
-  },
-  times: {
-    url: 'http://img.kiosko.net/#DATE#/uk/the_times.750.jpg',
-    noSlashes: false
-  }
+const buildNewspaperUrl = (url, noSlashes, forcePortada = null) => {
+  const output = { url, noSlashes }
+  return forcePortada ? Object.assign(output, { forcePortada }) : output
 }
 
-const formatDate = (date, noSlashes = false) => {
-  return noSlashes ? date.format('YYYYMMDD') : date.format('YYYY/MM/DD')
+const buildSoyChileUrl = periodico => buildNewspaperUrl(
+  `http://edicionimpresa.soychile.cl/portadas/${periodico}/01-550.jpg?fecha=#DATE#`, true
+)
+
+const buildKioskoUrl = periodico => buildNewspaperUrl(
+  `http://img.kiosko.net/#DATE#/${periodico}.750.jpg`, false
+)
+
+const diarios = {
+  /* Soy Chile - Diarios Regionales */
+  australlosrios: buildSoyChileUrl('AustralValdivia'),
+  australosorno: buildSoyChileUrl('AustralOsorno'),
+  australtemuco: buildSoyChileUrl('AustralTemuco'),
+  australvaldivia: buildSoyChileUrl('AustralValdivia'),
+  cronicachillan: buildSoyChileUrl('CronicaChillan'),
+  diarioatacama: buildSoyChileUrl('DiarioAtacama'),
+  estrellaantofa: buildSoyChileUrl('EstrellaAntofagasta'),
+  estrellaarica: buildSoyChileUrl('EstrellaArica'),
+  estrellachiloe: buildSoyChileUrl('EstrellaChiloe'),
+  estrellaconce: buildSoyChileUrl('EstrellaConcepcion'),
+  estrellaiquique: buildSoyChileUrl('EstellaIquique'),
+  estrellaloa: buildSoyChileUrl('EstrellaLoa'),
+  estrellaquillota: buildSoyChileUrl('EstrellaQuillota'),
+  estrellatocopilla: buildSoyChileUrl('EstrellaTocopilla'),
+  estrellavalpo: buildSoyChileUrl('EstrellaValparaiso'),
+  lider: buildSoyChileUrl('LiderSanAntonio'),
+  lidersanantonio: buildSoyChileUrl('LiderSanAntonio'),
+  llanquihue: buildSoyChileUrl('Llanquihue'),
+  mercurioantofa: buildSoyChileUrl('ElMercuriodeAntofagasta'),
+  mercuriocalama: buildSoyChileUrl('MercurioCalama'),
+  mercuriovalpo: buildSoyChileUrl('MercurioValparaiso'),
+  sur: buildSoyChileUrl('ElSur'),
+
+  /* Kiosko */
+  corriere: buildKioskoUrl('it/corriere_della_sera'),
+  corrieredellasera: buildKioskoUrl('it/corriere_della_sera'),
+  espectador: buildKioskoUrl('co/co_espectador'),
+  financiero: buildKioskoUrl('mx/mx_financiero'),
+  folha: buildKioskoUrl('br/br_folha_spaulo'),
+  globo: buildKioskoUrl('br/br_oglobo'),
+  lun: buildKioskoUrl('cl/cl_ultimas_noticias'),
+  mercurio: buildKioskoUrl('cl/cl_mercurio'),
+  pais: buildKioskoUrl('es/elpais'),
+  segunda: buildKioskoUrl('cl/cl_segunda'),
+  tiempo: buildKioskoUrl('co/co_eltiempo'),
+  times: buildKioskoUrl('uk/the_times'),
+  tipografo: buildKioskoUrl('cl/cl_tipografo'),
+  usatoday: buildKioskoUrl('us/usa_today'),
+  wallstreetjournal: buildKioskoUrl('eur/wsj'),
+  washingtonpost: buildKioskoUrl('us/washington_post'),
+  wsj: buildKioskoUrl('eur/wsj'),
+
+  trabajo: buildNewspaperUrl('http://www.eltrabajo.cl/slide/eltrabajo%20(1).jpg', false),
+  trabajosanfelipe: buildNewspaperUrl('http://www.eltrabajo.cl/slide/eltrabajo%20(1).jpg', false),
+  tercera: buildNewspaperUrl('https://kiosco.latercera.com/latest-issue-cover-image?collection=lt_diario_la_tercera_6_30', true),
+  cuarta: buildNewspaperUrl('https://kiosco.lacuarta.com/latest-issue-cover-image?collection=lc_diario_la_cuarta', true),
+  hoyxhoy: buildNewspaperUrl(endpointHxh, false),
+  hoyxhoylpm: buildNewspaperUrl(endpointHxh, false, true),
+  hxh: buildNewspaperUrl(endpointHxh, false),
+  hxhlpm: buildNewspaperUrl(endpointHxh, false, true),
+  paisuruguay: buildNewspaperUrl('http://www.elpais.com.uy/printed-home/#DATE#/portada_impresa.jpg', true),
+  paisuru: buildNewspaperUrl('http://www.elpais.com.uy/printed-home/#DATE#/portada_impresa.jpg', true),
+  paisuy: buildNewspaperUrl('http://www.elpais.com.uy/printed-home/#DATE#/portada_impresa.jpg', true),
+  monde: buildNewspaperUrl('http://www.lemonde.fr/journalelectronique/donnees/libre/#DATE#/QUO/img_pleinepage/1.jpg', true),
+  nyt: buildNewspaperUrl('https://static01.nyt.com/images/#DATE#/nytfrontpage/scan.jpg', false)
 }
+
+const formatDate = (date, noSlashes = false) => date.format(noSlashes ? 'YYYYMMDD' : 'YYYY/MM/DD')
 
 const sendPortadaDate = (res, date) => {
   const portadaDate = moment(date).calendar(null, {
@@ -287,56 +144,49 @@ const sendPortadaDate = (res, date) => {
   portadaDate.indexOf('hoy a las') === -1 && res.send(`Esta portada es ${portadaDate}`)
 }
 
-const getPortada = (res, diario) => {
+const getPortada = async (res, diario) => {
   let daysPast = 0
-  let ready = true
-  let testUrl = 'No existe portada de este diario por los últimos 5 días.'
-  return whilst(
-    () => ready,
-    () => {
-      if (daysPast > 5) {
-        ready = false
-        Promise.resolve()
-      } else {
-        const fecha = moment().subtract(daysPast, 'days')
-        testUrl = diario.url.replace('#DATE#', formatDate(fecha, diario.noSlashes))
-        return new Promise((resolve, reject) => {
-          res
-            .http(testUrl)
-            .timeout(2000)
-            .get()((err, response, body) => {
-              if (err) return reject(err)
-              switch (response.statusCode) {
-                case 404:
-                  daysPast++
-                  resolve(testUrl)
-                  break
-                case 200:
-                  ready = false
-                  if (testUrl === endpointHxh) {
-                    try {
-                      var jsonHxh = JSON.parse(body)
-                      testUrl = jsonHxh[0].esPortadaFalsa || diario.forcePortada ? jsonHxh[3].img : jsonHxh[0].img
-                      const dateFromHxh = testUrl && testUrl.split('/')[4]
-                      dateFromHxh && sendPortadaDate(res, moment(dateFromHxh, 'DDMMYY').toDate())
-                      resolve(testUrl)
-                    } catch (err) {
-                      reject(err)
-                    }
-                  } else {
-                    sendPortadaDate(res, fecha)
-                    resolve(testUrl)
-                  }
-                  break
-                default:
-                  resolve()
-                  break
-              }
-            })
-        })
+  let ready = false
+  let url = 'No existe portada de este diario por los últimos 5 días.'
+  let fecha, testUrl, response, dateFromHxh
+
+  while (!ready) {
+    fecha = moment().subtract(daysPast, 'days')
+    if (daysPast > 5) {
+      ready = true
+      url = 'No existe portada de este diario por los últimos 5 días.'
+    } else {
+      testUrl = diario.url.replace('#DATE#', formatDate(fecha, diario.noSlashes))
+
+      try {
+        response = await axios.get(testUrl, { timeout: 2000 })
+        switch (response.status) {
+          case 200:
+            ready = true
+
+            if (diario.url === endpointHxh) {
+              var jsonHxh = response.data
+              testUrl = jsonHxh[0].esPortadaFalsa || diario.forcePortada ? jsonHxh[3].img : jsonHxh[0].img
+
+              dateFromHxh = testUrl && testUrl.split('/')[4]
+              fecha = moment(dateFromHxh, 'DDMMYY').toDate()
+              url = testUrl
+            } else {
+              url = response.request.res.responseUrl
+            }
+
+            sendPortadaDate(res, fecha)
+            break
+        }
+      } catch (e) {
+        console.log(e)
+        if (e.request.res.statusCode === 404) {
+          daysPast++
+        }
       }
     }
-  )
+  }
+  return url
 }
 
 module.exports = robot => {
