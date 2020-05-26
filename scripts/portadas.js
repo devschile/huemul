@@ -73,7 +73,7 @@ const buildKioskoUrl = periodico => buildNewspaperUrl(
 )
 
 const diarios = {
-  /* Soy Chile - Diarios Regionales */
+  /* Soy Chile - Medios Regionales */
   australlosrios: buildSoyChileUrl('AustralValdivia'),
   australosorno: buildSoyChileUrl('AustralOsorno'),
   australtemuco: buildSoyChileUrl('AustralTemuco'),
@@ -89,6 +89,10 @@ const diarios = {
   estrellaquillota: buildSoyChileUrl('EstrellaQuillota'),
   estrellatocopilla: buildSoyChileUrl('EstrellaTocopilla'),
   estrellavalpo: buildSoyChileUrl('EstrellaValparaiso'),
+  hoyxhoy: buildNewspaperUrl(endpointHxh, false),
+  hoyxhoylpm: buildNewspaperUrl(endpointHxh, false, true),
+  hxh: buildNewspaperUrl(endpointHxh, false),
+  hxhlpm: buildNewspaperUrl(endpointHxh, false, true),
   lider: buildSoyChileUrl('LiderSanAntonio'),
   lidersanantonio: buildSoyChileUrl('LiderSanAntonio'),
   llanquihue: buildSoyChileUrl('Llanquihue'),
@@ -120,10 +124,7 @@ const diarios = {
   trabajosanfelipe: buildNewspaperUrl('http://www.eltrabajo.cl/slide/eltrabajo%20(1).jpg', false),
   tercera: buildNewspaperUrl('https://kiosco.latercera.com/latest-issue-cover-image?collection=lt_diario_la_tercera_6_30', true),
   cuarta: buildNewspaperUrl('https://kiosco.lacuarta.com/latest-issue-cover-image?collection=lc_diario_la_cuarta', true),
-  hoyxhoy: buildNewspaperUrl(endpointHxh, false),
-  hoyxhoylpm: buildNewspaperUrl(endpointHxh, false, true),
-  hxh: buildNewspaperUrl(endpointHxh, false),
-  hxhlpm: buildNewspaperUrl(endpointHxh, false, true),
+
   paisuruguay: buildNewspaperUrl('http://www.elpais.com.uy/printed-home/#DATE#/portada_impresa.jpg', true),
   paisuru: buildNewspaperUrl('http://www.elpais.com.uy/printed-home/#DATE#/portada_impresa.jpg', true),
   paisuy: buildNewspaperUrl('http://www.elpais.com.uy/printed-home/#DATE#/portada_impresa.jpg', true),
@@ -161,6 +162,7 @@ const getPortada = async (res, diario) => {
       try {
         response = await axios.get(testUrl, { timeout: 2000 })
         switch (response.status) {
+          /* Se encontró una portada */
           case 200:
             ready = true
 
@@ -177,12 +179,15 @@ const getPortada = async (res, diario) => {
 
             sendPortadaDate(res, fecha)
             break
+
+          /* De lo contrario (sea cual sea el motivo) se intenta con un día anterior. */
+          default:
+            daysPast++
+            break
         }
       } catch (e) {
-        console.log(e)
-        if (e.request.res.statusCode === 404) {
-          daysPast++
-        }
+        /* Digamos que nos azotó un a catástrofe, como un 500 o un 404 */
+        daysPast++
       }
     }
   }
