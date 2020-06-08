@@ -61,20 +61,22 @@ module.exports = function (robot) {
         ('0' + new Date().getDate()).slice(-2)
       ].join('-') + 'T00:00:00-04:00'
     )
-    robot.http('https://www.feriadosapp.com/api/holidays.json').get()(function (err, res, body) {
+    var currentYear = new Date().getFullYear()
+
+    robot.http('https://apis.digital.gob.cl/fl/feriados/' + currentYear).get()(function (err, res, body) {
       if (err || res.statusCode !== 200) {
         return robot.emit('error', err || new Error(`Status code ${res.statusCode}`), msg, 'proximo-feriado')
       }
       var ok = false
       var bodyParsed = JSON.parse(body)
 
-      bodyParsed.data.forEach(function (holiday) {
-        var date = new Date(holiday.date + 'T00:00:00-04:00')
-        var humanDate = holiday.date.split('-')
+      bodyParsed.forEach(function (holiday) {
+        var date = new Date(holiday.fecha + 'T00:00:00-04:00')
+        var humanDate = holiday.fecha.split('-')
         var humanDay = humanDate[2].replace(/^0+/, '')
         var humanMonth = humanDate[1]
         var humanWeekDay = humanizeDay(date.getDay())
-        var message = holiday.title + ' (_' + holiday.extra.toLowerCase() + '_)'
+        var message = holiday.nombre + ' (_' + holiday.tipo.toLowerCase() + '_)'
 
         if (ok === false && date.getTime() >= today.getTime()) {
           ok = true
@@ -83,7 +85,7 @@ module.exports = function (robot) {
             [today.getFullYear(), ('0' + (today.getMonth() + 1)).slice(-2), ('0' + today.getDate()).slice(-2)].join(
               '-'
             ),
-            holiday.date
+            holiday.fecha
           )
 
           if (dias === 0) {
