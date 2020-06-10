@@ -31,7 +31,7 @@ test.beforeEach(t => {
                 { id: 5, profile: { display_name: 'leonardo', display_name_normalized: 'leonardo' } },
                 { id: 6, profile: { display_name: 'leon', display_name_normalized: 'leon' } },
                 { id: 7, profile: { display_name: 'cata', display_name_normalized: 'cata' } },
-                { id: 8, profile: { display_name: 'dukuo', display_name_normalized: 'dukuo' } },
+                { id: 8, profile: { display_name: 'dilip', display_name_normalized: 'dilip' } },
                 { id: 9, profile: { display_name: 'hector', display_name_normalized: 'hector' } },
                 { id: 10, profile: { display_name: 'ienc', display_name_normalized: 'ienc' } },
                 { id: 11, profile: { display_name: 'gmq', display_name_normalized: 'gmq' } }
@@ -100,11 +100,11 @@ test.afterEach(t => {
 })
 
 test.cb.serial('Debe añadir karma con @ y comas después del user', t => {
-  t.context.room.user.say('user', '@dukuo++, cata++')
+  t.context.room.user.say('user', '@dilip++, cata++')
   setTimeout(() => {
     t.deepEqual(t.context.room.messages, [
-      ['user', '@dukuo++, cata++'],
-      ['hubot', 'dukuo ahora tiene 1 puntos de karma.'],
+      ['user', '@dilip++, cata++'],
+      ['hubot', 'dilip ahora tiene 1 puntos de karma.'],
       ['hubot', 'cata ahora tiene -4 puntos de karma.']
     ])
     t.end()
@@ -146,14 +146,14 @@ test.cb.serial('No Debe aplicar karma', t => {
   }, 500)
 })
 test.cb.serial('Aplica karma sólo a 5 usuarios', t => {
-  t.context.room.user.say('user', 'leonardo++ jorgeepunan-- hector++ dukuo++ cata-- seis++')
+  t.context.room.user.say('user', 'leonardo++ jorgeepunan-- hector++ dilip++ cata-- seis++')
   setTimeout(() => {
     t.deepEqual(t.context.room.messages, [
-      ['user', 'leonardo++ jorgeepunan-- hector++ dukuo++ cata-- seis++'],
+      ['user', 'leonardo++ jorgeepunan-- hector++ dilip++ cata-- seis++'],
       ['hubot', 'leonardo ahora tiene 1 puntos de karma.'],
       ['hubot', 'jorgeepunan ahora tiene -1 puntos de karma.'],
       ['hubot', 'hector ahora tiene 1 puntos de karma.'],
-      ['hubot', 'dukuo ahora tiene 1 puntos de karma.'],
+      ['hubot', 'dilip ahora tiene 1 puntos de karma.'],
       ['hubot', 'cata ahora tiene -6 puntos de karma.']
     ])
     t.end()
