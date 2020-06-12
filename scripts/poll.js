@@ -28,13 +28,17 @@ const { section, actions, divider, context, image } = block
 const uuid = function b(a) { return a ? (a ^ Math.random() * 16 >> a / 4).toString(16) : ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, b) }
 
 module.exports = bot => {
-    const debug = true
+    const debug = false
+
     const MINUTE_IN_MS = 60 * 1e3
+
+    // defaults
+    const FALLBACK_CHANNEL = 'random'
 
     // Used as the main bot command
     const POLL_KEYWORD = 'poll'
     const POLL_MIN_OPTIONS = 2
-    const POLL_VOTING_LIMIT = 1
+    const POLL_VOTING_LIMIT = 10
 
     // Events
     const ON_POLL_CHOICE = 'poll_choice'
@@ -42,10 +46,14 @@ module.exports = bot => {
     const ON_FINISH_POLL = 'finish_poll'
 
     // Text labels
+    // TODO: Build or implement a i18n strategy
     const TXT_VOTE_BUTTON = 'Votar'
     const TXT_POLL_BY = 'Encuesta por'
+    const TXT_POLL_RESULTS = 'Poll results'
     const TXT_FINISH_POLL_BUTTON = 'Finalizar'
     const TXT_REMOVE_POLL_BUTTON = 'Eliminar'
+    const TXT_PERCENTAGE_SYMBOL = '%'
+    const TXT_MOST_VOTED_OPTION = ':star:'
     const TXT_CREATING_POLL_STATUS_MESSAGE = `*Creating poll*. If you see this message for more than 2 seconds something might have gone wrong. Please stand by...`
     const TXT_FINISH_POLL_STANDBY = '*Poll:* Fetching poll results. If you see this message for more than 2 seconds something might have gone wrong. Please stand by... '
     const TXT_POLL_MIN_OPTIONS = `*New poll*: You must have at least ${POLL_MIN_OPTIONS} options to create a new poll.`
@@ -57,9 +65,14 @@ module.exports = bot => {
     const TXT_VOTE_ERROR = '*Poll:* An error ocurred while voting. Please try again.'
     const TXT_VOTE_CANT = '*Poll:* The user can\'t vote or has reached it\'s voting limit in this poll.'
     const TXT_POLL_NOT_FOUND = '*Poll*: Unable to find the selected poll.'
+    const TXT_UPDATING_POLL = '*Poll*: Updating voting results...'
+    const TXT_POLL_FINISH_NO_PERMISSON = '*Poll:* Only the poll author can finish a it.'
+    const TXT_POLL_FINISHED = '*Poll:* This poll has ended.'
+    const TXT_POLL_REMOVED_SUCCESSFULLY = '*Poll:*: Poll deleted successfully.'
+    const TXT_POLL_REMOVED_NO_PERMISSION = '*Poll*: Only the author can remove it.'
 
     // Clean scheduler cron settings
-    const cleaningCronSettings = "0 * * * *" // every 1 hour https://crontab.guru/every-1-hour
+    const CLEANING_CRON_SETTINGS = "0 * * * *" // every 1 hour https://crontab.guru/every-1-hour
     let cleaningCron = null
 
     const optionShape = {
@@ -78,6 +91,7 @@ module.exports = bot => {
     const managedPollShape = {
         active: false,
         expiresIn: .1 * MINUTE_IN_MS,
+        scheduled: false,
         begin: null,
         block: {},
         metadata: {},
@@ -96,7 +110,7 @@ module.exports = bot => {
     }
 
 
-
+    // Block Builders
 
     const buildPollOptions = (data, pId) => {
         const options = []
@@ -108,18 +122,16 @@ module.exports = bot => {
             }
             const concatId = Buffer.from(JSON.stringify(pollOption)).toString('base64')
 
-            // debug && console.log(pollOption)
-            const block = buildOptionBlock({
-                title,
-                subtitle,
-                value: concatId
-            })
-
             options.push({
                 ...optionShape,
                 value: id,
                 title,
-                block,
+                block: (finished = false) => buildOptionBlock({
+                    title,
+                    subtitle,
+                    value: concatId,
+                    finished
+                }),
                 context: () => buildOptionContext(pId, id)
             })
         })
@@ -145,7 +157,48 @@ module.exports = bot => {
         return context(votersBlock)
     }
 
-    const buildVoterBlock = voter => image(voter.avatar, voter.name)
+    const buildVoterBlock = voter => {
+        const user = bot.brain.usersForFuzzyName(voter)[0]
+        if (user) {
+
+            const { name, slack: { profile: { image_24: avatar } } } = user
+            const block = image(avatar, name)
+            return block
+        }
+    }
+
+    const buildPollBlock = ({
+        id,
+        title,
+        name,
+        options,
+        finished = false
+    }) => {
+        const header = section(
+            text(`*${title}* ${TXT_POLL_BY} @${name}`, TEXT_FORMAT_MRKDWN)
+        )
+        const _divider = divider()
+        const pollActions = buildPollActions(id, finished)
+
+        const optionsBlocks = options.map(opt => opt.block(finished))
+
+        const optionsContext = options.map(opt => opt.context())
+
+        const blocks = [
+            header,
+            _divider,
+        ]
+        optionsBlocks.forEach((optBlock, i) => {
+            blocks.push(optBlock)
+            blocks.push(optionsContext[i])
+        })
+
+        blocks.push(_divider)
+        blocks.push(pollActions)
+        blocks.push(_divider)
+
+        return blocks
+    }
 
     const buildAndPushPoll = (data) => {
         const {
@@ -155,8 +208,8 @@ module.exports = bot => {
                 name,
             },
             options,
-            limit,
-            multiple,
+            limit = pollMetadataShape.limit,
+            multiple = pollMetadataShape.multiple,
             expiresIn,
             channel,
         } = {
@@ -164,34 +217,17 @@ module.exports = bot => {
             ...data
         }
 
-        // console.log(data.author.slack.profile)
         debug && console.log("CREATING POLL WITH DATA: ", data)
 
-        const pollId = id
-        const header = section(
-            text(`*${title}* ${TXT_POLL_BY} @${name}`, TEXT_FORMAT_MRKDWN)
-        )
-        const _divider = divider()
-        const pollActions = buildPollActions(pollId)
-
-        const optionsBlocks = options.map(opt => opt.block)
-
-        const optionsContext = options.map(opt => opt.context())
-
-        const pollBlockData = [
-            header,
-            _divider,
-        ]
-        optionsBlocks.forEach((optBlock, i) => {
-            pollBlockData.push(optBlock)
-            pollBlockData.push(optionsContext[i])
+        const block = buildPollBlock({
+            id,
+            title,
+            name,
+            options
         })
 
-        pollBlockData.push(_divider)
-        pollBlockData.push(pollActions)
-
-        pushPoll(pollId, {
-            block: pollBlockData,
+        pushPoll(id, {
+            block,
             metadata: {
                 ...pollMetadataShape,
                 title,
@@ -205,41 +241,100 @@ module.exports = bot => {
         })
 
         return {
-            id: pollId,
-            block: pollBlockData
+            id,
+            block
         }
     }
 
-    const buildPollActions = (pollId) => {
-        const endPollBtn = buildButtonBlock(ON_FINISH_POLL, TXT_FINISH_POLL_BUTTON, pollId)
-        const removePollBtn = buildButtonBlock(ON_REMOVE_POLL, TXT_REMOVE_POLL_BUTTON, pollId)
-        return actions(
-            [
-                endPollBtn,
-                removePollBtn
-            ], {
+    const buildPollActions = (pollId, finished = false) => {
+        const endPollBtn = buildButtonBlock(ON_FINISH_POLL, TXT_FINISH_POLL_BUTTON, pollId, 'primary')
+        const removePollBtn = buildButtonBlock(ON_REMOVE_POLL, TXT_REMOVE_POLL_BUTTON, pollId, 'danger')
+        const pollFinishedSection = section(text(TXT_POLL_FINISHED, TEXT_FORMAT_MRKDWN))
+        const actionBlock = actions(
+            [endPollBtn, removePollBtn], {
             blockId: `pollActions-${pollId}`
+        })
+
+        return finished ? pollFinishedSection : actionBlock
+    }
+
+    const buildButtonBlock = (actionId, text, value, style = undefined) => {
+        const settings = {
+            value
         }
+        if (style) settings.style = style
+        return button(actionId, text, settings,
         )
     }
 
-    const buildButtonBlock = (actionId, text, value) => {
-        return button(actionId, text, {
-            value,
-        })
-    }
-
-    const buildOptionBlock = (option, optionId = undefined, pollId = undefined) => {
-        const { title, subtitle = null, value } = option
+    const buildOptionBlock = ({
+        title,
+        subtitle = null,
+        value,
+        finished = false
+    }) => {
 
         const newButton = buildButtonBlock(ON_POLL_CHOICE, TXT_VOTE_BUTTON, value)
+        // const newText = 
         // const votersBlock = buildOptionContext(pollId, optionId)
+        const settings = finished ? {} : {
+            accessory: newButton
+        }
+
         return section(
             text(`*${title}*${subtitle !== null ? `\n${subtitle}` : ''}`, TEXT_FORMAT_MRKDWN),
-            {
-                accessory: newButton
-            }
+            settings
         )
+    }
+
+    const buildPollResultsBlock = id => {
+        const poll = getPoll(id)
+        if (poll) {
+            const { voters, options, metadata: { title, author } } = poll
+
+            const header = section(
+                text(`*${TXT_POLL_RESULTS}: * *${title}* ${TXT_POLL_BY} @${author}`, TEXT_FORMAT_MRKDWN)
+            )
+            const _divider = divider()
+
+            const blocks = [
+                _divider,
+                header,
+                _divider,
+            ]
+
+            const pollTotalVotes = countVotesFromPoll(poll)
+
+            debug && console.log("TOTAL VOTES: ", pollTotalVotes)
+
+            const optionBlocksWithPercentagesAndContext = []
+
+            options.forEach(option => {
+                const optionVotePercentage = getVotesByPollOption(id, option.value).length * 1e2 / pollTotalVotes
+                const optionBlock = option.block(true)
+                const optionContext = option.context()
+                optionBlocksWithPercentagesAndContext.push([optionVotePercentage, optionBlock, optionContext, _divider])
+            })
+
+            const orderedResults = optionBlocksWithPercentagesAndContext.sort((a, b) => b[0] - a[0])
+            const orderedResultsWithTextLabel = orderedResults.map((result, i) => {
+                const percentageTextBlockLabel = `${result[0] > 0 ? result[0] : 0}${TXT_PERCENTAGE_SYMBOL}${i === 0 && result[0] > 0 ? ` - *${TXT_MOST_VOTED_OPTION}*` : ''}`
+                const textSectionBlock = section(
+                    text(percentageTextBlockLabel, TEXT_FORMAT_MRKDWN)
+                )
+                return [
+                    textSectionBlock,
+                    ...result.slice(1),
+                ]
+            })
+            
+            orderedResultsWithTextLabel.forEach(result => blocks.push(...result))
+
+            debug && console.log(optionBlocksWithPercentagesAndContext)
+
+            return blocks
+        }
+        return []
     }
 
     // Poll management
@@ -256,57 +351,81 @@ module.exports = bot => {
 
     const getPoll = id => pollManager.polls[id]
 
-    const getOptionFromPoll = (pollId, optId) => {
-        const poll = getPoll(pollId)
-        if (poll) {
-            return poll.options[optId]
-        }
-        return undefined
-
-    }
-
-    const beginPoll = id => {
-        const poll = getPoll(id)
-        if (poll && !poll.active) {
-            console.log("BEGINNING POLL TIMER")
-            poll.timer = poll.begin()
-        }
-    }
-
     const pushPoll = (id = uuid(), config = {}) => {
         pollManager.polls[id] = {
             ...managedPollShape,
             ...config
         }
-        debug && console.log("POLL MANAGER: ", pollManager)
+        return id
     }
 
     const removePoll = (pollId) => delete pollManager.polls[pollId]
 
-    const updatePoll = (id, conf) => {
-        const tmpPoll = getPoll(id)
-        if (tmpPoll) {
-            return pollManager.polls[id] = {
-                ...tmpPoll,
-                ...conf
-            }
-        }
-    }
-
-    const finishPoll = (pollId) => {
+    const finishPoll = async (pollId) => {
         const poll = getPoll(pollId)
-        if(poll) {
+        if (poll) {
+            clearInterval(poll.timer)
             poll.timer = undefined
             poll.active = false
-    
-            emitResults(pollId)
+
+            await handleRefreshPoll(pollId, true)
+            await handleShowResults(pollId)
         }
     }
 
-    const emitResults = async (pollId) => {
+    const doVotePoll = (pollId, optionId, username) => {
+        /**
+         * Get poll
+         * insert voter if not present
+         * push option key
+         * update poll
+         * return boolean
+         */
+        const poll = getPoll(pollId)
+        // debug && console.log("POLL FOUND", poll)
+        if (poll) {
+            const newVoters = { ...poll.voters }
+            if (newVoters[username]) {
+                newVoters[username][optionId] = true
+            } else {
+                newVoters[username] = {
+                    [optionId]: true
+                }
+            }
+            poll.voters = { ...newVoters }
+            // debug && console.log("NEW VOTERS", newVoters)
+            return true
+        }
+
+        return false
+
+    }
+
+    const handleRefreshPoll = async (id, finished = false) => {
+        const poll = getPoll(id)
+        if (poll) {
+            const { metadata: { title, author: name, channel, }, ts, options, } = poll
+            const block = buildPollBlock({
+                id,
+                title,
+                name,
+                options,
+                finished
+            })
+            poll.block = block
+
+            return web.chat.update({
+                channel,
+                ts,
+                blocks: poll.block
+            })
+        }
+        return handlePollNotFound()
+    }
+
+    const handleShowResults = async (pollId, finished = false) => {
         // Send a message with the results of the poll
         const poll = getPoll(pollId)
-        debug && console.log("EMITTING RESULTS FOR POLL: ", poll)
         if (poll) {
             const { metadata: { channel }, block } = poll
 
@@ -316,27 +435,14 @@ module.exports = bot => {
             return await web.chat.postMessage({
                 channel,
                 blocks: resultsBlock,
-                attachments: [
-                    {
-                        text: TXT_FINISH_POLL_STANDBY
-                    }
-                ]
+                text: TXT_FINISH_POLL_STANDBY,
             })
         } else {
-            return await web.chat.postMessage({
-                channel,
-                attachments: [
-                    {
-                        text: TXT_POLL_NOT_FOUND
-                    }
-                ]
-            })
+            return handlePollNotFound()
         }
     }
 
-    const buildPollResultsBlock = poll => {
-        const { voters } = poll
-    }
+
 
     // Utils
 
@@ -353,30 +459,52 @@ module.exports = bot => {
         const poll = getPoll(pollId)
         if (poll) {
             const pollVoters = poll.voters
-            const optionVoters = Object.keys(pollVoters)
-                .map((vk) => pollVoters[vk].votes)
-                .reduce((acc, curr, i, arr) => curr[optId] && acc.push(pollVoters[i].metadata), [])
+            const voteOptionCount = []
+            debug && console.log("POLL VOTERS: ", pollVoters)
 
-            return optionVoters
+            // Count votes
+            Object.keys(pollVoters)
+                .forEach(vk => {
+                    const voter = pollVoters[vk]
+                    voter && Object.keys(voter).forEach(vote => {
+                        if (vote === optId) voteOptionCount.push(vk)
+                    })
+                })
+
+            debug && console.log("VOTE COUNT: ", voteOptionCount)
+
+            return voteOptionCount
         }
         return []
+    }
+
+    const countVotesFromPoll = (poll) => {
+        const { voters } = poll
+        debug && console.log("COUNTING VOTES FROM VOTERS: ", voters)
+        return Object.keys(voters).reduce((acc, curr, i, arr) => {
+            return acc += Object.keys(voters[curr]).length
+        }, 0)
     }
 
     const cleanCommands = (cmd) => cmd.map(c => c.substring(1, c.length - 1))
 
     const canUserVoteOnPollOption = (pollId, optionId, username) => {
         const poll = getPoll(pollId)
+
         if (poll) {
             const voters = poll.voters
+
             if (!voters[username]) {
                 return true
             } else {
                 const { limit, multiple } = poll.metadata
                 const voterData = voters[username]
                 const userVoteCount = Object.keys(voterData).length
-                // debug && console.log("LIMIT: ", limit, "MULTIPLE: ", multiple, "VOTER DATA: ", voterData)
+
                 if (userVoteCount > 0 && (limit === userVoteCount || !multiple)) return false
+
                 if (voterData[optionId]) return false
+
                 return true
             }
         }
@@ -449,22 +577,11 @@ module.exports = bot => {
     const handleUserChoice = async payload => {
         const { user: { username }, actions, channel: { id: channelId } } = payload
 
-        const data = bot.brain.usersForFuzzyName(username)[0]
-
-        const userData = {
-            name: data.name,
-            avatar: data.slack.profile.image_24
-        }
         const optionData = actions.shift()
 
-        // debug && console.log(payload)
-
-        // const optionDeconstructed = Buffer.from(optionData.value, 'base64')
-        // debug && console.log(JSON.parse(atob(optionDeconstructed)))
-
         const parsedMetadata = JSON.parse(atob(Buffer.from(optionData.value, 'base64')))
-        // debug && console.log("PARSED: ", parsedMetadata)
         const { p: pollId, o: optionId } = parsedMetadata
+
         debug && console.log(pollId, optionId, username)
 
         if (pollId && optionId) {
@@ -472,101 +589,85 @@ module.exports = bot => {
             if (userCanVote) {
                 const pollVote = doVotePoll(pollId, optionId, username)
                 if (pollVote) {
+                    await handleRefreshPoll(pollId)
+
                     return await web.chat.postMessage({
                         channel: channelId,
-                        attachments: [
-                            {
-                                text: TXT_VOTE_SUCCESSFUL
-                            }
-                        ]
+                        text: TXT_VOTE_SUCCESSFUL
                     })
                 }
             } else {
                 return await web.chat.postMessage({
                     channel: channelId,
-                    attachments: [
-                        {
-                            text: TXT_VOTE_CANT
-                        }
-                    ]
+                    text: TXT_VOTE_CANT,
                 })
             }
-
-            /**
-             * TODO: update poll blocks
-             */
         }
 
         return await web.chat.postMessage({
             channel: channelId,
-            attachments: [
-                {
-                    text: TXT_VOTE_ERROR
-                }
-            ]
+            text: TXT_VOTE_ERROR,
         })
-
-        // debug && console.log(actions)
-
-        /**
-         * find poll
-         * get user metadata (username, thumbnail)
-         * set vote in option
-         * refresh poll blocks
-         */
-    }
-
-    const doVotePoll = (pollId, optionId, username) => {
-        /**
-         * Get poll
-         * insert voter if not present
-         * push option key
-         * update poll
-         * return boolean
-         */
-        const poll = getPoll(pollId)
-        // debug && console.log("POLL FOUND", poll)
-        if (poll) {
-            const newVoters = { ...poll.voters }
-            if (newVoters[username]) {
-                newVoters[username][optionId] = true
-            } else {
-                newVoters[username] = {
-                    [optionId]: true
-                }
-            }
-            poll.voters = { ...newVoters }
-            debug && console.log("NEW VOTERS", newVoters)
-            return true
-        }
-
-        return false
-
     }
 
     const handleFinishPoll = payload => {
-        /**
-         * deconstruct payload
-         * find poll
-         * update poll
-         * return message
-         */
+        const { user: { username }, actions, channel: { id: channelId } } = payload
+        const optionData = actions.shift()
+
+        const pollId = optionData.value
+        const poll = getPoll(pollId)
+
+        if (poll) {
+            if (poll.metadata.author === username) return finishPoll(pollId)
+            else return web.chat.postMessage({
+                channel: channelId,
+                text: TXT_POLL_FINISH_NO_PERMISSON
+            })
+        }
+        return handlePollNotFound(channelId)
     }
 
-    const handleRemovePoll = payload => {
-        /**
-         * deconstruct payload
-         * removePoll
-         */
+    const handleRemovePoll = async payload => {
+        const { user: { username }, actions, channel: { id: channelId } } = payload
+
+        const optionData = actions.shift()
+
+        const pollId = optionData.value
+        const poll = getPoll(pollId)
+        if (poll) {
+            if (poll.metadata.author === username) {
+                if (removePoll(pollId)) {
+                    await web.chat.delete({
+                        channel: channelId,
+                        ts: poll.ts
+                    })
+                    return web.chat.postMessage({
+                        channel: channelId,
+                        text: TXT_POLL_REMOVED_SUCCESSFULLY
+                    })
+                }
+            } else {
+                return web.chat.postMessage({
+                    channel: channelId,
+                    text: TXT_POLL_REMOVED_NO_PERMISSION
+                })
+            }
+        }
+        return handlePollNotFound(channelId)
     }
+
+    const handlePollNotFound = (channel = FALLBACK_CHANNEL) => web.chat.postMessage({
+        channel,
+        text: TXT_POLL_NOT_FOUND,
+    })
 
 
     const startPollCleanCron = () => {
-        cleaningCron = cron.schedule(cleaningCronSettings, handlePollCleaning)
+        cleaningCron = cron.schedule(CLEANING_CRON_SETTINGS, handlePollCleaning)
     }
     const handlePollCleaning = () => {
         debug && console.log("Cleaning inactive polls...")
-        Object.keys(pollManager.polls).map((id, i) => !pollManager.polls[id].active && removePoll(id))
+        Object.keys(pollManager.polls).map((id, i) => !pollManager.polls[id].active && !pollManager.polls[id].scheduled && removePoll(id))
     }
 
     const stopPollCleanCron = () => cleaningCron.stop()
