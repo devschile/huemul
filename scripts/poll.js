@@ -80,17 +80,9 @@ module.exports = bot => {
         context: {},
     }
 
-    const voterShape = {
-        metadata: {
-            username: null,
-            avatar: null,
-        },
-        votes: []
-    }
-
     const managedPollShape = {
         active: false,
-        expiresIn: 1 * MINUTE_IN_MS,
+        expiresIn: 5 * MINUTE_IN_MS,
         scheduled: false,
         begin: null,
         block: {},
@@ -290,7 +282,7 @@ module.exports = bot => {
     const buildPollResultsBlock = id => {
         const poll = getPoll(id)
         if (poll) {
-            const { voters, options, metadata: { title, author } } = poll
+            const { options, metadata: { title, author } } = poll
 
             const header = section(
                 text(`*${TXT_POLL_RESULTS}: * *${title}* ${TXT_POLL_BY} @${author}`, TEXT_FORMAT_MRKDWN)
@@ -417,6 +409,7 @@ module.exports = bot => {
             return web.chat.update({
                 channel,
                 ts,
+                text: TXT_UPDATING_POLL,
                 blocks: poll.block
             })
         }
@@ -427,7 +420,7 @@ module.exports = bot => {
         // Send a message with the results of the poll
         const poll = getPoll(pollId)
         if (poll) {
-            const { metadata: { channel }, block } = poll
+            const { metadata: { channel } } = poll
 
             debug && console.log(poll)
             const resultsBlock = buildPollResultsBlock(pollId)
