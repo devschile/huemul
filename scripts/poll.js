@@ -1,5 +1,5 @@
 // Description:
-//  In-memory polls. Inspired by SimplePoll & votador.js  by @juanbrujo & @antonishen
+//  In-memory polls. Inspired by SimplePoll & votador.js (@juanbrujo & @antonishen)
 // Dependencies:
 //  None
 // Usage:
@@ -13,6 +13,7 @@
 const { block, element, object, TEXT_FORMAT_MRKDWN, TEXT_FORMAT_PLAIN } = require('slack-block-kit')
 const { WebClient } = require('@slack/web-api')
 const cron = require('node-cron')
+const atob = require('atob')
 
 const token = process.env.HUBOT_SLACK_TOKEN
 const web = new WebClient(token)
@@ -23,16 +24,17 @@ const {
 } = element
 const { section, actions, divider, context, image } = block
 
-//https://gist.github.com/jed/982883
+// https://gist.github.com/jed/982883
 const uuid = function b(a) { return a ? (a ^ Math.random() * 16 >> a / 4).toString(16) : ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, b) }
 
 module.exports = bot => {
     const debug = true
+    const MINUTE_IN_MS = 60 * 1e3
 
     // Used as the main bot command
     const POLL_KEYWORD = 'poll'
-
     const POLL_MIN_OPTIONS = 2
+    const POLL_VOTING_LIMIT = 1
 
     // Events
     const ON_POLL_CHOICE = 'poll_choice'
@@ -51,6 +53,10 @@ module.exports = bot => {
     const TXT_VOTER_PLURAL = 'Voters'
     const TXT_VOTER_NONE = 'No votes'
     const TXT_VOTER_SINGULAR = 'Voter'
+    const TXT_VOTE_SUCCESSFUL = '*Poll:* Vote successful'
+    const TXT_VOTE_ERROR = '*Poll:* An error ocurred while voting. Please try again.'
+    const TXT_VOTE_CANT = '*Poll:* The user can\'t vote or has reached it\'s voting limit in this poll.'
+    const TXT_POLL_NOT_FOUND = '*Poll*: Unable to find the selected poll.'
 
     // Clean scheduler cron settings
     const cleaningCronSettings = "0 * * * *" // every 1 hour https://crontab.guru/every-1-hour
@@ -58,22 +64,30 @@ module.exports = bot => {
 
     const optionShape = {
         block: {},
-        voters: []
+        context: {},
     }
-    const pollBlockShape = {
-        author: null,
-        title: '',
-        limit: 1,
-        options: [],
+
+    const voterShape = {
+        metadata: {
+            username: null,
+            avatar: null,
+        },
+        votes: []
     }
 
     const managedPollShape = {
         active: false,
-        channel: '',
-        expiresIn: 5 * 60 * 1e3, // 30 minutes
+        expiresIn: .1 * MINUTE_IN_MS,
         begin: null,
         block: {},
-        metadata: {}
+        metadata: {},
+        voters: []
+    }
+
+    const pollMetadataShape = {
+        multiple: false,
+        limit: POLL_VOTING_LIMIT,
+        channel: ''
     }
 
     const pollManager = {
@@ -82,46 +96,40 @@ module.exports = bot => {
     }
 
 
-    const parseTitleAndSubtitle = commands => commands.map(cmd => {
-        const split = cmd.split(TXT_TITLE_SEPARATOR)
-        return {
-            title: split[0],
-            subtitle: split[1] ? split[1] : undefined
-        }
-    })
 
-    const buildPollOptions = (data) => {
+
+    const buildPollOptions = (data, pId) => {
         const options = []
         data.forEach(({ title, subtitle }) => {
             const id = uuid()
+            const pollOption = {
+                p: pId,
+                o: id
+            }
+            const concatId = Buffer.from(JSON.stringify(pollOption)).toString('base64')
+
+            // debug && console.log(pollOption)
             const block = buildOptionBlock({
                 title,
                 subtitle,
-                value: id
+                value: concatId
             })
 
             options.push({
                 ...optionShape,
                 value: id,
                 title,
-                block
+                block,
+                context: () => buildOptionContext(pId, id)
             })
         })
         return options
     }
 
-    const getOptionFromPoll = (pollId, optId) => {
-        const poll = getPoll(pollId)
-        if (poll) {
-            return poll.options[optId]
-        } else {
-            return undefined
-        }
-    }
 
     const buildOptionContext = (pollId = undefined, optId = undefined) => {
-        const option = pollId ? getOptionFromPoll(pollId, optId) : optionShape
-        const voters = option.voters
+        const voters = pollId && optId ? getVotesByPollOption(pollId, optId) : []
+        debug && console.log("VOTERS", voters)
         const votersCount = voters.length
 
         const votersBlock = voters.map(voter => buildVoterBlock(voter))
@@ -139,51 +147,61 @@ module.exports = bot => {
 
     const buildVoterBlock = voter => image(voter.avatar, voter.name)
 
-    const buildPollBlock = (channel, data) => {
+    const buildAndPushPoll = (data) => {
         const {
+            id,
             title,
             author: {
                 name,
             },
             options,
             limit,
-            expiresIn
+            multiple,
+            expiresIn,
+            channel,
         } = {
-            ...pollBlockShape,
+            ...managedPollShape,
             ...data
         }
-        
-        console.log(data.author.slack.profile)
-        debug && console.log(data)
 
-        const pollId = uuid()
+        // console.log(data.author.slack.profile)
+        debug && console.log("CREATING POLL WITH DATA: ", data)
+
+        const pollId = id
         const header = section(
             text(`*${title}* ${TXT_POLL_BY} @${name}`, TEXT_FORMAT_MRKDWN)
         )
         const _divider = divider()
         const pollActions = buildPollActions(pollId)
 
-        const extractOptionBlocks = options.map(opt => opt.block)
+        const optionsBlocks = options.map(opt => opt.block)
+
+        const optionsContext = options.map(opt => opt.context())
 
         const pollBlockData = [
             header,
             _divider,
         ]
-        extractOptionBlocks.forEach(optBlock => pollBlockData.push(...optBlock))
+        optionsBlocks.forEach((optBlock, i) => {
+            pollBlockData.push(optBlock)
+            pollBlockData.push(optionsContext[i])
+        })
 
         pollBlockData.push(_divider)
         pollBlockData.push(pollActions)
 
         pushPoll(pollId, {
-            ...managedPollShape,
             block: pollBlockData,
-            data: {
+            metadata: {
+                ...pollMetadataShape,
                 title,
                 author: name,
+                channel,
+                limit,
+                multiple,
             },
             options,
-            limit,
-            expiresIn
+            expiresIn,
         })
 
         return {
@@ -215,89 +233,160 @@ module.exports = bot => {
         const { title, subtitle = null, value } = option
 
         const newButton = buildButtonBlock(ON_POLL_CHOICE, TXT_VOTE_BUTTON, value)
-        const votersBlock = buildOptionContext(pollId, optionId)
-        return [
-            section(
-                text(`*${title}*${subtitle !== null ? `\n${subtitle}` : ''}`, TEXT_FORMAT_MRKDWN),
-                {
-                    accessory: newButton
-                }
-            ),
-            votersBlock
-        ]
+        // const votersBlock = buildOptionContext(pollId, optionId)
+        return section(
+            text(`*${title}*${subtitle !== null ? `\n${subtitle}` : ''}`, TEXT_FORMAT_MRKDWN),
+            {
+                accessory: newButton
+            }
+        )
     }
 
     // Poll management
 
     const startPoll = (pollId, cb) => {
         const poll = getPoll(pollId)
-        const { expiresIn } = poll
-        updatePoll(pollId, {
-            active: true,
-            begin: () => setTimeout(() => cb(), expiresIn)
-        })
+        if (poll) {
+            const { expiresIn } = poll
+            poll.begin = () => setTimeout(() => cb(), expiresIn)
 
-        beginPoll(pollId)
+            poll.timer = poll.begin()
+        }
     }
 
     const getPoll = id => pollManager.polls[id]
 
-    const beginPoll = id => pollManager.polls[id].begin()
+    const getOptionFromPoll = (pollId, optId) => {
+        const poll = getPoll(pollId)
+        if (poll) {
+            return poll.options[optId]
+        }
+        return undefined
 
-    const pushPoll = (id = uuid(), block, config = {}) => pollManager.polls[id] = {
-        block,
-        ...config
+    }
+
+    const beginPoll = id => {
+        const poll = getPoll(id)
+        if (poll && !poll.active) {
+            console.log("BEGINNING POLL TIMER")
+            poll.timer = poll.begin()
+        }
+    }
+
+    const pushPoll = (id = uuid(), config = {}) => {
+        pollManager.polls[id] = {
+            ...managedPollShape,
+            ...config
+        }
+        debug && console.log("POLL MANAGER: ", pollManager)
     }
 
     const removePoll = (pollId) => delete pollManager.polls[pollId]
 
     const updatePoll = (id, conf) => {
-        const tmpPoll = { ...pollManager.polls[id] }
-        return pollManager.polls[id] = {
-            ...tmpPoll,
-            ...conf
+        const tmpPoll = getPoll(id)
+        if (tmpPoll) {
+            return pollManager.polls[id] = {
+                ...tmpPoll,
+                ...conf
+            }
         }
     }
 
     const finishPoll = (pollId) => {
-        updatePoll(pollId, {
-            active: false,
-            timer: undefined
-        })
-
-        emitResults(pollId)
+        const poll = getPoll(pollId)
+        if(poll) {
+            poll.timer = undefined
+            poll.active = false
+    
+            emitResults(pollId)
+        }
     }
 
     const emitResults = async (pollId) => {
         // Send a message with the results of the poll
         const poll = getPoll(pollId)
-        const { channel, block, data } = poll
+        debug && console.log("EMITTING RESULTS FOR POLL: ", poll)
+        if (poll) {
+            const { metadata: { channel }, block } = poll
 
-        const resultsBlock = buildPollResultsBlock()
+            debug && console.log(poll)
+            const resultsBlock = buildPollResultsBlock(pollId)
 
-        const result = await web.chat.postMessage({
-            channel,
-            blocks: resultsBlock,
-            attachments: [
-                {
-                    text: TXT_FINISH_POLL_STANDBY
-                }
-            ]
-        })
+            return await web.chat.postMessage({
+                channel,
+                blocks: resultsBlock,
+                attachments: [
+                    {
+                        text: TXT_FINISH_POLL_STANDBY
+                    }
+                ]
+            })
+        } else {
+            return await web.chat.postMessage({
+                channel,
+                attachments: [
+                    {
+                        text: TXT_POLL_NOT_FOUND
+                    }
+                ]
+            })
+        }
     }
 
     const buildPollResultsBlock = poll => {
-        const { blocks } = poll
+        const { voters } = poll
     }
 
     // Utils
 
+    const parseTitleAndSubtitle = commands => commands.map(cmd => {
+        const split = cmd.split(TXT_TITLE_SEPARATOR)
+        return {
+            title: split[0],
+            subtitle: split[1] ? split[1] : undefined
+        }
+    })
+
+
+    const getVotesByPollOption = (pollId, optId) => {
+        const poll = getPoll(pollId)
+        if (poll) {
+            const pollVoters = poll.voters
+            const optionVoters = Object.keys(pollVoters)
+                .map((vk) => pollVoters[vk].votes)
+                .reduce((acc, curr, i, arr) => curr[optId] && acc.push(pollVoters[i].metadata), [])
+
+            return optionVoters
+        }
+        return []
+    }
+
     const cleanCommands = (cmd) => cmd.map(c => c.substring(1, c.length - 1))
+
+    const canUserVoteOnPollOption = (pollId, optionId, username) => {
+        const poll = getPoll(pollId)
+        if (poll) {
+            const voters = poll.voters
+            if (!voters[username]) {
+                return true
+            } else {
+                const { limit, multiple } = poll.metadata
+                const voterData = voters[username]
+                const userVoteCount = Object.keys(voterData).length
+                // debug && console.log("LIMIT: ", limit, "MULTIPLE: ", multiple, "VOTER DATA: ", voterData)
+                if (userVoteCount > 0 && (limit === userVoteCount || !multiple)) return false
+                if (voterData[optionId]) return false
+                return true
+            }
+        }
+        return false
+    }
 
     // Handlers
 
     const handlePollCreation = async (payload) => {
-        const { message: { room, text, user: { name } } } = payload
+        const { message: { room: channel, text, user: { name } } } = payload
         let splitCommand = text.split(POLL_KEYWORD)
         const settings = splitCommand[1]
 
@@ -312,7 +401,7 @@ module.exports = bot => {
 
         if (splitCommand.length < POLL_MIN_OPTIONS) {
             return await web.chat.postMessage({
-                channel: room,
+                channel,
                 attachments: [
                     {
                         text: TXT_POLL_MIN_OPTIONS
@@ -320,25 +409,27 @@ module.exports = bot => {
                 ]
             })
         }
-
-        const options = buildPollOptions(splitCommand)
+        const pollId = uuid()
+        const options = buildPollOptions(splitCommand, pollId)
 
         const author = bot.brain.usersForFuzzyName(name)[0]
 
         const pollData = {
+            id: pollId,
             title,
             author,
-            options
+            options,
+            channel,
         }
-        const newPoll = buildPollBlock(room, pollData)
-        const pollId = newPoll.id
+        const newPoll = buildAndPushPoll(pollData)
+        // const pollId = newPoll.id
         const pollBlock = newPoll.block
 
         debug && console.log(pollBlock)
         const response = TXT_CREATING_POLL_STATUS_MESSAGE
         const result = await web.chat.postMessage({
             callback_id: `${ON_POLL_CHOICE}`,
-            channel: room,
+            channel,
             text: response,
             blocks: pollBlock,
             attachments: [
@@ -349,25 +440,108 @@ module.exports = bot => {
         })
 
         if (result) {
-            updatePoll(pollId, {
-                ts: result.ts
-            })
-            startPoll(newPoll, () => finishPoll(newPoll))
+            const poll = getPoll(newPoll.id)
+            poll.ts = result.ts
+            startPoll(newPoll.id, () => finishPoll(newPoll.id))
         }
     }
 
-    const handleUserChoice = payload => {
-        // userdata = {
-        //     name: data.author.name,
-        //     avatar: data.author.slack.profile.image_24 
-        // }
-        const { } = payload
+    const handleUserChoice = async payload => {
+        const { user: { username }, actions, channel: { id: channelId } } = payload
+
+        const data = bot.brain.usersForFuzzyName(username)[0]
+
+        const userData = {
+            name: data.name,
+            avatar: data.slack.profile.image_24
+        }
+        const optionData = actions.shift()
+
+        // debug && console.log(payload)
+
+        // const optionDeconstructed = Buffer.from(optionData.value, 'base64')
+        // debug && console.log(JSON.parse(atob(optionDeconstructed)))
+
+        const parsedMetadata = JSON.parse(atob(Buffer.from(optionData.value, 'base64')))
+        // debug && console.log("PARSED: ", parsedMetadata)
+        const { p: pollId, o: optionId } = parsedMetadata
+        debug && console.log(pollId, optionId, username)
+
+        if (pollId && optionId) {
+            const userCanVote = canUserVoteOnPollOption(pollId, optionId, username)
+            if (userCanVote) {
+                const pollVote = doVotePoll(pollId, optionId, username)
+                if (pollVote) {
+                    return await web.chat.postMessage({
+                        channel: channelId,
+                        attachments: [
+                            {
+                                text: TXT_VOTE_SUCCESSFUL
+                            }
+                        ]
+                    })
+                }
+            } else {
+                return await web.chat.postMessage({
+                    channel: channelId,
+                    attachments: [
+                        {
+                            text: TXT_VOTE_CANT
+                        }
+                    ]
+                })
+            }
+
+            /**
+             * TODO: update poll blocks
+             */
+        }
+
+        return await web.chat.postMessage({
+            channel: channelId,
+            attachments: [
+                {
+                    text: TXT_VOTE_ERROR
+                }
+            ]
+        })
+
+        // debug && console.log(actions)
+
         /**
          * find poll
          * get user metadata (username, thumbnail)
          * set vote in option
          * refresh poll blocks
          */
+    }
+
+    const doVotePoll = (pollId, optionId, username) => {
+        /**
+         * Get poll
+         * insert voter if not present
+         * push option key
+         * update poll
+         * return boolean
+         */
+        const poll = getPoll(pollId)
+        // debug && console.log("POLL FOUND", poll)
+        if (poll) {
+            const newVoters = { ...poll.voters }
+            if (newVoters[username]) {
+                newVoters[username][optionId] = true
+            } else {
+                newVoters[username] = {
+                    [optionId]: true
+                }
+            }
+            poll.voters = { ...newVoters }
+            debug && console.log("NEW VOTERS", newVoters)
+            return true
+        }
+
+        return false
+
     }
 
     const handleFinishPoll = payload => {
