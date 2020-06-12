@@ -42,7 +42,7 @@ module.exports = bot => {
     // Text labels
     const TXT_VOTE_BUTTON = 'Votar'
     const TXT_POLL_BY = 'Encuesta por'
-    const TXT_FINISH_POLL_BUTTON = 'Terminar'
+    const TXT_FINISH_POLL_BUTTON = 'Finalizar'
     const TXT_REMOVE_POLL_BUTTON = 'Eliminar'
     const TXT_CREATING_POLL_STATUS_MESSAGE = `*Creating poll*. If you see this message for more than 2 seconds something might have gone wrong. Please stand by...`
     const TXT_FINISH_POLL_STANDBY = '*Poll:* Fetching poll results. If you see this message for more than 2 seconds something might have gone wrong. Please stand by... '
