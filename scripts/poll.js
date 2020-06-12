@@ -90,7 +90,7 @@ module.exports = bot => {
 
     const managedPollShape = {
         active: false,
-        expiresIn: .1 * MINUTE_IN_MS,
+        expiresIn: 1 * MINUTE_IN_MS,
         scheduled: false,
         begin: null,
         block: {},
