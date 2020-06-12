@@ -30,6 +30,7 @@
   "homepage": "https://github.com/devschile/huemul#readme",
   "dependencies": {
     "@slack/web-api": "^5.10.0",
+    "atob": "^2.1.2",
     "bip": "3.0.2",
     "cheerio": "1.0.0-rc.2",
     "correos-chile": "^1.2.4",
