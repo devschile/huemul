@@ -628,8 +628,6 @@ module.exports = bot => {
   const handleRemovePoll = async payload => {
     const { user: { username }, actions, channel: { id: channelId }, message: { ts: fallbackTs } } = payload
 
-    console.log('REMOVAL PAYLOAD: ', payload)
-
     const optionData = actions.shift()
 
     const { pollId, author } = JSON.parse(atob(Buffer.from(optionData.value, 'base64')))
