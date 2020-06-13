@@ -139,10 +139,10 @@ module.exports = bot => {
     const votersBlock = voters.map(voter => buildVoterBlock(voter))
     const votersText = votersCount > 1 ? TXT_VOTER_PLURAL : votersCount < 1 ? TXT_VOTER_NONE : TXT_VOTER_SINGULAR
     const votersCountBlock =
-            text(`${votersCount > 0 ? `${votersCount} ` : ''}${votersText}`,
-              votersCount > 0 ? TEXT_FORMAT_PLAIN : TEXT_FORMAT_MRKDWN,
-              { emoji: votersCount > 0 }
-            )
+      text(`${votersCount > 0 ? `${votersCount} ` : ''}${votersText}`,
+        votersCount > 0 ? TEXT_FORMAT_PLAIN : TEXT_FORMAT_MRKDWN,
+        { emoji: votersCount > 0 }
+      )
 
     votersBlock.push(votersCountBlock)
 
@@ -169,7 +169,7 @@ module.exports = bot => {
       text(`*${title}* ${TXT_POLL_BY} @${name}`, TEXT_FORMAT_MRKDWN)
     )
     const _divider = divider()
-    const pollActions = buildPollActions(id, finished)
+    const pollActions = buildPollActions(id, name, finished)
 
     const optionsBlocks = options.map(opt => opt.block(finished))
 
@@ -237,9 +237,13 @@ module.exports = bot => {
     }
   }
 
-  const buildPollActions = (pollId, finished = false) => {
-    const endPollBtn = buildButtonBlock(ON_FINISH_POLL, TXT_FINISH_POLL_BUTTON, pollId, 'primary')
-    const removePollBtn = buildButtonBlock(ON_REMOVE_POLL, TXT_REMOVE_POLL_BUTTON, pollId, 'danger')
+  const buildPollActions = (pollId, author = '', finished = false) => {
+    const payload = Buffer.from(JSON.stringify({
+      pollId,
+      author
+    })).toString('base64')
+    const endPollBtn = buildButtonBlock(ON_FINISH_POLL, TXT_FINISH_POLL_BUTTON, payload, 'primary')
+    const removePollBtn = buildButtonBlock(ON_REMOVE_POLL, TXT_REMOVE_POLL_BUTTON, payload, 'danger')
     const pollFinishedSection = section(text(TXT_POLL_FINISHED, TEXT_FORMAT_MRKDWN))
     const actionBlock = actions(
       [endPollBtn, removePollBtn], {
@@ -426,7 +430,7 @@ module.exports = bot => {
   // 0 disabled
   // 1 low
   // 2 warning
-  const logger = (log = [], logLevel = 1) => !!debug && !!debug <= logLevel && console.log(...log)
+  const logger = (log = [], logLevel = 1) => debug && !!debug <= logLevel && console.log(...log)
 
   const parseTitleAndSubtitle = commands => commands.map(cmd => {
     const split = cmd.split(TXT_TITLE_SEPARATOR)
@@ -490,6 +494,17 @@ module.exports = bot => {
       }
     }
     return false
+  }
+
+  const deleteMessageAndSendConfirmation = async (channel, ts = undefined) => {
+    await web.chat.delete({
+      channel: channel,
+      ts: ts
+    })
+    return web.chat.postMessage({
+      channel: channel,
+      text: TXT_POLL_REMOVED_SUCCESSFULLY
+    })
   }
 
   // Handlers
@@ -588,10 +603,11 @@ module.exports = bot => {
   }
 
   const handleFinishPoll = payload => {
-    const { user: { username }, actions, channel: { id: channelId } } = payload
+    const { user: { username }, actions, channel: { id: channelId }, message: { ts: fallbackTs } } = payload
     const optionData = actions.shift()
 
-    const pollId = optionData.value
+    // const pollId = optionData.value
+    const { pollId, author } = JSON.parse(atob(Buffer.from(optionData.value, 'base64')))
     const poll = getPoll(pollId)
 
     if (poll) {
@@ -602,28 +618,28 @@ module.exports = bot => {
           text: TXT_POLL_FINISH_NO_PERMISSON
         })
       }
+    } else if (author === username) {
+      deleteMessageAndSendConfirmation(channelId, fallbackTs)
     }
+
     return handlePollNotFound(channelId)
   }
 
   const handleRemovePoll = async payload => {
-    const { user: { username }, actions, channel: { id: channelId } } = payload
+    const { user: { username }, actions, channel: { id: channelId }, message: { ts: fallbackTs } } = payload
+
+    console.log('REMOVAL PAYLOAD: ', payload)
 
     const optionData = actions.shift()
 
-    const pollId = optionData.value
+    const { pollId, author } = JSON.parse(atob(Buffer.from(optionData.value, 'base64')))
+
     const poll = getPoll(pollId)
+
     if (poll) {
       if (poll.metadata.author === username) {
         if (removePoll(pollId)) {
-          await web.chat.delete({
-            channel: channelId,
-            ts: poll.ts
-          })
-          return web.chat.postMessage({
-            channel: channelId,
-            text: TXT_POLL_REMOVED_SUCCESSFULLY
-          })
+          return deleteMessageAndSendConfirmation(channelId, poll.ts)
         }
       } else {
         return web.chat.postMessage({
@@ -631,6 +647,9 @@ module.exports = bot => {
           text: TXT_POLL_REMOVED_NO_PERMISSION
         })
       }
+    } else if (author === username) {
+      // Find TS of the message somewhere because of the poll not existing in memory.
+      return deleteMessageAndSendConfirmation(channelId, fallbackTs)
     }
     return handlePollNotFound(channelId)
   }
