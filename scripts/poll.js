@@ -25,7 +25,11 @@ const {
 const { section, actions, divider, context, image } = block
 
 // https://gist.github.com/jed/982883
-const uuid = function b (a) { return a ? (a ^ Math.random() * 16 >> a / 4).toString(16) : ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, b) }
+const uuid = function b (a) {
+  return a
+    ? (a ^ Math.random() * 16 >> a / 4).toString(16)
+    : ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, b)
+}
 
 module.exports = bot => {
   const debug = false
@@ -73,6 +77,7 @@ module.exports = bot => {
 
   // Clean scheduler cron settings
   const CLEANING_CRON_SETTINGS = '0 * * * *' // every 1 hour https://crontab.guru/every-1-hour
+
   let cleaningCron = null
 
   const optionShape = {
@@ -129,6 +134,22 @@ module.exports = bot => {
     return options
   }
 
+  const buildOptionBlock = ({
+    title,
+    subtitle = null,
+    value,
+    finished = false
+  }) => {
+    const newButton = buildButtonBlock(ON_POLL_CHOICE, TXT_VOTE_BUTTON, value)
+    const settings = finished ? {} : {
+      accessory: newButton
+    }
+
+    return section(
+      text(`*${title}*${subtitle !== null ? `\n${subtitle}` : ''}`, TEXT_FORMAT_MRKDWN),
+      settings
+    )
+  }
   const buildOptionContext = (pollId = undefined, optId = undefined) => {
     const voters = pollId && optId ? getVotesByPollOption(pollId, optId) : []
 
@@ -137,7 +158,10 @@ module.exports = bot => {
     const votersCount = voters.length
 
     const votersBlock = voters.map(voter => buildVoterBlock(voter))
+
+    // Plural, singular or "none" label selection
     const votersText = votersCount > 1 ? TXT_VOTER_PLURAL : votersCount < 1 ? TXT_VOTER_NONE : TXT_VOTER_SINGULAR
+
     const votersCountBlock =
       text(`${votersCount > 0 ? `${votersCount} ` : ''}${votersText}`,
         votersCount > 0 ? TEXT_FORMAT_PLAIN : TEXT_FORMAT_MRKDWN,
@@ -168,7 +192,9 @@ module.exports = bot => {
     const header = section(
       text(`*${title}* ${TXT_POLL_BY} @${name}`, TEXT_FORMAT_MRKDWN)
     )
+
     const _divider = divider()
+
     const pollActions = buildPollActions(id, name, finished)
 
     const optionsBlocks = options.map(opt => opt.block(finished))
@@ -179,13 +205,16 @@ module.exports = bot => {
       header,
       _divider
     ]
+
     optionsBlocks.forEach((optBlock, i) => {
       blocks.push(optBlock)
       blocks.push(optionsContext[i])
     })
 
     blocks.push(_divider)
+
     blocks.push(pollActions)
+
     blocks.push(_divider)
 
     return blocks
@@ -210,14 +239,15 @@ module.exports = bot => {
 
     logger(['CREATING POLL WITH DATA: ', data])
 
-    const block = buildPollBlock({
+    const newBlockSettings = {
       id,
       title,
       name,
       options
-    })
+    }
+    const block = buildPollBlock(newBlockSettings)
 
-    pushPoll(id, {
+    const newPollSettings = {
       block,
       metadata: {
         ...pollMetadataShape,
@@ -229,7 +259,9 @@ module.exports = bot => {
       },
       options,
       expiresIn
-    })
+    }
+
+    pushPoll(id, newPollSettings)
 
     return {
       id,
@@ -238,10 +270,13 @@ module.exports = bot => {
   }
 
   const buildPollActions = (pollId, author = '', finished = false) => {
+    // Serialize and decode buffer
     const payload = Buffer.from(JSON.stringify({
       pollId,
       author
     })).toString('base64')
+
+    // UI generation
     const endPollBtn = buildButtonBlock(ON_FINISH_POLL, TXT_FINISH_POLL_BUTTON, payload, 'primary')
     const removePollBtn = buildButtonBlock(ON_REMOVE_POLL, TXT_REMOVE_POLL_BUTTON, payload, 'danger')
     const pollFinishedSection = section(text(TXT_POLL_FINISHED, TEXT_FORMAT_MRKDWN))
@@ -257,36 +292,22 @@ module.exports = bot => {
     const settings = {
       value
     }
+
     if (style) settings.style = style
-    return button(actionId, text, settings
-    )
-  }
 
-  const buildOptionBlock = ({
-    title,
-    subtitle = null,
-    value,
-    finished = false
-  }) => {
-    const newButton = buildButtonBlock(ON_POLL_CHOICE, TXT_VOTE_BUTTON, value)
-    const settings = finished ? {} : {
-      accessory: newButton
-    }
-
-    return section(
-      text(`*${title}*${subtitle !== null ? `\n${subtitle}` : ''}`, TEXT_FORMAT_MRKDWN),
-      settings
-    )
+    return button(actionId, text, settings)
   }
 
   const buildPollResultsBlock = id => {
     const poll = getPoll(id)
+
     if (poll) {
       const { options, metadata: { title, author } } = poll
 
       const header = section(
         text(`*${TXT_POLL_RESULTS}: * *${title}* ${TXT_POLL_BY} @${author}`, TEXT_FORMAT_MRKDWN)
       )
+
       const _divider = divider()
 
       const blocks = [
@@ -326,6 +347,8 @@ module.exports = bot => {
 
       return blocks
     }
+
+    // Fallback
     return []
   }
 
