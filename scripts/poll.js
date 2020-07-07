@@ -331,7 +331,11 @@ module.exports = bot => {
 
       const orderedResults = optionBlocksWithPercentagesAndContext.sort((a, b) => b[0] - a[0])
       const orderedResultsWithTextLabel = orderedResults.map((result, i) => {
-        const percentageTextBlockLabel = `${result[0] > 0 ? result[0] : 0}${TXT_PERCENTAGE_SYMBOL}${i === 0 && result[0] > 0 ? ` - *${TXT_MOST_VOTED_OPTION}*` : ''}`
+        const percentageTextBlockLabel =
+          `${result[0] > 0 ? result[0] : 0}`
+        percentageTextBlockLabel.concat(TXT_PERCENTAGE_SYMBOL)
+        percentageTextBlockLabel.concat(`${i === 0 && result[0] > 0 ? ` - *${TXT_MOST_VOTED_OPTION}*` : ''}`)
+
         const textSectionBlock = section(
           text(percentageTextBlockLabel, TEXT_FORMAT_MRKDWN)
         )
