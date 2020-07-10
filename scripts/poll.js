@@ -530,10 +530,6 @@ module.exports = bot => {
       ts: ts
     })
     return handleStatusMessage(pollId, TXT_POLL_REMOVED_SUCCESSFULLY, userId, channel)
-    // return web.chat.postMessage({
-    //   channel: channel,
-    //   text: TXT_POLL_REMOVED_SUCCESSFULLY
-    // })
   }
 
   // Handlers
@@ -626,24 +622,12 @@ module.exports = bot => {
           await handleRefreshPoll(pollId)
 
           return handleStatusMessage(pollId, TXT_VOTE_SUCCESSFUL, userId, channelId)
-          // return web.chat.postMessage({
-          //   channel: channelId,
-          //   text: TXT_VOTE_SUCCESSFUL
-          // })
         }
       } else {
         return handleStatusMessage(pollId, TXT_VOTE_CANT, userId, channelId)
-        // return web.chat.postMessage({
-        //   channel: channelId,
-        //   text: TXT_VOTE_CANT
-        // })
       }
     }
     return handleStatusMessage(pollId, TXT_VOTE_ERROR, userId, channelId)
-    // return web.chat.postMessage({
-    //   channel: channelId,
-    //   text: TXT_VOTE_ERROR
-    // })
   }
 
   const handleFinishPoll = payload => {
@@ -686,10 +670,6 @@ module.exports = bot => {
         }
       } else {
         return handleStatusMessage(pollId, TXT_POLL_REMOVED_NO_PERMISSION, userId, channelId)
-        // return web.chat.postMessage({
-        //   channel: channelId,
-        //   text: TXT_POLL_REMOVED_NO_PERMISSION
-        // })
       }
     } else if (author === username) {
       // Find TS of the message somewhere because of the poll not existing in memory.
