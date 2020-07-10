@@ -32,7 +32,7 @@ const uuid = function b (a) {
 }
 
 module.exports = bot => {
-  const debug = false
+  const debug = true
 
   const MINUTE_IN_MS = 60 * 1e3
 
