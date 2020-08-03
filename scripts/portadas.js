@@ -34,7 +34,6 @@ const listaPortadas = () => {
     (el)? mercurio
     (la)? tercera
     (la)? cuarta
-    (el)? tip(o|ó)grafo (de rancagua)?
     (el)? trabajo (de san felipe)?
   *Uruguay:*
     (el)? pa(í|i)s (uruguay|uru|uy)
@@ -66,10 +65,6 @@ const diarios = {
     url: 'http://img.kiosko.net/#DATE#/cl/cl_segunda.750.jpg',
     noSlashes: false
   },
-  tipografo: {
-    url: 'http://img.kiosko.net/#DATE#/cl/cl_tipografo.750.jpg',
-    noSlashes: false
-  },
   trabajo: {
     url: 'http://www.eltrabajo.cl/slide/eltrabajo%20(1).jpg',
     noSlashes: false
@@ -87,14 +82,12 @@ const diarios = {
     noSlashes: false
   },
   tercera: {
-    url:
-      'https://edition.pagesuite-professional.co.uk/get_image.aspx?w=550&pbid=33084897-397a-48cc-b3c0-3ce1ec447137&pnum=01&nocache=#DATE#',
-    noSlashes: true
+    url: 'http://img.kiosko.net/#DATE#/cl/cl_tercera.750.jpg',
+    noSlashes: false
   },
   cuarta: {
-    url:
-      'https://edition.pagesuite-professional.co.uk/get_image.aspx?w=550&pbid=a94a1c16-2ebc-4ecc-b2bc-d60709ea4c26&pnum=01&nocache=#DATE#',
-    noSlashes: true
+    url: 'http://img.kiosko.net/#DATE#/cl/cl_cuarta.750.jpg',
+    noSlashes: false
   },
   estrellaarica: {
     url: 'http://edicionimpresa.soychile.cl/portadas/EstrellaArica/01-550.jpg?fecha=#DATE#',
