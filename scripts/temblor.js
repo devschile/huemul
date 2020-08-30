@@ -72,9 +72,7 @@ module.exports = robot => {
               },
               {
                 title: 'Fecha',
-                value: new Date(time)
-                  .toISOString()
-                  .replace(/(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2}).\d+Z/, '$1 $2 UTC'),
+                value: new Date(time).toString(),
                 short: true
               }
             ]
