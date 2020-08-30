@@ -23,10 +23,10 @@ module.exports = robot => {
 
     if (what === 'inicio') {
       date = moment([year, monthBegin])
-      msg.send(`:alarm_clock: El horario de verano este ${year} comienza el sábado ${date.day(+6).format('DD-MM-YYYY')}.`)
+      msg.send(`:alarm_clock: El horario de verano este ${year} comienza el domingo ${date.day(+7).format('DD-MM-YYYY')} a las 00:00hrs.`)
     } else if (what === 'fin') {
       date = moment([year, monthEnd])
-      msg.send(`:alarm_clock: El horario de verano este ${year} termina el sábado ${date.day(+6).format('DD-MM-YYYY')}.`)
+      msg.send(`:alarm_clock: El horario de verano este ${year} termina el domingo ${date.day(+7).format('DD-MM-YYYY')} a las 00:00hrs.`)
     } else {
       msg.send(':alarm_clock: Debes elegir si quieres saber el *inicio* o *fin* del horario de verano')
     }
