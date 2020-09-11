@@ -97,7 +97,7 @@
     "moment-business-days": "1.0.6",
     "moment-countdown": "0.0.3",
     "node-cron": "^2.0.3",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^2.6.1",
     "numbertoclpformater": "1.0.0",
     "password-generator": "2.2.0",
     "phantom": "4.0.12",
