@@ -18,7 +18,7 @@ module.exports = robot => {
   robot.respond(/18\s?(.*)/i, msg => {
     const year = new Date().getFullYear()
     const month = 8 // Septiembre
-    const day = 18
+    const day = 19 // 18
 
     let eventDate = moment([year, month, day])
     const todaysDate = moment()
@@ -28,10 +28,13 @@ module.exports = robot => {
     }
 
     const daysleft = eventDate.diff(todaysDate, 'days')
+    console.log('daysleft', daysleft)
     if (daysleft === 0) {
-      msg.send(':flag-cl: ¡Hoy es 18! ¡A emborracharte!')
+      msg.send(':flag-cl: ¡Hoy es 18! ¡A emborracharse!')
     } else {
-      msg.send(`:flag-cl: Quedan ${daysleft} días pa'l 18 de septiembre.`)
+      const pluralS = daysleft === 1 ? ['', ''] : ['s', 's']
+      const pluralN = daysleft === 1 ? ['', ''] : ['n', 'n']
+      msg.send(`:flag-cl: Queda${pluralN[0]} ${daysleft} día${pluralS[0]} pa'l 18 de septiembre.`)
       msg.send(`:huemul-huaso: ${msg.random(frases)}`)
     }
   })
