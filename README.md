@@ -24,6 +24,6 @@ El repositorio queda abierto para todos los miembros de [devsChile en GitHub](ht
 
 ## Stickers
 
-Nuestro bot es tan querido que imprimimos _stickers_ y se venden a módicos precios y modalidades. Llévate tus 3 stickers a través del Paypal en [el sitio de devsChile](http://www.devschile.cl)
+Nuestro bot es tan querido que tenemos _swags_ los que están disponibles en [la tienda devsChile](https://tienda.devschile.cl)
 
-![Stickers huemul](http://i.imgur.com/KfAx4Mx.jpg)
+![Swags huemul](https://i.imgur.com/aNEtsHa.jpg)

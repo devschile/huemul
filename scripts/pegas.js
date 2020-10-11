@@ -17,7 +17,7 @@ module.exports = function (robot) {
   robot.respond(/(pega|pegas|trabajo|trabajos) (.*)/i, function (msg) {
     msg.send('Buscando en GetOnBrd... :dev:')
 
-    const domain = 'https://www.getonbrd.cl/empleos-'
+    const domain = 'https://www.getonbrd.com/jobs-'
     const busqueda = msg.match[2]
     const url = domain + querystring.escape(busqueda)
 
@@ -39,12 +39,8 @@ module.exports = function (robot) {
             return this.type === 'text'
           })
           .text()
-        const type = $(this)
-          .find('.gb-results-list__title .color-hierarchy3')
-          .text()
-        const path = $(this)
-          .find('a')
-          .attr('href')
+        const type = $(this).find('.gb-results-list__title .color-hierarchy3').text()
+        const path = $(this).find('a').attr('href')
 
         resultados.push(`<${path}|${title} - ${type}>`)
       })

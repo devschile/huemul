@@ -5,17 +5,17 @@ import path from 'path'
 import nock from 'nock'
 
 const helper = new Helper('../scripts/pegas.js')
-const sleep = m => new Promise(resolve => setTimeout(() => resolve(), m))
+const sleep = (m) => new Promise((resolve) => setTimeout(() => resolve(), m))
 
-test.beforeEach(t => {
+test.beforeEach((t) => {
   t.context.room = helper.createRoom({ httpd: false })
 })
 
-test.afterEach(t => t.context.room.destroy())
+test.afterEach((t) => t.context.room.destroy())
 
-test('Buscando pega fullstack', async t => {
-  nock('https://www.getonbrd.cl')
-    .get('/empleos-fullstack')
+test('Buscando pega fullstack', async (t) => {
+  nock('https://www.getonbrd.com')
+    .get('/jobs-fullstack')
     .replyWithFile(200, path.join(__dirname, 'html', 'pegas-200.html'))
   t.context.room.user.say('user', 'hubot pega fullstack')
   await sleep(500)
@@ -29,13 +29,14 @@ test('Buscando pega fullstack', async t => {
 
   // test response messages of hubot
   t.deepEqual(hubotMessage1, ['hubot', 'Buscando en GetOnBrd... :dev:'])
-  t.deepEqual(hubotMessage2, ['hubot', 'Se ha encontrado 1 resultado para *fullstack*:\n1: </empleos/programacion/programador-fullstack-wivo-analytics| - >\n'])
+  t.deepEqual(hubotMessage2, [
+    'hubot',
+    'Se ha encontrado 1 resultado para *fullstack*:\n1: </empleos/programacion/programador-fullstack-wivo-analytics| - >\n'
+  ])
 })
 
-test('Redirect', async t => {
-  nock('https://www.getonbrd.cl')
-    .get('/empleos-301')
-    .reply(301)
+test('Redirect', async (t) => {
+  nock('https://www.getonbrd.com').get('/jobs-301').reply(301)
   t.context.room.user.say('user', 'hubot pega 301')
   await sleep(500)
 
