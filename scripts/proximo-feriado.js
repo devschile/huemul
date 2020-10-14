@@ -54,53 +54,6 @@ function humanizeDay (day) {
   return dayNames[day]
 }
 
-module.exports = function (robot) {
-  robot.respond(/pr(o|ó)ximo feriado/i, function (msg) {
-    var today = new Date(
-      [
-        new Date().getFullYear(),
-        ('0' + (new Date().getMonth() + 1)).slice(-2),
-        ('0' + new Date().getDate()).slice(-2)
-      ].join('-') + 'T00:00:00-04:00'
-    )
-    var currentYear = new Date().getFullYear()
-
-    robot.http('https://apis.digital.gob.cl/fl/feriados/' + currentYear).get()(function (err, res, body) {
-      if (err || res.statusCode !== 200) {
-        return robot.emit('error', err || new Error(`Status code ${res.statusCode}`), msg, 'proximo-feriado')
-      }
-      var ok = false
-      var bodyParsed = JSON.parse(body)
-
-      bodyParsed.forEach(function (holiday, index) {
-        var date = new Date(holiday.fecha + 'T00:00:00-04:00')
-        var message = holiday.nombre + ' (_' + holiday.tipo.toLowerCase() + '_)'
-
-        if (ok === false && date.getTime() >= today.getTime()) {
-          ok = true
-
-          var dias = daysDiff(
-            [today.getFullYear(), ('0' + (today.getMonth() + 1)).slice(-2), ('0' + today.getDate()).slice(-2)].join(
-              '-'
-            ),
-            holiday.fecha
-          )
-
-          if (dias === 0) {
-            msg.send('*¡HOY es feriado!* Se celebra: ' + message + '. ¡Disfrútalo!')
-          } else {
-            const nextWeekDayHoliday = findNextWorkingDay(bodyParsed, index + 1)
-            const outputMessage = getOutputMessage(holiday, dias) + (nextWeekDayHoliday ? '\n' + getOutputMessage(nextWeekDayHoliday, dias, true) : '')
-            msg.send(
-              outputMessage
-            )
-          }
-        }
-      })
-    })
-  })
-}
-
 /**
  * @description Takes the list of holidays and a starting index to check
  * and finds the next non-weekend day
@@ -144,4 +97,47 @@ const getOutputMessage = (holiday, dias, isWorkDay) => {
     message +
     '.'
   )
+}
+
+module.exports = function (robot) {
+  robot.respond(/pr(o|ó)ximo feriado/i, function (msg) {
+    var today = new Date(
+      [
+        new Date().getFullYear(),
+        ('0' + (new Date().getMonth() + 1)).slice(-2),
+        ('0' + new Date().getDate()).slice(-2)
+      ].join('-') + 'T00:00:00-04:00'
+    )
+    var currentYear = new Date().getFullYear()
+
+    robot.http('https://apis.digital.gob.cl/fl/feriados/' + currentYear).get()(function (err, res, body) {
+      if (err || res.statusCode !== 200) {
+        return robot.emit('error', err || new Error(`Status code ${res.statusCode}`), msg, 'proximo-feriado')
+      }
+      var ok = false
+      var bodyParsed = JSON.parse(body)
+
+      bodyParsed.forEach(function (holiday, index) {
+        var date = new Date(holiday.fecha + 'T00:00:00-04:00')
+        var message = holiday.nombre + ' (_' + holiday.tipo.toLowerCase() + '_)'
+
+        if (ok === false && date.getTime() >= today.getTime()) {
+          ok = true
+
+          const todayFormatted = [today.getFullYear(), ('0' + (today.getMonth() + 1)).slice(-2), ('0' + today.getDate()).slice(-2)].join('-')
+          const remainingDays = daysDiff(todayFormatted, holiday.fecha)
+
+          if (remainingDays === 0) {
+            msg.send('*¡HOY es feriado!* Se celebra: ' + message + '. ¡Disfrútalo!')
+          } else {
+            const nextWeekDayHoliday = findNextWorkingDay(bodyParsed, index + 1)
+            const outputMessage = getOutputMessage(holiday, remainingDays) + (nextWeekDayHoliday ? '\n' + getOutputMessage(nextWeekDayHoliday, daysDiff(todayFormatted, nextWeekDayHoliday.fecha), true) : '')
+            msg.send(
+              outputMessage
+            )
+          }
+        }
+      })
+    })
+  })
 }
