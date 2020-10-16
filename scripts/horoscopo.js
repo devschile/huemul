@@ -2,7 +2,7 @@
 //   Muestra el horóscopo del día según el signo
 //
 // Dependencies:
-//   https://api.adderou.cl/tyaas/
+//   https://api.xor.cl/tyaas/
 //
 // Configuration:
 //   None
@@ -14,7 +14,7 @@
 // Author:
 //   @jorgeepunan
 
-const url = 'https://api.adderou.cl/tyaas/'
+const url = 'https://api.xor.cl/tyaas/'
 
 module.exports = function (robot) {
   const signs = [
