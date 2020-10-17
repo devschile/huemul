@@ -17,10 +17,12 @@ const frases = ['Preparen la sed.', 'Tiqui-tiqui-tíiiiiiiii', '¡A viajar fuera
 module.exports = robot => {
   robot.respond(/18\s?(.*)/i, msg => {
     const year = new Date().getFullYear()
-    const month = 8 // Septiembre
+    const month = 09
     const day = 18
 
-    let eventDate = moment([year, month, day])
+    const date = new Date(`${year}-${month}-${day}`)
+    let eventDate = moment(date).add(1, 'days')
+    const weekday = eventDate.format('dddd')
     const todaysDate = moment()
 
     if (todaysDate.isAfter(eventDate)) {
@@ -31,7 +33,7 @@ module.exports = robot => {
     if (daysleft === 0) {
       msg.send(':flag-cl: ¡Hoy es 18! ¡A emborracharte!')
     } else {
-      msg.send(`:flag-cl: Quedan ${daysleft} días pa'l 18 de septiembre.`)
+      msg.send(`:flag-cl: Quedan ${daysleft} días pa'l 18 de septiembre, que será día ${weekday}`)
       msg.send(`:huemul-huaso: ${msg.random(frases)}`)
     }
   })
