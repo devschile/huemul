@@ -8,18 +8,18 @@
 //   GOLD_USER_AGENT, GOLD_SECRET, GOLD_KEYS, GOLD_CHANNEL
 //
 // Commands:
-//   hubot gold status <name> - Verificar si un usuario posee la membresía golden
-//   hubot gold insert <key> - Agregar una golden key para ser un miembro golden
-//   hubot gold add <user> - Dar la membresía golden a un usuario
-//   hubot gold remove <user> - Quitar la membresía golden a un usuario
-//   hubot gold list - Listar todos los miembros golden
+//   hubot gold status <name> - Verificar si un usuario posee la membresía gold
+//   hubot gold insert <key> - Agregar una gold key para ser un miembro gold
+//   hubot gold add <user> - Dar la membresía gold a un usuario
+//   hubot gold remove <user> - Quitar la membresía gold a un usuario
+//   hubot gold list - Listar todos los miembros gold
 //
 // Author:
 //   @lgaticaq
 
 module.exports = robot => {
   /**
-   * Obtener listado de usuarios golden
+   * Obtener listado de usuarios gold
    * @return {Array}
    */
   const getGoldUsers = () => {
@@ -28,14 +28,14 @@ module.exports = robot => {
   }
 
   /**
-   * Buscar un usuario golden
+   * Buscar un usuario gold
    * @param  {String} name
    * @return {Object}      En caso de encontrar el usuario retorna un Object, caso contrario null
    */
   const getGoldUser = name => getGoldUsers().find(result => result.data.user === name)
 
   /**
-   * Verifica la expiración de un usuario golden.
+   * Verifica la expiración de un usuario gold
    * En caso de expirar actualiza el robot.brain
    * @param  {String} key  Key del store del usuario en el brain
    * @param  {Object} data El Object usuario
@@ -59,7 +59,7 @@ module.exports = robot => {
   }
 
   /**
-   * Agrega un usuario al store de golden
+   * Agrega un usuario al store de gold
    * @param  {String} name
    * @param  {Number} days
    * @param  {String} channelId
@@ -81,10 +81,10 @@ module.exports = robot => {
     if (!now) now = new Date()
     const expire = new Date(now.getTime() + diff)
     goldUsers[name] = { user: name, expire: expire }
-    let message = ':clap2: eres miembro golden :monea: por 1 mes!'
+    let message = ':clap2: eres miembro gold :monea: por 1 mes!'
     if (key === null) {
       channelId = robot.adapter.client.rtm.dataStore.getChannelByName(process.env.GOLD_CHANNEL || '#random').id
-      message = `:clap2: *${name}* donó 1 mes de servidor a :huemul:, se lleva 3 stickers :huemul: y es miembro golden :monea: por 2 meses!`
+      message = `:clap2: *${name}* donó 1 mes de servidor a :huemul:, se lleva swags :devschile: y es miembro gold :monea: por 2 meses!`
     } else {
       goldUsers[name].key = key
     }
@@ -94,7 +94,7 @@ module.exports = robot => {
 
   class Golden {
     /**
-     * Verifica si un determinado usuario es golden
+     * Verifica si un determinado usuario es gold
      * @param  {String}  name
      * @return {Boolean}
      */
@@ -112,12 +112,12 @@ module.exports = robot => {
   robot.respond(/gold status (.*)/i, res => {
     const name = res.match[1]
     const result = getGoldUser(name)
-    if (!result) return res.send(`${name} no es golden :monea:`)
+    if (!result) return res.send(`${name} no es gold :monea:`)
     const data = verifyExpireGold(result.key, result.data)
     if (!data.expired) {
-      res.send(`${name} es golden :monea: hasta el ${data.date}`)
+      res.send(`${name} es gold :monea: hasta el ${data.date}`)
     } else {
-      res.send(`${name} ya no eres golden :monea:, expiró el ${data.date}`)
+      res.send(`${name} ya no eres gold :monea:, expiró el ${data.date}`)
     }
   })
 
@@ -127,7 +127,7 @@ module.exports = robot => {
       .map(result => result.data.user)
       .join(', ')
     if (users === '') {
-      res.send('No hay usuarios golden :monea:')
+      res.send('No hay usuarios gold :monea:')
     } else {
       res.send(users)
     }
@@ -164,9 +164,9 @@ module.exports = robot => {
       if (Object.keys(goldUsers).includes(user)) {
         delete goldUsers[user]
         robot.brain.set('gold_users', JSON.stringify(goldUsers))
-        res.send(`${user} ya no es miembro golden :monea:`)
+        res.send(`${user} ya no es miembro gold :monea:`)
       } else {
-        res.reply('el usuario no existe')
+        res.reply('El usuario no existe')
       }
     }
   })
@@ -181,8 +181,8 @@ module.exports = robot => {
         if (admins) {
           let message = `El email ${req.body.email} acaba de donar pero no `
           message += 'logré determinar qué usuario es para agregarlo a los '
-          message += 'golden :monea:.\nEste mensaje fue enviado a todos los '
-          message += 'administradores de DevsChile.'
+          message += 'gold :monea:.\nEste mensaje fue enviado a todos los '
+          message += 'administradores DevsChile.'
           admins.split(',').forEach(admin => {
             robot.send({ room: admin }, message)
           })
