@@ -13,17 +13,15 @@
 // Author:
 //   @jorgeepunan
 
-module.exports = robot => {
-  robot.enter(msg => {
+module.exports = (robot) => {
+  robot.enter((msg) => {
     // robot.hear(/hola/i, msg => {
     const channel = robot.adapter.client.rtm.dataStore.getChannelByName('#comunidad')
     if (msg.message.room === channel.id) {
       robot.send(
         { room: channel.members.pop() },
         `¡Hola! :wave: \n \
-Soy ${
-          robot.name
-        } el :robot: de este grupo y te doy la bienvenida a *devsChile*, la mejor y más activa comunidad chilena de desarrolladores y diseñadores web.\n\n \
+Soy ${robot.name} el :robot: de este grupo y te doy la bienvenida a *devsChile*, la mejor y más activa comunidad chilena de desarrolladores y diseñadores web.\n\n \
 Entre los canales que te pueden interesar están:\n \
 - #anuncios: el canal que alberga todos los usuarios y donde se realizan anuncios oficiales por los admins sobre temas relacionados con la comunidad. Aquí también se anuncia las inscripciones a la famosa BeerJS Santiago, mes a mes.\n \
 - #backend: server-side, BD, devops y lenguajes compilados.\n \
@@ -48,7 +46,7 @@ Entre los canales que te pueden interesar están:\n \
 \
 Te sugerimos presentarte en #comunidad y te daremos la bienvenida como corresponde. Para conocer mis comandos puedes enviarme un \`help\` por DM o escribir \`huemul help\` en algún canal y te mostraré lo que puedo hacer.\n\n \
 \
-Esta comunidad es libre y abierta y se aceptan donaciones voluntarias para mantener el servidor en el cual reside el sitio web y :huemul: ; se venden stickers en http://www.devschile.cl \
+Esta comunidad es libre y abierta y se aceptan donaciones voluntarias para mantener el servidor en el cual reside el sitio web y :huemul: ; se venden swags en https://tienda.devschile.cl \
 \
 No dejes de leer nuestro Código de Conducta http://www.devschile.cl/coc/ y cualquier duda o consulta sobre el CdC o el grupo puedes hacerla en #comunidad o directo a los admins :gmq: :hector: o :jorge: \n\n \
 \
