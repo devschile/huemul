@@ -84,7 +84,7 @@ module.exports = robot => {
     let message = ':clap2: eres miembro gold :monea: por 1 mes!'
     if (key === null) {
       channelId = robot.adapter.client.rtm.dataStore.getChannelByName(process.env.GOLD_CHANNEL || '#random').id
-      message = `:clap2: *${name}* donó 1 mes de servidor a :huemul:, se lleva swags :devschile: y es miembro gold :monea: por 2 meses!`
+      message = `:clap2: *${name}* donó 1 mes de servidor a :huemul:, se lleva swag :devschile: y es miembro gold :monea: por 2 meses!`
     } else {
       goldUsers[name].key = key
     }
