@@ -8,7 +8,7 @@
 //  @raerpo
 
 module.exports = robot =>
-  robot.respond(/plebiscito/i, msg => {
+  robot.respond(/plebiscito|plebisito|plebicito/i, msg => {
     const send = text => {
       if (robot.adapter.constructor.name === 'SlackBot') {
         const options = { unfurl_links: false, as_user: true }
@@ -17,7 +17,7 @@ module.exports = robot =>
         msg.send(text)
       }
     }
-    send('Preguntandole al servel...')
+    send('Preguntándole al servel...')
     robot
       .http('http://huemul-airlines.herokuapp.com/plebiscito')
       .get()((err, res, body) => {
