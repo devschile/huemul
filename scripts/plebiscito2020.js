@@ -7,25 +7,33 @@
 // Author:
 //  @raerpo
 
-module.exports = robot =>
-  robot.respond(/plebiscito|plebisito|plebicito/i, msg => {
-    const send = text => {
+function formatNumber (number) {
+  return number.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.')
+}
+
+module.exports = (robot) =>
+  robot.respond(/plebiscito|plebisito|plebicito/i, (msg) => {
+    const send = (text) => {
       if (robot.adapter.constructor.name === 'SlackBot') {
-        const options = { unfurl_links: false, as_user: true }
+        const options = {
+          unfurl_links: false,
+          as_user: false,
+          icon_url: 'https://i.imgur.com/R24p0SV.png',
+          username: 'Servel'
+        }
         robot.adapter.client.web.chat.postMessage(msg.message.room, text, options)
       } else {
         msg.send(text)
       }
     }
-    send('Preguntándole al servel...')
-    robot
-      .http('http://huemul-airlines.herokuapp.com/plebiscito')
-      .get()((err, res, body) => {
-        if (err) {
-          robot.emit('error', err, msg, 'noticias')
-        } else {
-          const { apruebo, rechazo } = JSON.parse(body)
-          send(`\nApruebo: ${apruebo.percentage}% con ${apruebo.votes} votos :huemul-matapacos:\nRechazo: ${rechazo.percentage}% con ${rechazo.votes} votos :chaleco-amarillo:`)
-        }
-      })
+    send('Consultando al Servel :loading:')
+    robot.http('http://huemul-airlines.herokuapp.com/plebiscito').get()((err, res, body) => {
+      if (err) robot.emit('error', err, msg, 'noticias')
+      const { apruebo, rechazo } = JSON.parse(body)
+      send(
+        `\n*Apruebo*: ${apruebo.percentage}% con ${formatNumber(apruebo.votes)} votos :huemul-matapacos:\n*Rechazo*: ${
+          rechazo.percentage
+        }% con ${formatNumber(rechazo.votes)} votos :chaleco-amarillo:`
+      )
+    })
   })
