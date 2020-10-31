@@ -106,6 +106,7 @@
     "slack-block-kit": "^0.9.9",
     "string": "3.3.3",
     "superheroes": "1.0.0",
+    "tax-cl": "^0.0.1",
     "twitter-rss-feed": "1.4.0",
     "uuid": "3.2.1",
     "whilst": "1.0.2",
