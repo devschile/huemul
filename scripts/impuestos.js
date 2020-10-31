@@ -1,8 +1,23 @@
+// Description:
+//   Dice cuanto tienes que pagarle al SII por impuestos y cotizaciones
+//
+// Dependencies:
+//   None
+//
+// Configuration:
+//   None
+//
+// Commands:
+//   hubot impuestos <sueldoMensual> - Dice cuanto tendrás que pagarle all SII en la próxima operación renta
+//
+// Author:
+//   Nicolás Gómez <ngomez@hey.com>
+
 const { calcular, obtenerTramoImpositivo } = require('tax-cl')
 const { numberToCLPFormater } = require('numbertoclpformater')
 
 module.exports = robot => {
-  robot.respond(/impuestos (.*)/i, msg => {
+  robot.respond(/impuestos (\d+)$/i, msg => {
     const income = parseInt(msg.match[1], 10)
 
     const {
