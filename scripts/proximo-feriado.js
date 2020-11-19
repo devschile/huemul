@@ -54,18 +54,22 @@ function humanizeDay (day) {
   return dayNames[day]
 }
 
+const isWorkDay = (dayString) => {
+  const FRIDAY_ISO_DAY = 5
+  const day = moment(`${dayString}T00:00:00-04:00`)
+  return day.isoWeekday() > FRIDAY_ISO_DAY
+}
+
 /**
  * @description Takes the list of holidays and a starting index to check
  * and finds the next non-weekend day
  */
 const findNextWorkingDay = (holidays, startIndex) => {
-  const FRIDAY_ISO_DAY = 5
   const nextHoliday = holidays[startIndex]
   if (!nextHoliday) {
     return null
   }
-  const holiday = moment(`${nextHoliday.fecha}T00:00:00-04:00`)
-  if (holiday.isoWeekday() > FRIDAY_ISO_DAY) {
+  if (!isWorkDay(nextHoliday.fecha)) {
     return findNextWorkingDay(holidays, startIndex + 1)
   } else {
     return nextHoliday
@@ -130,11 +134,15 @@ module.exports = function (robot) {
           if (remainingDays === 0) {
             msg.send('*¡HOY es feriado!* Se celebra: ' + message + '. ¡Disfrútalo!')
           } else {
-            const nextWeekDayHoliday = findNextWorkingDay(bodyParsed, index + 1)
-            const outputMessage = getOutputMessage(holiday, remainingDays) + (nextWeekDayHoliday ? '\n' + getOutputMessage(nextWeekDayHoliday, daysDiff(todayFormatted, nextWeekDayHoliday.fecha), true) : '')
-            msg.send(
-              outputMessage
-            )
+            if (isWorkDay(holiday.fecha)) {
+              msg.send(getOutputMessage(holiday, remainingDays))
+            } else {
+              const nextWeekDayHoliday = findNextWorkingDay(bodyParsed, index + 1)
+              const outputMessage = getOutputMessage(holiday, remainingDays) + (nextWeekDayHoliday ? '\n' + getOutputMessage(nextWeekDayHoliday, daysDiff(todayFormatted, nextWeekDayHoliday.fecha), true) : '')
+              msg.send(
+                outputMessage
+              )
+            }
           }
         }
       })
