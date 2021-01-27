@@ -21,7 +21,7 @@ module.exports = robot => {
     const weekDay = moment().format('dddd')
 
     robot.http(url).get()((error, response, body) => {
-      if (response.statusCode === 200 || !error) {
+      if (!error && response.statusCode === 200) {
         const santoral = JSON.parse(body)
 
         msg.send(`Hoy *${weekDay} ${currentDay} de ${currentMonth}* el santoral es *${santoral[currentMonth][currentDay - 1]}* :angel:`)
