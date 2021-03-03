@@ -100,7 +100,7 @@
     "numbertoclpformater": "1.0.0",
     "password-generator": "2.2.0",
     "phantom": "4.0.12",
-    "pug": "2.0.3",
+    "pug": "3.0.1",
     "raven": "2.6.2",
     "rutjs": "0.1.1",
     "slack-block-kit": "^0.9.9",
