@@ -19,7 +19,7 @@ module.exports = function (robot) {
     fetch(fetchQuery)
     .then(res => res.text())
     .then(text => {
-        $ = cheerio.load(text)
+        const $ = cheerio.load(text)
         const definition = $('meta[name="description"]').attr('content')
         if (definition.split(" ")[0] == "Versión") {
             msg.send("No se encontró aquella palabra :sadhuemul:")
