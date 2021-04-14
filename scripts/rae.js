@@ -10,22 +10,36 @@
   
 const cheerio = require('cheerio')
 const fetch = require('node-fetch')
+const querystring = require('querystring')
 
 module.exports = function (robot) {
-  robot.respond(/(rae|define) (\s*[a-zA-ZÀ-ÿ]*)/i, function (msg) {
+  robot.respond(/(rae|define) (\s*[a-zA-ZÀ-ÿ]*)(\s*[a-zA-ZÀ-ÿ]*)/i, function (msg) {
+
+
+    let word = msg.match[2].trim()
+
+    if (msg.match[3]) {
+      word += msg.match[3].trim()
+    }
+
+    const search = querystring.escape(word.toLowerCase())
+
     const url = 'http://dle.rae.es/srv/search?w='
-    const word = encodeURI(msg.match[2])
-    const fetchQuery = url + word
+    const fetchQuery = url + search
     fetch(fetchQuery)
     .then(res => res.text())
     .then(text => {
+
         const $ = cheerio.load(text)
         const definition = $('meta[name="description"]').attr('content')
-        if (definition.split(" ")[0] == "Versión") {
+
+        if (definition.split(" ")[0] === "Versión") {
             msg.send("No se encontró aquella palabra :sadhuemul:")
         } else {
         msg.send(definition)
         }
-    }).catch(e => msg.send("Ohh no, algo no esta funcionando bien. ¿Conocen algun programador que pueda ver esto? :kappa:"))
+
+    }).catch(e => msg.send("Ohh no, algo no está funcionando bien. ¿Conocen algún programador que pueda ver esto? :kappa:"))
   })
+  
 }
