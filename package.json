@@ -90,7 +90,7 @@
     "hubot-wikipedia-lang": "1.0.3",
     "hubot-youtube": "1.1.0",
     "jquery": "3.5.0",
-    "mathjs": "4.3.0",
+    "mathjs": "7.5.1",
     "md-2-json": "^1.0.5",
     "moment": "2.22.1",
     "moment-business-days": "1.0.6",
