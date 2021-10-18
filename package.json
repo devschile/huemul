@@ -14,9 +14,6 @@
     "*.{css,md,json}": ["prettier --write", "git add"],
     "*.{js}": ["eslint --fix", "git add"]
   },
-  "engines": {
-    "node": ">=10"
-  },
   "repository": {
     "type": "git",
     "url": "git://github.com/devschile/huemul.git"
