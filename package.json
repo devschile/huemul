@@ -80,7 +80,6 @@
     "hubot-sentry-integration": "0.0.2",
     "hubot-shipit": "0.2.1",
     "hubot-slack": "^4.8.0",
-    "hubot-soon": "1.0.0",
     "hubot-surbtc": "0.3.0",
     "hubot-travis-ci-hook": "1.0.0",
     "hubot-tweets": "github:devschile/hubot-tweets",
