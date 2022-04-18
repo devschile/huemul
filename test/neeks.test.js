@@ -24,33 +24,29 @@ test('Neeks Game Boy 200', async t => {
   const hubotMessage1 = t.context.room.messages[1]
   const hubotMessage2 = t.context.room.messages[2]
 
-  // test message of user
+  // test user's message
   t.deepEqual(user, ['user', 'hubot neeks game boy'])
 
-  // test response messages of hubot
+  // test hubot's response messages
   t.deepEqual(hubotMessage1, ['hubot', ':joystick: buscando game boy...'])
-  t.deepEqual(hubotMessage2, [
-    'hubot',
-    ' - Dock de Carga Apple Watch: _$14.990_\n  https://neeks.cl/producto/dock-de-carga-apple-watch/\n' +
-    ' - Multiconsola RETRO Emuelec G5 HDMI: _$99.990_\n  https://neeks.cl/producto/multiconsola-retro-gamebox-g5-hdmi/'
-  ])
+  t.deepEqual(hubotMessage2, ['hubot', '@user :pinceleart: mató al animal'])
 })
 
-test('Neeks 301', async t => {
+test('Neeks 301', async (t) => {
   nock('https://neeks.cl/')
-    .get('?s=dildo_301&post_type=product')
+    .get('?s=301&post_type=product')
     .reply(301)
-  t.context.room.user.say('user', 'hubot neeks dildo')
+  t.context.room.user.say('user', 'hubot neeks 301')
   await sleep(500)
 
   const user = t.context.room.messages[0]
   const hubotMessage1 = t.context.room.messages[1]
   const hubotMessage2 = t.context.room.messages[2]
 
-  // test message of user
+  // test user's message
   t.deepEqual(user, ['user', 'hubot neeks 301'])
 
-  // test response messages of hubot
-  t.deepEqual(hubotMessage1, ['hubot', ':joystick: buscando dildo...'])
-  t.deepEqual(hubotMessage2, ['hubot', ':pinceleart: mató al animal'])
+  // test hubot's response messages
+  t.deepEqual(hubotMessage1, ['hubot', ':joystick: buscando 301...'])
+  t.deepEqual(hubotMessage2, ['hubot', '@user :pinceleart: mató al animal'])
 })
