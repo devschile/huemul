@@ -30,11 +30,7 @@ module.exports = (robot) =>
       send(
 `Total mesas escrutadas: *${votos.totalMesasPorcent}*
 *${votos.data[0].a}*: ${votos.data[0].d} con ${votos.data[0].c} votos.
-<<<<<<< HEAD
-*${votos.data[1].a}*: ${votos.data[0].d} con ${votos.data[0].c} votos.
-=======
 *${votos.data[1].a}*: ${votos.data[1].d} con ${votos.data[1].c} votos.
->>>>>>> d58749bec40ba02bbae5ca3e0cac9b0ece8b2850
 *Resumen:*
  - Válidamente emitidos: ${votos.resumen[0].d}.
  - Null: ${votos.resumen[1].d}.
