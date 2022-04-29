@@ -17,7 +17,7 @@ module.exports = function (robot) {
   robot.respond(/neeks (.*)/i, function (msg) {
     const search = msg.match[1]
     const mainUrl = 'https://neeks.cl/'
-    const url = mainUrl + '?s=' + search.replace(' ', '+') + '&post_type=product'
+    const url = mainUrl + '?s=' + search.replace(' ', '+')
 
     msg.send(':joystick: buscando ' + search + '...')
 
