@@ -19,14 +19,12 @@ test('Neeks Game Boy 200', async t => {
     .replyWithFile(200, path.join(__dirname, 'html', 'neeks-200.html'))
   t.context.room.user.say('user', 'hubot neeks game boy')
   await sleep(500)
-
   const user = t.context.room.messages[0]
   const hubotMessage1 = t.context.room.messages[1]
   const hubotMessage2 = t.context.room.messages[2]
 
   // test user's message
   t.deepEqual(user, ['user', 'hubot neeks game boy'])
-
   // test hubot's response messages
   t.deepEqual(hubotMessage1, ['hubot', ':joystick: buscando game boy...'])
   t.deepEqual(hubotMessage2, ['hubot', '@user :pinceleart: mató al animal'])

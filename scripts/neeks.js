@@ -33,12 +33,12 @@ module.exports = function (robot) {
     const url = mainUrl + '?s=' + search.replace(' ', '+') + '&post_type=product'
     msg.send(':joystick: buscando ' + search + '...')
     robot.http(url).get()(function (err, res, body) {
-      const $ = cheerio.load(body)
       if (err !== null) {
         robot.emit('error', err || new Error(`Status code is ${res.statusCode}`), msg, 'neeks')
         msg.reply(':pinceleart: mató al animal')
         return
       }
+      const $ = cheerio.load(body)
       if (res.statusCode === 302) {
         robot.http(res.headers.location).get()(function (err, res2, body2) {
           const results = []
