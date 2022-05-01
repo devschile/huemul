@@ -26,7 +26,7 @@ test('Neeks Game Boy 200', async t => {
   // test user's message
   t.deepEqual(user, ['user', 'hubot neeks game boy'])
   // test hubot's response messages
-  t.deepEqual(hubotMessage1, ['hubot', ':joystick: buscando game boy...'])
+  t.deepEqual(hubotMessage1, ['hubot', ':joystick: cargando Neeks.cl...'])
   t.deepEqual(hubotMessage2, ['hubot', '@user :pinceleart: mató al animal'])
 })
 
@@ -45,6 +45,6 @@ test('Neeks 301', async (t) => {
   t.deepEqual(user, ['user', 'hubot neeks 301'])
 
   // test hubot's response messages
-  t.deepEqual(hubotMessage1, ['hubot', ':joystick: buscando 301...'])
+  t.deepEqual(hubotMessage1, ['hubot', ':joystick: cargando Neeks.cl...'])
   t.deepEqual(hubotMessage2, ['hubot', '@user :pinceleart: mató al animal'])
 })
