@@ -23,7 +23,7 @@ const web = new WebClient(token)
 const { text } = object
 const { section, divider, image } = block
 const storeHost = 'https://neeks.cl/'
-const productLimit = 10
+const productLimit = 5
 module.exports = function (robot) {
   robot.respond(/neeks (.*)/i, async function (msg) {
     const buildAndSendBlockMessage = (searchTerm, results) => {
