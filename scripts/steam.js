@@ -15,8 +15,13 @@
 
 'use strict'
 const cheerio = require('cheerio')
+const { block, object, TEXT_FORMAT_MRKDWN } = require('slack-block-kit')
+const { text } = object
+const { section, divider, image, context } = block
 const { numberToCLPFormater } = require('numbertoclpformater')
-
+const { WebClient } = require('@slack/web-api')
+const token = process.env.HUBOT_SLACK_TOKEN
+const web = new WebClient(token)
 const commands = [
   'Comandos de Steam:',
   '`huemul steam daily` - Muestra la oferta del día.',
@@ -31,7 +36,7 @@ module.exports = robot => {
       if (options.query) request.query(options.query)
       request.get()((err, res, body) => {
         if (err || res.statusCode !== 200) {
-          return reject(err || new Error(`Status code ${res.statusCode}`))
+          return reject(err || res.statusCode)
         }
         resolve(body)
       })
@@ -56,7 +61,7 @@ module.exports = robot => {
     return getBody('https://store.steampowered.com').then(body => {
       const $ = cheerio.load(body)
       const idAttr = $('.dailydeal_desc .dailydeal_countdown').attr('id')
-      return idAttr.substr(idAttr.length - 6)
+      return idAttr.replace(/[^0-9.]/g, '')
     })
   }
 
@@ -69,28 +74,6 @@ module.exports = robot => {
     }
     const uri = 'https://store.steampowered.com/api/appdetails/'
     return getBody(uri, options)
-  }
-
-  const getPrice = id => {
-    return getGameDetails(id).then(body => {
-      try {
-        const game = JSON.parse(body)[id].data
-        const name = game.name
-        const price = game.price_overview
-        const final = price.final / 100
-        const initial = price.initial / 100
-        const discount = price.discount_percent
-        return {
-          name: name,
-          final: final,
-          initial: initial,
-          discount: discount,
-          uri: `https://store.steampowered.com/app/${id}`
-        }
-      } catch (err) {
-        throw err
-      }
-    })
   }
 
   const getDesc = id => {
@@ -107,6 +90,7 @@ module.exports = robot => {
         // price process
         const itsfree = game.is_free
         const price = itsfree ? 0 : game.price_overview
+        const initial = price && price.initial > 0 ? price.initial / 100 : price && price.initial
         const final = !game.release_date.coming_soon ? price.final / 100 : 0
         // Important!
         const dev = game.developers
@@ -118,6 +102,7 @@ module.exports = robot => {
           name,
           genres,
           price,
+          initial,
           final,
           discount,
           uri,
@@ -126,7 +111,8 @@ module.exports = robot => {
           editor,
           release,
           meta,
-          type
+          type,
+          id
         }
       } catch (err) {
         throw err
@@ -134,17 +120,99 @@ module.exports = robot => {
     })
   }
 
-  const sendMessage = (message, channel) => {
-    if (robot.adapter.constructor.name === 'SlackBot') {
-      const options = { unfurl_links: false, as_user: true }
-      robot.adapter.client.web.chat.postMessage(channel, message, options)
+  const formatPrice = (initial, final, discount) => {
+    let priceFormated = ''
+    if (!initial || initial === 0) {
+      priceFormated = 'Free-To-Play'
     } else {
-      robot.messageRoom(channel, message)
+      if (discount) {
+        priceFormated = `~${numberToCLPFormater(initial)}~ ${numberToCLPFormater(final)} ${parseInt(discount) ? `(${discount}% OFF)` : discount}`
+      } else {
+        priceFormated = `${numberToCLPFormater(final)}`
+      }
     }
+    return priceFormated
+  }
+
+  const buildGameMessage = data => {
+    const {
+      meta,
+      genres,
+      name,
+      dev,
+      editor,
+      release,
+      desc,
+      uri,
+      discount,
+      initial,
+      final,
+      id,
+      isDaily
+    } = data
+    let priceFormated = formatPrice(initial, final, discount)
+    if (release === 'Coming Soon') {
+      priceFormated = priceFormated + ' (Unreleased)'
+    }
+    const blocks = []
+    const heroImage = `https://cdn.cloudflare.steamstatic.com/steam/apps/${id[0]}/hero_capsule.jpg`
+    const headerText = isDaily ? 'Oferta del día en Steam' : 'Descripción de juego en Steam'
+    blocks.push(JSON.parse(`{
+      "type": "header",
+      "text": {
+        "type": "plain_text",
+        "text": "${headerText}"
+      }
+    }`))
+    blocks.push(divider())
+    blocks.push(section(text(`<${uri}|${name}>`, TEXT_FORMAT_MRKDWN)))
+    blocks.push(section(
+      text(`*${priceFormated}*\n${desc}`, TEXT_FORMAT_MRKDWN),
+      {
+        accessory: image(heroImage, name)
+      }
+    ))
+    blocks.push(context([
+      image('https://res.cloudinary.com/dilip/image/upload/v1651536106/huemul-dev/huemul-steam-game-dev-bg.png', name),
+      text(`*Desarrollador*: ${dev}`, TEXT_FORMAT_MRKDWN)
+    ]))
+    blocks.push(context([
+      image('https://res.cloudinary.com/dilip/image/upload/v1651536197/huemul-dev/huemul-steam-company-bg.png', name),
+      text(`*Editor*: ${editor}`, TEXT_FORMAT_MRKDWN)
+    ]))
+    blocks.push(context([
+      image('https://res.cloudinary.com/dilip/image/upload/v1651535775/huemul-dev/huemul-steam-metacritic-logo.png', name),
+      text(`*Metacritic*: ${meta === 0 ? 'No Registra' : meta}`, TEXT_FORMAT_MRKDWN)
+    ]))
+    blocks.push(context([
+      image('https://res.cloudinary.com/dilip/image/upload/v1651536268/huemul-dev/huemul-steam-fecha-bg.png', name),
+      text(`*Fecha de lanzamiento*: ${release}`, TEXT_FORMAT_MRKDWN)
+    ]))
+    blocks.push(context([
+      image('https://res.cloudinary.com/dilip/image/upload/v1651536345/huemul-dev/huemul-steam-genre-bg.png', name),
+      text(`*Género*: ${genres}`, TEXT_FORMAT_MRKDWN)
+    ]))
+    return blocks
+  }
+  const sendMessage = (message, channel) => {
+    let data
+    if (!Array.isArray(message)) {
+      data = {
+        channel,
+        text: message
+      }
+    } else {
+      data = {
+        channel,
+        blocks: message,
+        text: '*Steam*'
+      }
+    }
+    return web.chat.postMessage(data)
   }
 
   const onError = (err, msg, text) => {
-    if (err === 404) {
+    if (err === 404 || err === 400) {
       msg.send(text)
     } else {
       msg.send('Actualmente _Steam_ no responde.')
@@ -159,17 +227,19 @@ module.exports = robot => {
     if (args === 'help') {
       return sendMessage(commands.join('\n'), msg.message.room)
     }
+    web.chat.postMessage({
+      channel: msg.message.room,
+      text: 'Cargando búsqueda en Steam :steam: :loading:'
+    })
     if (args === 'daily') {
       return getDailyId()
-        .then(getPrice)
+        .then(getDesc)
         .then(data => {
           sendMessage(
-            `¡Lorea la oferta del día!: *${data.name}*, a sólo *${numberToCLPFormater(
-              data.final,
-              'CLP $'
-            )}*. Valor original *${numberToCLPFormater(data.initial, 'CLP $')}*, eso es un -*${data.discount}*%! <${
-              data.uri
-            }|Ver más>`,
+            buildGameMessage({
+              isDaily: true,
+              ...data
+            }),
             msg.message.room
           )
         })
@@ -179,34 +249,15 @@ module.exports = robot => {
       .then(getDesc)
       .then(data => {
         if (data.type !== 'game') {
-          return msg.send('¡Cuek!, no encontré el juego')
+          return msg.send('Juego no encontrado.')
         }
-        const meta = data.meta === 0 ? 'No Registra' : data.meta
-        const genres = data.genres
-        const fields = [
-          `Nombre del Juego: *${data.name}*`,
-          `Desarrollador: *${data.dev}*`,
-          `Editor: *${data.editor}*`,
-          `Metacritic: *${meta}*`,
-          `Fecha del Lanzamiento: *${data.release}*`,
-          `Género: *${genres}*`,
-          `Descripción: ${data.desc} <${data.uri}|Ver más>`
-        ]
-        let price
         let discount = ''
         if (data.discount > 0) {
-          price = data.final
           discount = ` (%${data.discount} Off)`
-        } else {
-          price = data.price === 0 ? 'Free-To-Play' : data.final
         }
-        if (!isNaN(parseFloat(price)) && isFinite(price)) {
-          fields.splice(1, 0, `Valor: *${numberToCLPFormater(price, 'CLP $')}*${discount}`)
-        } else {
-          fields.splice(1, 0, `Valor: *${price}*`)
-        }
-        msg.send(fields.join('\n'))
+        data.discount = discount
+        sendMessage(buildGameMessage(data), msg.message.room)
       })
-      .catch(err => onError(err, msg, '¡Cuek!, no encontré el juego'))
+      .catch(err => onError(err, msg, 'Juego no encontrado'))
   })
 }
