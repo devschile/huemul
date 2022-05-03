@@ -12,6 +12,7 @@
 
 // Author:
 //   @christopher
+//   @dilip
 
 'use strict'
 const cheerio = require('cheerio')
