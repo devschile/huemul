@@ -62,7 +62,7 @@ module.exports = robot => {
     return getBody('https://store.steampowered.com').then(body => {
       const $ = cheerio.load(body)
       const idAttr = $('.dailydeal_desc .dailydeal_countdown').attr('id')
-      return idAttr.replace(/[^0-9.]/g, '')
+      return idAttr && idAttr.replace(/[^0-9.]/g, '')
     })
   }
 
@@ -92,12 +92,12 @@ module.exports = robot => {
         const itsfree = game.is_free
         const price = itsfree ? 0 : game.price_overview
         const initial = price && price.initial > 0 ? price.initial / 100 : price && price.initial
-        const final = !game.release_date.coming_soon ? price.final / 100 : 0
+        const final = !game.release_date.coming_soon ? price && price.final / 100 : 0
         // Important!
         const dev = game.developers
         const editor = game.publishers
         const release = game.release_date.coming_soon ? 'Coming Soon' : game.release_date.date
-        const discount = !game.release_date.coming_soon ? price.discount_percent : 0
+        const discount = !game.release_date.coming_soon ? price && price.discount_percent : 0
         const uri = `https://store.steampowered.com/app/${id}`
         return {
           name,
@@ -174,23 +174,23 @@ module.exports = robot => {
       }
     ))
     blocks.push(context([
-      image('https://res.cloudinary.com/dilip/image/upload/v1651536106/huemul-dev/huemul-steam-game-dev-bg.png', name),
+      image('/images/huemul-steam-game-dev-bg.png', name),
       text(`*Desarrollador*: ${dev}`, TEXT_FORMAT_MRKDWN)
     ]))
     blocks.push(context([
-      image('https://res.cloudinary.com/dilip/image/upload/v1651536197/huemul-dev/huemul-steam-company-bg.png', name),
+      image('/images/huemul-steam-editor-bg.png', name),
       text(`*Editor*: ${editor}`, TEXT_FORMAT_MRKDWN)
     ]))
     blocks.push(context([
-      image('https://res.cloudinary.com/dilip/image/upload/v1651535775/huemul-dev/huemul-steam-metacritic-logo.png', name),
+      image('/images/huemul-steam-metacritic.png', name),
       text(`*Metacritic*: ${meta === 0 ? 'No Registra' : meta}`, TEXT_FORMAT_MRKDWN)
     ]))
     blocks.push(context([
-      image('https://res.cloudinary.com/dilip/image/upload/v1651536268/huemul-dev/huemul-steam-fecha-bg.png', name),
+      image('/images/huemul-steam-launch-bg.png', name),
       text(`*Fecha de lanzamiento*: ${release}`, TEXT_FORMAT_MRKDWN)
     ]))
     blocks.push(context([
-      image('https://res.cloudinary.com/dilip/image/upload/v1651536345/huemul-dev/huemul-steam-genre-bg.png', name),
+      image('/images/huemul-steam-genre-bg.png', name),
       text(`*Género*: ${genres}`, TEXT_FORMAT_MRKDWN)
     ]))
     return blocks
