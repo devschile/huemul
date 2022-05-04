@@ -29,6 +29,16 @@ const commands = [
   '`huemul steam [Nombre Juego]` - Muestra información básica de un juego.'
 ]
 module.exports = robot => {
+  const deleteMessage = async (message) => {
+    if (message !== undefined) {
+      const { channel, message: { ts } } = await message
+      web.chat.delete({
+        token,
+        channel,
+        ts
+      })
+    }
+  }
   const getBody = (uri, options = {}) => {
     return new Promise((resolve, reject) => {
       const request = robot.http(uri)
@@ -228,14 +238,20 @@ module.exports = robot => {
     if (args === 'help') {
       return sendMessage(commands.join('\n'), msg.message.room)
     }
-    web.chat.postMessage({
-      channel: msg.message.room,
-      text: 'Cargando búsqueda en Steam :steam: :loading:'
-    })
+    let loadingMessage
+    try {
+      loadingMessage = web.chat.postMessage({
+        channel: msg.message.room,
+        text: 'Cargando búsqueda en Steam :steam: :loading:'
+      })
+    } catch (e) {
+      return onError(e, msg, 'Error inesperado cargando Steam')
+    }
     if (args === 'daily') {
       return getDailyId()
         .then(getDesc)
         .then(data => {
+          loadingMessage && deleteMessage(loadingMessage)
           sendMessage(
             buildGameMessage({
               isDaily: true,
@@ -244,11 +260,16 @@ module.exports = robot => {
             msg.message.room
           )
         })
-        .catch(err => onError(err, msg, 'No se encontró la oferta del día, revisaste los especiales?'))
+        .catch(err => {
+          loadingMessage && deleteMessage(loadingMessage)
+          onError(err, msg, 'No se encontró la oferta del día en Steam :steam:, revisaste los especiales?')
+        })
     }
     getGameDesc(full)
       .then(getDesc)
       .then(data => {
+        loadingMessage && deleteMessage(loadingMessage)
+
         if (data.type !== 'game') {
           return msg.send('Juego no encontrado.')
         }
@@ -259,6 +280,9 @@ module.exports = robot => {
         data.discount = discount
         sendMessage(buildGameMessage(data), msg.message.room)
       })
-      .catch(err => onError(err, msg, 'Juego no encontrado'))
+      .catch(err => {
+        loadingMessage && deleteMessage(loadingMessage)
+        onError(err, msg, 'Juego no encontrado en Steam :steam:')
+      })
   })
 }
