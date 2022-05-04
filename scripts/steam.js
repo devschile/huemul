@@ -157,7 +157,7 @@ module.exports = robot => {
     const blocks = []
     const heroImage = `https://cdn.cloudflare.steamstatic.com/steam/apps/${id[0]}/hero_capsule.jpg`
     const headerText = isDaily ? 'Oferta del día en Steam' : 'Descripción de juego en Steam'
-    const imageAssetsPrefix = 'httpsul.devschile.cl/images'
+    const imageAssetsHost = process.env.HUBOT_URL
     blocks.push(JSON.parse(`{
       "type": "header",
       "text": {
@@ -174,23 +174,23 @@ module.exports = robot => {
       }
     ))
     blocks.push(context([
-      image(imageAssetsPrefix + '/huemul-steam-game-dev-bg.png', name),
+      image(imageAssetsHost + '/images/huemul-steam-game-dev-bg.png', name),
       text(`*Desarrollador*: ${dev}`, TEXT_FORMAT_MRKDWN)
     ]))
     blocks.push(context([
-      image(imageAssetsPrefix + '/huemul-steam-editor-bg.png', name),
+      image(imageAssetsHost + '/images/huemul-steam-editor-bg.png', name),
       text(`*Editor*: ${editor}`, TEXT_FORMAT_MRKDWN)
     ]))
     blocks.push(context([
-      image(imageAssetsPrefix + '/huemul-steam-metacritic.png', name),
+      image(imageAssetsHost + '/images/huemul-steam-metacritic.png', name),
       text(`*Metacritic*: ${meta === 0 ? 'No Registra' : meta}`, TEXT_FORMAT_MRKDWN)
     ]))
     blocks.push(context([
-      image(imageAssetsPrefix + '/huemul-steam-launch-bg.png', name),
+      image(imageAssetsHost + '/images/huemul-steam-launch-bg.png', name),
       text(`*Fecha de lanzamiento*: ${release}`, TEXT_FORMAT_MRKDWN)
     ]))
     blocks.push(context([
-      image(imageAssetsPrefix + '/huemul-steam-genre-bg.png', name),
+      image(imageAssetsHost + '/images/huemul-steam-genre-bg.png', name),
       text(`*Género*: ${genres}`, TEXT_FORMAT_MRKDWN)
     ]))
     return blocks
