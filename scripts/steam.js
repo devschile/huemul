@@ -262,7 +262,7 @@ module.exports = robot => {
         })
         .catch(err => {
           loadingMessage && deleteMessage(loadingMessage)
-          onError(err, msg, 'No se encontró la oferta del día en Steam :steam:, revisaste los especiales?')
+          onError(err, msg, 'No se encontró la oferta del día en Steam :steam:, ¿revisaste los especiales?')
         })
     }
     getGameDesc(full)
