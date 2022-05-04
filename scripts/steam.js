@@ -28,7 +28,6 @@ const commands = [
   '`huemul steam daily` - Muestra la oferta del día.',
   '`huemul steam [Nombre Juego]` - Muestra información básica de un juego.'
 ]
-
 module.exports = robot => {
   const getBody = (uri, options = {}) => {
     return new Promise((resolve, reject) => {
@@ -158,6 +157,7 @@ module.exports = robot => {
     const blocks = []
     const heroImage = `https://cdn.cloudflare.steamstatic.com/steam/apps/${id[0]}/hero_capsule.jpg`
     const headerText = isDaily ? 'Oferta del día en Steam' : 'Descripción de juego en Steam'
+    const huemulPrefix = '/huemul'
     blocks.push(JSON.parse(`{
       "type": "header",
       "text": {
@@ -174,23 +174,23 @@ module.exports = robot => {
       }
     ))
     blocks.push(context([
-      image('/images/huemul-steam-game-dev-bg.png', name),
+      image(huemulPrefix + '/images/huemul-steam-game-dev-bg.png', name),
       text(`*Desarrollador*: ${dev}`, TEXT_FORMAT_MRKDWN)
     ]))
     blocks.push(context([
-      image('/images/huemul-steam-editor-bg.png', name),
+      image(huemulPrefix + '/images/huemul-steam-editor-bg.png', name),
       text(`*Editor*: ${editor}`, TEXT_FORMAT_MRKDWN)
     ]))
     blocks.push(context([
-      image('/images/huemul-steam-metacritic.png', name),
+      image(huemulPrefix + '/images/huemul-steam-metacritic.png', name),
       text(`*Metacritic*: ${meta === 0 ? 'No Registra' : meta}`, TEXT_FORMAT_MRKDWN)
     ]))
     blocks.push(context([
-      image('/images/huemul-steam-launch-bg.png', name),
+      image(huemulPrefix + '/images/huemul-steam-launch-bg.png', name),
       text(`*Fecha de lanzamiento*: ${release}`, TEXT_FORMAT_MRKDWN)
     ]))
     blocks.push(context([
-      image('/images/huemul-steam-genre-bg.png', name),
+      image(huemulPrefix + '/images/huemul-steam-genre-bg.png', name),
       text(`*Género*: ${genres}`, TEXT_FORMAT_MRKDWN)
     ]))
     return blocks
