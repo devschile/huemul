@@ -80,7 +80,7 @@ module.exports = function (robot, web = webClient) {
     }
     return 'US$0'
   }
-  const mapResponseToJobs = async (response) => {
+  const mapResponseToJobs = (response) => {
     let jobs = []
     const { data } = response
     if (data) {
@@ -231,7 +231,7 @@ module.exports = function (robot, web = webClient) {
         searchTerm = searchTerm.replace(tldrRegex, '')
       }
       const body = await getBody(formatSearchApiUrl(searchTerm, isShortVersion ? tldrModeLimit : expandedModeLimit))
-      const jobs = await mapResponseToJobs(JSON.parse(body))
+      const jobs = mapResponseToJobs(JSON.parse(body))
       if (jobs.length === 0) {
         const blocks = [
           section(text(`No hay trabajos encontrados en <${gobDomain}|GetOnBrd> para '${searchTerm}'`, TEXT_FORMAT_MRKDWN))
