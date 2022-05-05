@@ -13,12 +13,14 @@
 
 const { WebClient } = require('@slack/web-api')
 const token = process.env.HUBOT_SLACK_TOKEN
-const web = new WebClient(token)
+const webClient = new WebClient(token)
 const { block, object, TEXT_FORMAT_MRKDWN } = require('slack-block-kit')
 const { text } = object
 const { section, divider, image, context } = block
 const gobApiHost = 'https://www.getonbrd.com/api/v0'
-module.exports = function (robot) {
+const gobDomain = 'https://www.getonbrd.com'
+
+module.exports = function (robot, web = webClient) {
   const imageAssetHost = 'http://1ea2-181-161-144-247.ngrok.io'
   const remoteLabels = {
     no_remote: 'No remoto',
@@ -40,7 +42,10 @@ module.exports = function (robot) {
         text: '*GetOnBrd*'
       }
     }
-    return web.chat.postMessage(data)
+    return web.chat.postMessage({
+      ...data,
+      token
+    })
   }
   const deleteMessage = (message) => {
     if (message !== undefined) {
@@ -58,8 +63,11 @@ module.exports = function (robot) {
       if (options.headers) request.headers(options.headers)
       if (options.query) request.query(options.query)
       request.get()((err, res, body) => {
-        if (err || res.statusCode !== 200) {
-          return reject(err || res.statusCode)
+        if (err) {
+          return reject(err)
+        }
+        if (res.statusCode !== 200) {
+          return reject(new Error(':gob: tiene problemas en el servidor'))
         }
         resolve(body)
       })
@@ -124,6 +132,32 @@ module.exports = function (robot) {
     return perk.replace(/_/g, ' ').replace(/\w+/g,
       function (w) { return w[0].toUpperCase() + w.slice(1).toLowerCase() })
   }
+  const buildCondensedJobsBlock = async (jobs) => {
+    const blocks = []
+    for (const job of jobs) {
+      const {
+        title,
+        remoteModality,
+        minSalary,
+        maxSalary,
+        publicUrl
+      } = job
+      const {
+        name: companyName,
+        logo: companyLogo
+      } = await job.companyInfo
+
+      blocks.push(
+        context([
+          image(companyLogo, companyName),
+          text(`<${publicUrl}|${title}>`, TEXT_FORMAT_MRKDWN),
+          text(`${maxSalary > 0 ? `${formatAmountToUsd(minSalary)} - ${formatAmountToUsd(maxSalary)}` : 'No especifica'}`, TEXT_FORMAT_MRKDWN),
+          text(`${remoteLabels[remoteModality] || 'No especifica'}`, TEXT_FORMAT_MRKDWN)
+        ])
+      )
+    }
+    return blocks
+  }
   const buildJobsBlock = async (jobs) => {
     const blocks = []
     for (const job of jobs) {
@@ -176,17 +210,26 @@ module.exports = function (robot) {
     return blocks
   }
   robot.respond(/(pega|pegas|trabajo|trabajos) (.*)/i, async function (msg) {
-    const domain = 'https://www.getonbrd.com'
-    const searchTerm = msg.match[2] || 'fullstack'
-    const searchUrl = encodeURI(`${domain}/jobs-${searchTerm}`)
-    const searchApiUrl = encodeURI(`${gobApiHost}/search/jobs?query=${searchTerm}&per_page=3&expand=["company"]`)
+    const tldrLimit = 10
+    const expandedLimit = 3
+    let searchTerm = msg.match[2] || ''
+    const searchUrl = encodeURI(`${gobDomain}/jobs-${searchTerm}`)
+    const formatSearchApiUrl = (searchTerm, limit) => encodeURI(`${gobApiHost}/search/jobs?query=${searchTerm}&per_page=${limit}`)
+
     const loadingMessage = await sendMessage('Buscando en GetOnBrd... :dev:', msg.message.room)
+
     try {
-      const body = await getBody(searchApiUrl)
+      const tldrRegex = /(tldr|mini|short|corta) (?!$)/g
+      let isShortVersion = false
+      if (searchTerm.match(tldrRegex) !== null) {
+        isShortVersion = true
+        searchTerm = searchTerm.replace(tldrRegex, '')
+      }
+      const body = await getBody(formatSearchApiUrl(searchTerm, isShortVersion ? tldrLimit : expandedLimit))
       const jobs = mapResponseToJobs(JSON.parse(body))
       if (jobs.length === 0) {
         const blocks = [
-          section(text(`No hay trabajos encontrados en <${domain}|GetOnBrd> para esta búsqueda`, TEXT_FORMAT_MRKDWN))
+          section(text(`No hay trabajos encontrados en <${gobDomain}|GetOnBrd> para '${searchTerm}'`, TEXT_FORMAT_MRKDWN))
         ]
         loadingMessage && deleteMessage(loadingMessage)
         return sendMessage(blocks, msg.message.room)
@@ -200,9 +243,14 @@ module.exports = function (robot) {
           }
         }`)
       ]
-      const jobsBlock = await buildJobsBlock(jobs)
+      let jobsBlock
+      if (isShortVersion) {
+        jobsBlock = await buildCondensedJobsBlock(jobs)
+      } else {
+        jobsBlock = await buildJobsBlock(jobs)
+      }
+
       blocks.push(...jobsBlock)
-      blocks.push(divider())
       blocks.push(section(text(`Para ver más resultados, visita <${searchUrl}|GetOnBrd - ${searchTerm}>`, TEXT_FORMAT_MRKDWN)))
       sendMessage(blocks, msg.message.room)
     } catch (e) {
