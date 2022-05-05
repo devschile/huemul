@@ -215,7 +215,25 @@ module.exports = function (robot, web = webClient) {
     let searchTerm = msg.match[2] || ''
     const searchUrl = encodeURI(`${gobDomain}/jobs-${searchTerm}`)
     const formatSearchApiUrl = (searchTerm, limit) => encodeURI(`${gobApiHost}/search/jobs?query=${searchTerm}&per_page=${limit}`)
-
+    if (searchTerm.match(/^(help|ayuda)$/g)) {
+      const blocks = []
+      blocks.push(JSON.parse(`{
+        "type": "header",
+        "text": {
+          "type": "plain_text",
+          "text": "Búsqueda de trabajo - Powered by GetOnBrd API"
+        }
+      }`))
+      blocks.push(divider())
+      blocks.push(section(
+        text(`
+*huemul <pega|pegas|trabajo|trabajos> <busqueda>* - Retorna 3 búsquedas con detalles de trabajo (Rango Salarial, Remoto, Aplicaciones recibidas y  beneficios)
+*huemul <pega|pegas|trabajo|trabajos> <tldr|mini|short|corta> <busqueda>* - Retorna 10 resultados de trabajos con detalles condensados (Rango Salarial, Remoto)
+*huemul <help|ayuda>* - Muestra este mensaje
+        `, TEXT_FORMAT_MRKDWN)
+      ))
+      return sendMessage(blocks, msg.message.room)
+    }
     const loadingMessage = await sendMessage('Buscando en GetOnBrd... :dev:', msg.message.room)
 
     try {
