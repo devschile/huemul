@@ -68,7 +68,7 @@ module.exports = function (robot, web = webClient) {
           return reject(err)
         }
         if (res.statusCode !== 200) {
-          return reject(new Error(':gob: tiene problemas en el servidor'))
+          return reject(err)
         }
         resolve(body)
       })
@@ -76,37 +76,26 @@ module.exports = function (robot, web = webClient) {
   }
   const formatAmountToUsd = (amount) => {
     if (parseInt(amount)) {
-      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2, currencyDisplay: 'code' }).format(amount)
+      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0, currencyDisplay: 'code' }).format(amount)
     }
     return 'US$0'
   }
-  const getCompanyById = async (id) => {
-    try {
-      const uri = `${gobApiHost}/companies/${id}`
-      const body = await getBody(uri)
-      const { data: { attributes: { name, logo } } } = JSON.parse(body)
-      return {
-        name,
-        logo
-      }
-    } catch (e) {
-      robot.emit('error', e, 'pegas')
-    }
-  }
-  const mapResponseToJobs = (response) => {
+  const mapResponseToJobs = async (response) => {
     let jobs = []
     const { data } = response
     if (data) {
-      // get company ids from jobs and filter repeated ids
-      const companyIds = data
-        .map(job => job.attributes.company.data.id)
-        .filter((id, index, self) => self.indexOf(id) === index)
-        .map(id => ({ [id]: getCompanyById(id) }))
-      const companies = Object.assign({}, ...companyIds)
       jobs = data.map(dataRow => {
         if (dataRow.type === 'job') {
           const {
             applications_count: applicationsCount,
+            company: {
+              data: {
+                attributes: {
+                  name: companyName,
+                  logo: companyLogo
+                }
+              }
+            },
             min_salary: minSalary,
             max_salary: maxSalary,
             perks,
@@ -116,7 +105,8 @@ module.exports = function (robot, web = webClient) {
           const { public_url: publicUrl } = dataRow.links
           return {
             applicationsCount: applicationsCount || 0,
-            companyInfo: companies[dataRow.attributes.company.data.id],
+            companyName,
+            companyLogo,
             minSalary,
             maxSalary,
             remoteModality,
@@ -137,21 +127,19 @@ module.exports = function (robot, web = webClient) {
     const blocks = []
     for (const job of jobs) {
       const {
+        companyName,
+        companyLogo,
         title,
         remoteModality,
         minSalary,
         maxSalary,
         publicUrl
       } = job
-      const {
-        name: companyName,
-        logo: companyLogo
-      } = await job.companyInfo
 
       blocks.push(
         context([
           image(companyLogo, companyName),
-          text(`<${publicUrl}|${title}>`, TEXT_FORMAT_MRKDWN),
+          text(`<${publicUrl}|${companyName} - ${title}>`, TEXT_FORMAT_MRKDWN),
           text(`${maxSalary > 0 ? `${formatAmountToUsd(minSalary)} - ${formatAmountToUsd(maxSalary)}` : 'No especifica'}`, TEXT_FORMAT_MRKDWN),
           text(`${remoteLabels[remoteModality] || 'No especifica'}`, TEXT_FORMAT_MRKDWN)
         ])
@@ -165,20 +153,18 @@ module.exports = function (robot, web = webClient) {
       const {
         title,
         applicationsCount,
+        companyName,
+        companyLogo,
         remoteModality,
         perks,
         minSalary,
         maxSalary,
         publicUrl
       } = job
-      const {
-        name: companyName,
-        logo: companyLogo
-      } = await job.companyInfo
       blocks.push(
         context([
           image(companyLogo, companyName),
-          text(`<${publicUrl}|${title}>`, TEXT_FORMAT_MRKDWN)
+          text(`<${publicUrl}|${companyName} - ${title}>`, TEXT_FORMAT_MRKDWN)
         ])
       )
       blocks.push(
@@ -211,11 +197,11 @@ module.exports = function (robot, web = webClient) {
     return blocks
   }
   robot.respond(/(pega|pegas|trabajo|trabajos) (.*)/i, async function (msg) {
-    const tldrLimit = 10
-    const expandedLimit = 3
+    const tldrModeLimit = 10
+    const expandedModeLimit = 3
     let searchTerm = msg.match[2] || ''
     const searchUrl = encodeURI(`${gobDomain}/jobs-${searchTerm}`)
-    const formatSearchApiUrl = (searchTerm, limit) => encodeURI(`${gobApiHost}/search/jobs?query=${searchTerm}&per_page=${limit}`)
+    const formatSearchApiUrl = (searchTerm, limit) => encodeURI(`${gobApiHost}/search/jobs?query=${searchTerm}&per_page=${limit}&expand=["company"]`)
     if (searchTerm.match(/^(help|ayuda)$/g)) {
       const blocks = []
       blocks.push(JSON.parse(`{
@@ -244,8 +230,8 @@ module.exports = function (robot, web = webClient) {
         isShortVersion = true
         searchTerm = searchTerm.replace(tldrRegex, '')
       }
-      const body = await getBody(formatSearchApiUrl(searchTerm, isShortVersion ? tldrLimit : expandedLimit))
-      const jobs = mapResponseToJobs(JSON.parse(body))
+      const body = await getBody(formatSearchApiUrl(searchTerm, isShortVersion ? tldrModeLimit : expandedModeLimit))
+      const jobs = await mapResponseToJobs(JSON.parse(body))
       if (jobs.length === 0) {
         const blocks = [
           section(text(`No hay trabajos encontrados en <${gobDomain}|GetOnBrd> para '${searchTerm}'`, TEXT_FORMAT_MRKDWN))
