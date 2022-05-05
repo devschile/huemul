@@ -21,7 +21,8 @@ const gobApiHost = 'https://www.getonbrd.com/api/v0'
 const gobDomain = 'https://www.getonbrd.com'
 
 module.exports = function (robot, web = webClient) {
-  const imageAssetHost = 'http://1ea2-181-161-144-247.ngrok.io'
+  const imageAssetHost = process.env.HUBOT_URL
+
   const remoteLabels = {
     no_remote: 'No remoto',
     temporarily_remote: 'Temporalmente remoto',
