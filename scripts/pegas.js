@@ -26,7 +26,7 @@ module.exports = function (robot, web = webClient) {
   const remoteLabels = {
     no_remote: 'No remoto',
     temporarily_remote: 'Temporalmente remoto',
-    remote_local: 'Remoto dentro de Chile',
+    remote_local: zone => `Remoto dentro de ${zone}`,
     fully_remote: 'Full Remoto'
   }
   const sendMessage = (message, channel) => {
@@ -100,6 +100,7 @@ module.exports = function (robot, web = webClient) {
             max_salary: maxSalary,
             perks,
             remote_modality: remoteModality,
+            remote_zone: remoteZone,
             title
           } = dataRow.attributes
           const { public_url: publicUrl } = dataRow.links
@@ -110,6 +111,7 @@ module.exports = function (robot, web = webClient) {
             minSalary,
             maxSalary,
             remoteModality,
+            remoteZone,
             perks,
             publicUrl,
             title
@@ -131,6 +133,7 @@ module.exports = function (robot, web = webClient) {
         companyLogo,
         title,
         remoteModality,
+        remoteZone,
         minSalary,
         maxSalary,
         publicUrl
@@ -141,7 +144,7 @@ module.exports = function (robot, web = webClient) {
           image(companyLogo, companyName),
           text(`<${publicUrl}|${companyName} - ${title}>`, TEXT_FORMAT_MRKDWN),
           text(`${maxSalary > 0 ? `${formatAmountToUsd(minSalary)} - ${formatAmountToUsd(maxSalary)}` : 'No especifica'}`, TEXT_FORMAT_MRKDWN),
-          text(`${remoteLabels[remoteModality] || 'No especifica'}`, TEXT_FORMAT_MRKDWN)
+          text(`${remoteModality === 'remote_local' ? remoteLabels.remote_local(remoteZone) : remoteLabels[remoteModality] || 'No especifica'}`, TEXT_FORMAT_MRKDWN)
         ])
       )
     }
@@ -156,6 +159,7 @@ module.exports = function (robot, web = webClient) {
         companyName,
         companyLogo,
         remoteModality,
+        remoteZone,
         perks,
         minSalary,
         maxSalary,
@@ -174,7 +178,7 @@ module.exports = function (robot, web = webClient) {
       )
       blocks.push(
         context([
-          text(`*Remoto*: ${remoteLabels[remoteModality] || 'No especifica'}`, TEXT_FORMAT_MRKDWN)
+          text(`*Remoto*: ${remoteModality === 'remote_local' ? remoteLabels.remote_local(remoteZone) : remoteLabels[remoteModality] || 'No especifica'}`, TEXT_FORMAT_MRKDWN)
         ])
       )
       blocks.push(
