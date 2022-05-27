@@ -14,6 +14,7 @@
 // Author:
 //   @carsonmcdonald
 //   @drdamour
+//   @jorgeepunan
 
 const zlib = require('zlib')
 
@@ -35,6 +36,7 @@ module.exports = robot => {
 
 var soSearch = function (msg, search, tags) {
   let data = ''
+
   return msg.http('https://api.stackexchange.com/2.2/search')
     .query({
       site: 'stackoverflow',
@@ -58,19 +60,23 @@ var soSearch = function (msg, search, tags) {
 
         return output.on('end', function () {
           const parsedData = JSON.parse(data)
+
           if (parsedData.error) {
             msg.send(`Error searching stack overflow: ${parsedData.error.message}`)
             return
           }
 
           if (parsedData.total > 0) {
-            const qs = Array.from(parsedData.items.slice(0, 6)).map((question) =>
-              `http://www.stackoverflow.com/questions/${question.question_id} - ${question.title}`)
+            const qs = Array.from(parsedData.items.slice(0, 5)).map((question) =>
+              ` ◆ <http://www.stackoverflow.com/questions/${question.question_id}|${question.title}>`
+            )
             if ((parsedData.total - 5) > 0) {
-              qs.push(`${parsedData.total - 5} more...`)
+              qs.push(`<http://www.stackoverflow.com/search?q=${search.replace(' ','+')}|Ver todos los resultados>`)
             }
+            msg.send(`Estos son los *5* resultados principales de *${parsedData.total}*:`)
             return Array.from(qs).map((ans) =>
-              msg.send(ans))
+              msg.send(ans)
+            )
           } else {
             return msg.reply('No questions found matching that search.')
           }
