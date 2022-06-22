@@ -40,8 +40,8 @@
     "hubot-azar": "0.1.0",
     "hubot-beerjs": "0.1.0",
     "hubot-bellako": "0.0.1",
-    "hubot-buda": "1.0.0",
     "hubot-binario": "0.1.0",
+    "hubot-buda": "1.0.0",
     "hubot-cachipun": "^0.1.0",
     "hubot-caniuse": "1.0.3",
     "hubot-chaucha": "0.0.1",
@@ -109,6 +109,7 @@
     "yelp": "1.0.2"
   },
   "devDependencies": {
+    "@sinonjs/fake-timers": "^9.1.2",
     "@types/nock": "^11.1.0",
     "ava": "0.25.0",
     "coffee-script": "1.12.7",
@@ -122,6 +123,7 @@
     "husky": "0.14.3",
     "lint-staged": "9.4.2",
     "nock": "9.2.6",
-    "prettier": "1.12.1"
+    "prettier": "1.12.1",
+    "sinon": "^14.0.0"
   }
 }

@@ -16,17 +16,13 @@
 
 // Co-Author:
 //   @jorgeepunan
+//   @raerpo
 
 const moment = require('moment')
 
-function daysDiff (now, date) {
-  const date1 = new Date(`${date}T00:00:00-04:00`)
-  const date2 = new Date(`${now}T00:00:00-04:00`)
-  const timeDiff = Math.abs(date2.getTime() - date1.getTime())
-  const diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24))
-
-  return diffDays
-}
+// Constants
+const SATURDAY_ISO_DAY = 6
+const SUNDAY_ISO_DAY = 7
 
 function humanizeMonth (month) {
   const monthNumber = month - 1
@@ -49,50 +45,43 @@ function humanizeMonth (month) {
 }
 
 function humanizeDay (day) {
-  const dayNames = [
-    'Domingo',
-    'Lunes',
-    'Martes',
-    'Miércoles',
-    'Jueves',
-    'Viernes',
-    'Sábado'
-  ]
+  const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
 
   return dayNames[day]
 }
 
-/**
- * @description Takes the list of holidays and a starting index to check
- * and finds the next non-weekend day
- */
-const findNextWorkingDay = (holidays, startIndex) => {
-  const FRIDAY_ISO_DAY = 5
-  const nextHoliday = holidays[startIndex]
-  if (!nextHoliday) {
-    return null
+const getOutputMessage = (holiday, days, { isWorkDay = true }) => {
+  if (holiday === undefined) {
+    return
   }
-  const holiday = moment(`${nextHoliday.fecha}T00:00:00-04:00`)
-  if (holiday.isoWeekday() >= FRIDAY_ISO_DAY) {
-    return findNextWorkingDay(holidays, startIndex + 1)
-  } else {
-    return nextHoliday
-  }
-}
-
-const getOutputMessage = (holiday, dias, isWorkDay) => {
   const date = new Date(`${holiday.fecha}T00:00:00-04:00`)
   const humanDate = holiday.fecha.split('-')
   const humanDay = humanDate[2].replace(/^0+/, '')
   const humanMonth = humanDate[1]
   const humanWeekDay = humanizeDay(date.getDay())
   const message = `${holiday.nombre} (_${holiday.tipo.toLowerCase()}_)`
-  const plural = dias > 1 ? ['n', 's'] : ['', '']
-  const mensajeInicial = isWorkDay ? 'El próximo feriado para los :gonzaleee: es el' : 'El próximo feriado es el'
-  return `
-${mensajeInicial} *${humanWeekDay} ${humanDay} de ${humanizeMonth(humanMonth)}*, queda${plural[0]} *${dias} día${plural[1]}*. Se celebra: *${message}*
-`
+  const plural = days > 1 ? ['n', 's'] : ['', '']
+  const mensajeInicial = isWorkDay ? 'El próximo feriado es el' : 'El próximo feriado para los :gonzaleee: es el'
+  return `${mensajeInicial} *${humanWeekDay} ${humanDay} de ${humanizeMonth(humanMonth)}*, queda${
+    plural[0]
+  } *${days} día${plural[1]}*. Se celebra: *${message}*`
 }
+
+const getNextWorkingHoliday = (holidays, refDate) => {
+  if (holidays.length === 0) {
+    return null
+  }
+  const futureHolidays = holidays.filter(holiday => moment(`${holiday.fecha}T00:00:00-04:00`).isAfter(moment(refDate)))
+  if (futureHolidays[0].isWorkDay) {
+    return futureHolidays[0]
+  } else {
+    // eslint-disable-next-line no-unused-vars
+    const [_, ...nextHolidays] = futureHolidays
+    return getNextWorkingHoliday(nextHolidays, refDate)
+  }
+}
+
+exports.getNextWorkingHoliday = getNextWorkingHoliday
 
 module.exports = function (robot) {
   robot.respond(/pr(o|ó)ximo feriado/i, function (msg) {
@@ -109,30 +98,53 @@ module.exports = function (robot) {
       if (err || res.statusCode !== 200) {
         return robot.emit('error', err || new Error(`Status code ${res.statusCode}`), msg, 'proximo-feriado')
       }
-      let ok = false
+
       const bodyParsed = JSON.parse(body)
 
-      bodyParsed.forEach(function (holiday, index) {
+      // Filter out data from past days
+      const nextHolidays = bodyParsed.filter(holiday => {
         const date = new Date(`${holiday.fecha}T00:00:00-04:00`)
-        const message = `${holiday.nombre} (_${holiday.tipo.toLowerCase()}_)`
+        return moment(date).isSame(today) || moment(date).isAfter(today)
+      })
 
-        if (ok === false && date.getTime() >= today.getTime()) {
-          ok = true
-
-          const todayFormatted = [today.getFullYear(), ('0' + (today.getMonth() + 1)).slice(-2), ('0' + today.getDate()).slice(-2)].join('-')
-          const remainingDays = daysDiff(todayFormatted, holiday.fecha)
-
-          if (remainingDays === 0) {
+      // No more holidays for this year :depressed:
+      if (nextHolidays.length === 0) {
+        msg.send('No hay más feriados este año :depressed:')
+      } else if (nextHolidays.length > 0) {
+        /**
+         * extend the holidays data with the property if it's a working day. I couldn't find a better name
+         * so I leave a comment instead
+         */
+        const extendedHolidays = nextHolidays.map(holiday => {
+          const date = moment(`${holiday.fecha}T00:00:00-04:00`)
+          const isWorkingDay = date.isoWeekday() !== SATURDAY_ISO_DAY && date.isoWeekday() !== SUNDAY_ISO_DAY
+          return { ...holiday, isWorkingDay }
+        })
+        /**
+         * print the next holiday and in case of being a non-working day show the next one
+         */
+        for (let i = 0; i <= extendedHolidays.length; i++) {
+          const holiday = extendedHolidays[i]
+          const date = moment(`${holiday.fecha}T00:00:00-04:00`)
+          const message = `${holiday.nombre} (_${holiday.tipo.toLowerCase()}_)`
+          if (moment(date).isSame(today)) {
             msg.send(`*¡HOY es feriado!* Se celebra: *${message}*. ¡Disfrútalo!`)
-          } else {
-            const nextWeekDayHoliday = findNextWorkingDay(bodyParsed, index + 1)
-            const outputMessage = getOutputMessage(holiday, remainingDays) + (nextWeekDayHoliday ? '\n' + getOutputMessage(nextWeekDayHoliday, daysDiff(todayFormatted, nextWeekDayHoliday.fecha), true) : '')
-            msg.send(
-              outputMessage
-            )
+          } else if (moment(date).isAfter(today)) {
+            if (holiday.isWorkDay) {
+              msg.send(getOutputMessage(holiday, date.diff(today, 'days'), { isWorkDay: true }))
+            } else {
+              msg.send(getOutputMessage(holiday, date.diff(today, 'days'), { isWorkDay: true }))
+              const nextHoliday = getNextWorkingHoliday(extendedHolidays, holiday.fecha)
+              if (nextHoliday) {
+                msg.send(
+                  getOutputMessage(nextHoliday, moment(nextHoliday.fecha).diff(today, 'days'), { isWorkDay: false })
+                )
+              }
+            }
+            break
           }
         }
-      })
+      }
     })
   })
 }
