@@ -17,6 +17,10 @@
 // Author:
 //   @lgaticaq
 
+const { WebClient } = require('@slack/web-api')
+const token = process.env.HUBOT_SLACK_TOKEN
+const web = new WebClient(token)
+
 module.exports = robot => {
   /**
    * Obtener listado de usuarios gold
@@ -82,14 +86,19 @@ module.exports = robot => {
     const expire = new Date(now.getTime() + diff)
     goldUsers[name] = { user: name, expire: expire }
     let message = ':clap2: eres miembro gold :monea: por 1 mes!'
-    if (key === null) {
-      channelId = robot.adapter.client.rtm.dataStore.getChannelByName(process.env.GOLD_CHANNEL || '#random').id
-      message = `:clap2: *${name}* donó 1 mes de servidor a :huemul:, se lleva swag :devschile: y es miembro gold :monea: por 2 meses!`
-    } else {
-      goldUsers[name].key = key
-    }
-    robot.brain.set('gold_users', JSON.stringify(goldUsers))
-    robot.send({ room: channelId }, message)
+
+    web.conversations.list().then(res => {
+      if (key === null) {
+        const channel = res.channels.find(channel => channel.name === process.env.GOLD_CHANNEL || channel.name === 'random')
+        channelId = channel.id
+        message = `:clap2: *${name}* donó 1 mes de servidor a :huemul:, se lleva swag :devschile: y es miembro gold :monea: por 2 meses!`
+      } else {
+        goldUsers[name].key = key
+      }
+
+      robot.brain.set('gold_users', JSON.stringify(goldUsers))
+      robot.send({ room: channelId }, message)
+    })
   }
 
   class Golden {
@@ -146,12 +155,12 @@ module.exports = robot => {
     const isAdmin = robot.auth.isAdmin(res.message.user)
     const hasRole = robot.auth.hasRole(res.message.user, 'gold')
     if (isAdmin || hasRole) {
-      const user = robot.adapter.client.rtm.dataStore.getUserByName(res.match[1])
-      if (typeof user !== 'undefined') {
-        addUser(user.name, 60)
-      } else {
-        res.reply('el usuario no existe')
-      }
+      const slackId = res.message.rawMessage.text.match(/gold add <@(.*)>/)[1]
+      web.users.info({ user: slackId }).then(result => {
+        const user = result.user
+        if (!user) return res.send('No se encontró el usuario')
+        addUser(user.name, 30, res.message.room)
+      })
     }
   })
 
