@@ -20,6 +20,8 @@
 const { WebClient } = require('@slack/web-api')
 const token = process.env.HUBOT_SLACK_TOKEN
 const web = new WebClient(token)
+const moment = require('moment')
+moment.locale('es')
 
 module.exports = robot => {
   /**
@@ -85,13 +87,15 @@ module.exports = robot => {
     if (!now) now = new Date()
     const expire = new Date(now.getTime() + diff)
     goldUsers[name] = { user: name, expire: expire }
-    let message = ':clap2: eres miembro gold :monea: por 1 mes!'
+    const momentNow = moment(now)
+    const humanizedDuration = moment.duration(momentNow.diff(expire)).humanize()
+    let message = `:clap2: eres miembro gold :monea: por ${humanizedDuration}!`
 
     web.conversations.list().then(res => {
       if (key === null) {
         const channel = res.channels.find(channel => channel.name === process.env.GOLD_CHANNEL || channel.name === 'random')
         channelId = channel.id
-        message = `:clap2: *${name}* donó 1 mes de servidor a :huemul:, se lleva swag :devschile: y es miembro gold :monea: por 2 meses!`
+        message = `:clap2: *${name}* donó a :huemul:, se lleva swag :devschile: y es miembro gold :monea: por ${humanizedDuration}!`
       } else {
         goldUsers[name].key = key
       }
@@ -156,10 +160,12 @@ module.exports = robot => {
     const hasRole = robot.auth.hasRole(res.message.user, 'gold')
     if (isAdmin || hasRole) {
       const slackId = res.message.rawMessage.text.match(/gold add <@(.*)>/)[1]
+      const daysMatch = res.message.rawMessage.text.match(/gold add <@.*> (\d*)/)
+      const days = daysMatch ? daysMatch[1] : 30
       web.users.info({ user: slackId }).then(result => {
         const user = result.user
         if (!user) return res.send('No se encontró el usuario')
-        addUser(user.name, 30, res.message.room)
+        addUser(user.name, days, res.message.room)
       })
     }
   })
