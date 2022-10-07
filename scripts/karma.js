@@ -20,6 +20,8 @@
 
 const theme = require('./theme.js')
 const exceptions = ['c', 'C']
+const karmaRegex = /([a-zA-Z0-9-_.]|[^,\-\s+$!(){}"'`~%=^:;#°|¡¿?]+?)(\+{2}|-{2})([^,]?|\s|$)/g
+
 module.exports = robot => {
   const hubotHost = process.env.HEROKU_URL || process.env.HUBOT_URL || 'http://localhost:8080'
   const hubotWebSite = `${hubotHost}/${robot.name}`
@@ -42,7 +44,7 @@ module.exports = robot => {
     if (checkCache) {
       return updateUsersCache()
     } else {
-      return new Promise((resolve, reject) => resolve(userListCache.members))
+      return Promise.resolve(userListCache.members)
     }
   }
 
@@ -58,7 +60,6 @@ module.exports = robot => {
         if (userList && userList.response_metadata && userList.response_metadata.next_cursor) {
           return paginatedGetUsers(userList.response_metadata.next_cursor).then(newUserList => {
             userList.members = userList.members.concat(newUserList.members)
-
             return userList
           })
         } else {
@@ -67,12 +68,15 @@ module.exports = robot => {
       })
     }
 
-    return paginatedGetUsers().then(userList => {
-      userList.updateDate = new Date()
-      robot.brain.set('userListCache', userList)
-
-      return userList.members
-    })
+    if (robot.adapter.client && robot.adapter.client.web) {
+      return paginatedGetUsers().then(userList => {
+        userList.updateDate = new Date()
+        robot.brain.set('userListCache', userList)
+        return userList.members
+      })
+    } else {
+      return Promise.resolve([])
+    }
   }
 
   const userFromList = (userList, token) => {
@@ -142,7 +146,6 @@ module.exports = robot => {
           if (thisUser.id === targetUser.id && op !== '--') {
             return response.send('¡Oe no po, el karma es pa otros no pa ti!')
           }
-          if (targetUser.length === '') return response.send('¡Oe no seai pillo, escribe un nombre!')
           const limit = canUpvote(thisUser, targetUser)
           if (Number.isFinite(limit)) {
             return response.send(`¡No abuses! Intenta en ${limit} minutos.`)
@@ -183,9 +186,8 @@ module.exports = robot => {
     return tokens.filter(token => urls.reduce((acc, url) => acc && url.indexOf(token) === -1, true))
   }
 
-  const karmaRegex = /([a-zA-Z0-9-_.]|[^,\-\s+$!(){}"'`~%=^:;#°|¡¿?]+?)(\+{2}|-{2})([^,]?|\s|$)/g
-
   robot.hear(karmaRegex, response => {
+    robot.logger.info('Se quiere asignar karma:', response.match[0])
     const textToCheck = response.message.rawText || response.message.text
     const reFilteredMatch = textToCheck.match(karmaRegex)
     const tokens = removeURLFromTokens(reFilteredMatch, response.message.text)
@@ -216,6 +218,7 @@ module.exports = robot => {
   })
 
   robot.hear(/^karma(?:\s+@?(.*))?$/, response => {
+    robot.logger.info('Escuche un comando karma:', response.match[1])
     if (!response.match[1]) return
     const targetToken = response.match[1].trim()
     if (['todos', 'all'].includes(targetToken.toLowerCase())) {

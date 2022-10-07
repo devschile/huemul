@@ -4,11 +4,13 @@ El repositorio de Huemul queda abierto para todos los miembros de [devsChile en 
 
 En la medida que sea posible todo script _complejo_ que se quiera agregar debería ser su propio paquete de npm, ya sea el original o un fork con los cambios en esta organización u otra parte. **Una buena regla es que si tu script tiene dependencias debería ser su propio paquete, sino puede ir en la carpeta de scripts.**
 
-## Pasos:
+## Pasos
 
 * Fork a tu cuenta de GitHub y clone este repo en tu local.
+* Recomendamos utilizar `nvm` para poder cambiar entre versiones node
 * `$ cd ruta/a/huemul`
-* `$ npm install` o `$ yarn` (probablemente sea mejor usar `sudo` a menos que uses nodenv o nvm).
+* `$ nvm install && nvm use` (Esto instalará la version de node especificada en el `.nvmrc`)
+* `$ yarn` (probablemente sea mejor usar `sudo` a menos que uses nodenv o nvm).
 * Si estás usando la carpeta de scripts deja tu código en `huemul/scripts`, sino:
 
 --

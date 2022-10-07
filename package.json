@@ -5,7 +5,7 @@
   "main": "bin/hubot",
   "scripts": {
     "start": "bin/hubot -a slack",
-    "dev": "bin/hubot",
+    "dev": "HUBOT_LOG_LEVEL=\"debug\" nodemon --exec bin/hubot",
     "test": "ava test",
     "precommit": "lint-staged",
     "prepush": "ava test"
@@ -123,6 +123,7 @@
     "husky": "0.14.3",
     "lint-staged": "9.4.2",
     "nock": "9.2.6",
+    "nodemon": "^2.0.20",
     "prettier": "1.12.1",
     "sinon": "^14.0.0"
   }
