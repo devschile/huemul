@@ -75,7 +75,7 @@ module.exports = robot => {
         return userList.members
       })
     } else {
-      return Promise.resolve([])
+      return Promise.resolve({})
     }
   }
 
@@ -86,6 +86,7 @@ module.exports = robot => {
 
     return userList.filter(
       user =>
+        user.id &&
         !user.deleted &&
         getCleanName(user)
           .toLowerCase()
@@ -142,7 +143,7 @@ module.exports = robot => {
       const thisUser = response.message.user
       userForToken(userToken, response)
         .then(targetUser => {
-          if (!targetUser) return
+          if (!targetUser || !targetUser.id || !thisUser.id) return
           if (thisUser.id === targetUser.id && op !== '--') {
             return response.send('¡Oe no po, el karma es pa otros no pa ti!')
           }

@@ -24,19 +24,19 @@ test.beforeEach(t => {
     web: {
       users: {
         list: function () {
-          return new Promise(function (resolve) {
-            resolve({
-              members: [
-                { id: 4, profile: { display_name: 'jorgeepunan', display_name_normalized: 'jorgeepunan' } },
-                { id: 5, profile: { display_name: 'leonardo', display_name_normalized: 'leonardo' } },
-                { id: 6, profile: { display_name: 'leon', display_name_normalized: 'leon' } },
-                { id: 7, profile: { display_name: 'cata', display_name_normalized: 'cata' } },
-                { id: 8, profile: { display_name: 'dukuo', display_name_normalized: 'dukuo' } },
-                { id: 9, profile: { display_name: 'hector', display_name_normalized: 'hector' } },
-                { id: 10, profile: { display_name: 'ienc', display_name_normalized: 'ienc' } },
-                { id: 11, profile: { display_name: 'gmq', display_name_normalized: 'gmq' } }
-              ]
-            })
+          return Promise.resolve({
+            members: [
+              { id: 4, profile: { display_name: 'jorgeepunan', display_name_normalized: 'jorgeepunan' } },
+              { id: 5, profile: { display_name: 'leonardo', display_name_normalized: 'leonardo' } },
+              { id: 6, profile: { display_name: 'leon', display_name_normalized: 'leon' } },
+              { id: 7, profile: { display_name: 'cata', display_name_normalized: 'cata' } },
+              { id: 8, profile: { display_name: 'dukuo', display_name_normalized: 'dukuo' } },
+              { id: 9, profile: { display_name: 'hector', display_name_normalized: 'hector' } },
+              { id: 10, profile: { display_name: 'ienc', display_name_normalized: 'ienc' } },
+              { id: 11, profile: { display_name: 'gmq', display_name_normalized: 'gmq' } },
+              { id: 12, profile: { display_name: 'madkoding' } },
+              {}
+            ]
           })
         }
       }
