@@ -219,7 +219,7 @@ module.exports = robot => {
   })
 
   robot.hear(/^karma(?:\s+@?(.*))?$/, response => {
-    robot.logger.info('Escuche un comando karma:', response.match[1])
+    robot.logger.info('Escuché un comando karma:', response.match[1])
     if (!response.match[1]) return
     const targetToken = response.match[1].trim()
     if (['todos', 'all'].includes(targetToken.toLowerCase())) {
