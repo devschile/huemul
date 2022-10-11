@@ -125,5 +125,8 @@
     "nock": "9.2.6",
     "prettier": "1.12.1",
     "sinon": "^14.0.0"
+  },
+  "resolutions": {
+    "mongodb": "3.2.2"
   }
 }
