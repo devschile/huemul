@@ -18,6 +18,9 @@
 // Author
 //   @clsource
 
+const { WebClient } = require('@slack/web-api')
+const token = process.env.HUBOT_SLACK_TOKEN
+const web = new WebClient(token)
 const theme = require('./theme.js')
 const exceptions = ['c', 'C']
 module.exports = robot => {
@@ -190,29 +193,32 @@ module.exports = robot => {
     const reFilteredMatch = textToCheck.match(karmaRegex)
     const tokens = removeURLFromTokens(reFilteredMatch, response.message.text)
 
+    function karmaHear () {
+      tokens
+        .slice(0, 5)
+        .map(token => {
+          const opRegex = /(\+{2}|-{2})/g
+          const specialChars = /@/
+
+          return {
+            userToken: token
+              .trim()
+              .replace(specialChars, '')
+              .replace(opRegex, ''),
+            op: token.match(opRegex)[0]
+          }
+        })
+        .filter(karma => karma.userToken && karma.userToken !== '')
+        .forEach(karma => {
+          applyKarma(karma.userToken, karma.op, response)
+        })
+    }
     if (!tokens) return
     if (robot.adapter.constructor.name === 'SlackBot') {
-      if (!robot.adapter.client.rtm.dataStore.getChannelGroupOrDMById(response.envelope.room).is_channel) return
+      web.conversations.info({ channel: response.envelope.room }).then(res => {
+        if (res.channel && res.channel.is_channel) karmaHear()
+      })
     }
-
-    tokens
-      .slice(0, 5)
-      .map(token => {
-        const opRegex = /(\+{2}|-{2})/g
-        const specialChars = /@/
-
-        return {
-          userToken: token
-            .trim()
-            .replace(specialChars, '')
-            .replace(opRegex, ''),
-          op: token.match(opRegex)[0]
-        }
-      })
-      .filter(karma => karma.userToken && karma.userToken !== '')
-      .forEach(karma => {
-        applyKarma(karma.userToken, karma.op, response)
-      })
   })
 
   robot.hear(/^karma(?:\s+@?(.*))?$/, response => {
