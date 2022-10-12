@@ -16,6 +16,6 @@
 //   @clsource © 2016
 
 // Picks a random item from an array
-exports.item = function(items) {
-  return items[~~(Math.random() * items.length)];
-};
+exports.item = function (items) {
+  return items[~~(Math.random() * items.length)]
+}

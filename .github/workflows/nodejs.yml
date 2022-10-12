@@ -1,0 +1,31 @@
+name: Node.js CI
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '10'
+          cache: 'yarn'
+      - run: yarn install
+      - run: yarn test
+        env:
+          TZ: America/Santiago
+  deploy:
+    if: github.ref == 'refs/heads/master'
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: ssh deploy
+        uses: dokku/github-action@master
+        with:
+          git_remote_url: 'ssh://dokku@devschile.cl/huemul'
+          ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}

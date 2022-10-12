@@ -1,0 +1,36 @@
+html
+  head
+    title devsChile - Agencias
+    link(rel='stylesheet', type='text/css', href='//fonts.googleapis.com/css?family=Inconsolata:400,700')
+    link(rel='stylesheet', type='text/css', href='//cdn.rawgit.com/mutable-tools/MutaGrid/master/demo/mutagrid/dist/5/mutagrid.min.css')
+    link(rel='stylesheet', type='text/css', href='/css/agencias.css')
+  body
+    main.container
+      .row
+        .column-5.column-center.text-center
+          h1 devsChile - Agencias
+          hr
+          h2 Listado y modificación de gif's agregados al script agencias.js
+          if token === ''
+            a.btn.login-heroku(href=`https://id.heroku.com/oauth/authorize?client_id=${clientId}&response_type=code&scope=${scope}&state=${state}`) Login con Heroku
+          hr
+      .row
+        .column-3
+          .agencias-listado
+            ul
+              for link in agencias
+                li
+                  span= link
+                  div
+                    button.btn.agencias-show(data-src=link) Ver
+                    if /^http\:\/\/giphy\.com\/gifs\//.test(link)
+                      button.btn.agencias-fix(data-src=link) Corregir
+                    if token !== ''
+                      button.btn.agencias-delete(data-src=link, data-token=token) Borrar
+        .column-2
+          aside.agencias-preview
+            img#agencias-preview(src='', width='100%')
+            p#agencias-message
+
+    script(src='//code.jquery.com/jquery-2.2.4.min.js')
+    script(src='/js/agencias.js')

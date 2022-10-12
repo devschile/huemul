@@ -8,7 +8,10 @@
 //   None
 //
 // Commands:
-//   hubot pregunta|consejo
+//   hubot pregunta|consejo - Retorna un consejo random
+//
+// Author:
+//   @juanbrujo
 
 var consejos = [
   'En mi opinión, sí',
@@ -31,12 +34,10 @@ var consejos = [
   'Mis fuentes me dicen que no',
   'Las perspectivas no son buenas',
   'Muy dudoso'
-];
+]
 
-module.exports = function(robot) {
-  robot.respond(/pregunta|consejo/gi, function(res) {
-
-    res.send( ':huemul: ~ ' + consejos[Math.floor(Math.random() * consejos.length)] );
-
-  });
-};
+module.exports = function (robot) {
+  robot.respond(/pregunta|consejo/gi, function (res) {
+    res.send(':huemul: ~ ' + res.random(consejos))
+  })
+}

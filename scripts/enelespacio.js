@@ -1,5 +1,5 @@
 // Description:
-//   Muestra quiénes están en el espacio (fuera de la tierra) AHORA
+//   Muestra quiénes están en el espacio (en el International Space Station o ISS) AHORA
 //
 // Dependencies:
 //   http://api.open-notify.org/
@@ -8,46 +8,40 @@
 //   None
 //
 // Commands:
-//   hubot en el espacio
+//   hubot en el espacio - Muestra quiénes están en el espacio (en el International Space Station o ISS) AHORA
 //
 // Author:
 //   @jorgeepunan
 
-var request = require('request');
-var url = 'http://api.open-notify.org/astros.json';
+const url = 'http://api.open-notify.org/astros.json'
 
-var emojis = [":space_invader:",":stars:",":alien:",":star2:"]
+const emojis = [':space_invader:', ':stars:', ':alien:', ':star2:']
 
-function rand(items){
-  return emojis[~~(Math.random() * emojis.length)];
-}
+module.exports = function (robot) {
+  robot.respond(/en el espacio/i, res => {
+    robot.http(url).get()((error, response, body) => {
+      if (!error && response.statusCode === 200) {
+        try {
+          const data = JSON.parse(body)
+          const cuantos = data.number
+          const messages = []
 
-module.exports = function(robot) {
-  robot.respond(/en el espacio/i, function(res) {
+          messages.push(`En este momento hay *${cuantos}* personas en el espacio ${res.random(emojis)}`)
 
-    request(url, function (error, response, body) {
+          data.people.forEach(d => {
+            const donde = d.craft
+            const quien = d.name
 
-      if (!error && response.statusCode == 200) {
+            messages.push(` · ${quien} (${donde})`)
+          })
 
-        var data = JSON.parse(body);
-        var cuantos = data.number;
-
-        res.send( "En este momento hay *" + cuantos + "* personas en el espacio " + rand(emojis) );
-
-        data.people.forEach(function(d) {
-
-          var donde = d.craft;
-          var quien = d.name;
-
-          res.send( " · " + quien + " (" + donde + ")" );
-
-        });
-
-
+          res.send(messages.join('\n'))
+        } catch (err) {
+          robot.emit('error', err, res, 'en el espacio')
+        }
       } else {
-        res.send(":facepalm: Error: ", error);
+        res.send(':facepalm: Error: ', error)
       }
-
-    });
-  });
-};
+    })
+  })
+}

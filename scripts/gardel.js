@@ -8,28 +8,40 @@
 //   None
 //
 // Commands:
-//   hubot gardel
+//   hubot gardel|cuando pagan|cuándo pagan - Indica la cantidad de dias que faltan para que paguen
 //
 // Author:
 //   @hectorpalmatellez
 
-var moment = require('moment-business-days');
+var moment = require('moment-business-days')
 
-module.exports = function gardel(robot) {
-  'use strict';
+module.exports = function gardel (robot) {
+  'use strict'
 
-  var today = moment().format('D');
-  var lastBusinessDay = moment().endOf('month').isBusinessDay() ? moment().endOf('month').format('D') : moment().endOf('month').prevBusinessDay().format('D');
-  var nameLastDay = moment().locale('es').endOf('month').isBusinessDay() ? moment().locale('es').endOf('month').format('dddd') : moment().locale('es').endOf('month').prevBusinessDay().format('dddd');
-  var dayCount = lastBusinessDay - today;
+  moment.locale('es')
 
-  robot.respond(/(gardel)/, function(msg) {
-    var message = '';
+  robot.respond(/gardel|cu[aá]ndo pagan/i, function (msg) {
+    var today = moment(`${moment().format('YYYY-MM-DD')}T00:00:00-04:00`)
+    var lastBusinessDayMoment = moment()
+      .endOf('month')
+      .isBusinessDay()
+      ? moment().endOf('month')
+      : moment()
+        .endOf('month')
+        .prevBusinessDay()
+    var dateLastBusinessDay = lastBusinessDayMoment.format('YYYY-MM-DD')
+    var lastBusinessDay = moment(`${dateLastBusinessDay}T00:00:00-04:00`)
+    var dayMessage = moment.duration(lastBusinessDay.diff(today)).humanize()
+    var dayCount = lastBusinessDay.diff(today, 'days')
+    var message = ''
+    var plural = dayCount > 1 ? 'n' : ''
     if (dayCount === 0) {
-      message = `:tada: Hoy pagan :tada:`;
+      message = ':tada: Hoy pagan :tada:'
     } else {
-      message = `Faltan ${dayCount} días para que paguen. Este mes pagan el ${lastBusinessDay}, que cae ${nameLastDay} :tired_face:`;
+      message = `Falta${plural} ${dayMessage} para que paguen. Este mes pagan el ${lastBusinessDay.format(
+        'D'
+      )}, que cae ${lastBusinessDay.format('dddd')} :tired_face:`
     }
-    return msg.send(message);
-  });
-};
+    return msg.send(message)
+  })
+}

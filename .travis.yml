@@ -1,0 +1,25 @@
+---
+language: node_js
+node_js:
+  - '10'
+notifications:
+  email: false
+  webhooks: https://huemul.devschile.cl/travis-ci/huemul-devs
+addons:
+  ssh_known_hosts:
+    - github.com
+    - devschile.cl
+before_script:
+  - export TZ=America/Santiago
+before_deploy:
+  - openssl aes-256-cbc -K $encrypted_687768fa4b0e_key -iv $encrypted_687768fa4b0e_iv -in deploy_key.pem.enc -out deploy_key.pem -d
+  - eval "$(ssh-agent -s)"
+  - chmod 600 deploy_key.pem
+  - ssh-add deploy_key.pem
+deploy:
+  provider: script
+  script: git remote add dokku dokku@devschile.cl:huemul && git push dokku master
+  skip_cleanup: true
+  on:
+    branch: master
+cache: yarn

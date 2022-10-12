@@ -8,17 +8,15 @@
 //   None
 //
 // Commands:
-//   hubot superheroe
+//   hubot superheroe - Entrega al azar el nombre de un super-heroe ficticio
 //
 // Author:
 //   @jorgeepunan
 
-var superheroes = require("superheroes");
+var superheroes = require('superheroes')
 
-module.exports = function(robot) {
-
-  robot.respond(/superheroe/i, function(res) {
-    res.send( "Súper-Héroe: " + superheroes.random() );
-  });
-
-};
+module.exports = function (robot) {
+  robot.respond(/superheroe/i, function (res) {
+    res.send('Súper-Héroe: ' + superheroes.random())
+  })
+}

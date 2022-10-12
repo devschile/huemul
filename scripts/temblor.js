@@ -1,55 +1,98 @@
 // Description:
-//   Muestra los últimos temblores significativos en Chile.
+//   Muestra los últimos temblores significativos en cualquier país del 🌍.
 //
 // Dependencies:
-//   request
+//   None
 //
 // Configuration:
 //   None
 //
 // Commands:
-//   hubot temblores <Chile|Mundo>
+//   hubot temblores - Muestra los últimos temblores >= a 6° en el 🌍.
+//   hubot temblores <país> - Muestra los últimos temblores >= a 6° en el país seleccionado.
 //
 // Author:
 //   @jorgeepunan
 
-var request = require('request');
-var url = 'http://earthquake-report.com/feeds/recent-eq?json';
+module.exports = robot => {
+  robot.respond(/temblores( .*)?/i, res => {
+    const country = res.match[1] ? res.match[1].trim().toUpperCase() : null
+    const minMagnitude = 6 // Con un temblor menor a 6 grados ni me muevo de la silla menos de la cama asi q este es el mínimo.
+    const fetch = robot
+      .http('https://earthquake.usgs.gov')
+      .path('/fdsnws/event/1/query')
+      .query({ format: 'geojson', minmagnitude: minMagnitude }) // {starttime: 'YYYY-MM-DDTHH:mm:ss-04:00'}
 
-module.exports = function(robot) {
-  robot.respond(/temblores (.*)/i, function(res) {
-    var cual = (res.match[1]).trim().toUpperCase();
-    request(url, function (error, response, body) {
+    fetch.get()((error, response, body) => {
+      if (error) return robot.emit('error', error, res, 'temblor')
+      if (response.statusCode !== 200) { return robot.emit('error', new Error(`Response statusCode is ${response.statusCode}`), res, 'temblor') }
+      const { features: earthquakes } = JSON.parse(body)
 
-      if (!error && response.statusCode == 200) {
+      const earthquakesFilter = earthquakes.filter(({ properties: { place } }) => {
+        return country ? new RegExp(country, 'i').test(place) : true
+      })
 
-        /* Leer el JSON */
-        var data = JSON.parse(body);
-        var magnitudMinima = 6;
-        var chile = [];
-        var mundo = [];
-
-        data.forEach (function(d) {
-          var donde = d.location;
-          var magnitud = d.magnitude;
-          if( parseInt(magnitud) >= magnitudMinima ) {
-            /* con un temblor menos de 6 grados ni me muevo de la silla menos de la cama asi q este es el mínimo */
-            contenedor = (donde.toUpperCase().indexOf('CHILE') > -1)?chile:mundo;
-            contenedor.push(d.title + ": \n- Lugar: " + d.location + "\n- Magnitud: " + d.magnitude + " (richter)\n- Fecha/Hora: " + d.date_time + "\n- Enlace: " + d.link);
-          }
-        });
-
-        var mensaje;
-        if(cual == 'CHILE') {
-          mensaje = (chile.length > 0)?chile.join("\n\n"):"Por suerte, ningún temblor mayor a " + magnitudMinima + " grados recientemente en Chile.";
-        } else {
-          mensaje = (mundo.length > 0)?mundo.join("\n\n"):"Por suerte, ningún temblor mayor a " + magnitudMinima + " grados fuera de Chile.";
+      if (robot.adapter.constructor.name === 'SlackBot') {
+        const options = {
+          as_user: false,
+          link_names: 1,
+          icon_url: 'https://www.usgs.gov/sites/all/themes/usgs_palladium/favicons/apple-touch-icon.png',
+          username: 'USGS',
+          unfurl_links: false
         }
-        res.send(mensaje);
+        if (earthquakesFilter.length === 0) {
+          const text = `Por suerte, ningún temblor mayor a ${minMagnitude} grados en ${country || 'todo el mundo'}.`
+          options.attachments = [
+            {
+              fallback: text,
+              text: text
+            }
+          ]
+          return robot.adapter.client.web.chat.postMessage(res.message.room, null, options)
+        }
+        options.attachments = earthquakesFilter.slice(0, 5).map(({ properties: { place, mag, time, title, url } }) => {
+          const fallback = `${title}: \n- Lugar: ${place} \n- Magnitud: ${mag} (richter) \n- Fecha/Hora: ${new Date(
+            time
+          ).toString()} \n- Enlace: ${url}`
+          return {
+            fallback: fallback,
+            color: '#36a64f',
+            title: title,
+            title_link: url,
+            fields: [
+              {
+                title: 'Lugar',
+                value: place,
+                short: true
+              },
+              {
+                title: 'Magnitud',
+                value: `${mag} (richter)`,
+                short: true
+              },
+              {
+                title: 'Fecha',
+                value: new Date(time).toString(),
+                short: true
+              }
+            ]
+          }
+        })
+        robot.adapter.client.web.chat.postMessage(res.message.room, null, options)
       } else {
-        res.send(":facepalm: Error: ", error);
+        if (earthquakesFilter.length === 0) {
+          return res.send(`Por suerte, ningún temblor mayor a ${minMagnitude} grados en ${country || 'todo el mundo'}.`)
+        }
+        res.send(
+          earthquakesFilter
+            .slice(0, 5).map(({ properties: { place, mag, time, title, url } }) => {
+              return `${title}: \n- Lugar: ${place} \n- Magnitud: ${mag} (richter) \n- Fecha/Hora: ${new Date(
+                time
+              ).toString()} \n- Enlace: ${url}`
+            })
+            .join('\n\n')
+        )
       }
-
-    });
-  });
-};
+    })
+  })
+}
