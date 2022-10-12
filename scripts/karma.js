@@ -98,13 +98,15 @@ module.exports = robot => {
       if (users.length === 1) {
         user = users[0]
       } else if (users.length > 1) {
-        const room = robot.adapter.client.rtm.dataStore.getDMByName(response.message.user.name)
-        robot.send(
-          { room: room.id },
-          `Se más específico, hay ${users.length} personas que se parecen a: ${users
-            .map(user => getCleanName(user))
-            .join(', ')}.`
-        )
+        web.conversations.open({ users: response.message.user.id }).then(res => {
+          const channelId = res.channel.id
+          robot.send(
+            { room: channelId },
+            `Se más específico, hay ${users.length} personas que se parecen a: ${users
+              .map(user => getCleanName(user))
+              .join(', ')}.`
+          )
+        })
       } else {
         response.send(`Chaucha, no encuentro al usuario '${token}'.`)
       }
