@@ -35,8 +35,13 @@ module.exports = function gardel (robot) {
     var dayCount = lastBusinessDay.diff(today, 'days')
     var message = ''
     var plural = dayCount > 1 ? 'n' : ''
+
     if (dayCount === 0) {
       message = ':tada: Hoy pagan :tada:'
+    } else if (dayCount < 0) {
+      message = `Pagaron hace ${dayMessage}. Este mes el pago fue el ${lastBusinessDay.format(
+        'D'
+      )}, el pasado ${lastBusinessDay.format('dddd')}`
     } else {
       message = `Falta${plural} ${dayMessage} para que paguen. Este mes pagan el ${lastBusinessDay.format(
         'D'
