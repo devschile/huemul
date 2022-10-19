@@ -5745,6 +5745,11 @@ just-extend@^4.0.2:
   resolved "https://registry.yarnpkg.com/just-extend/-/just-extend-4.2.1.tgz#ef5e589afb61e5d66b24eca749409a8939a8c744"
   integrity sha512-g3UB796vUFIY90VIv/WX3L2c8CS2MdWUww3CNrYmqza1Fg0DURc2K/O4YrnklBdQarSJ/y8JnJYDGc+1iumQjg==
 
+justwatch-api@^1.0.7:
+  version "1.0.7"
+  resolved "https://registry.yarnpkg.com/justwatch-api/-/justwatch-api-1.0.7.tgz#4573436b3ae86c1ce4a089e6e153898ae0e4e569"
+  integrity sha512-Tg3aP6jSzUv7UMQKVmDi/MnXzUr6/DzNWfOmoi7UEQPQu/roLMaaG+xY9erP1afcTRzZW6p8mgvOdWi8Ifj8xQ==
+
 kew@^0.7.0:
   version "0.7.0"
   resolved "https://registry.yarnpkg.com/kew/-/kew-0.7.0.tgz#79d93d2d33363d6fdd2970b335d9141ad591d79b"
