@@ -2,8 +2,8 @@
 *       @devschile/org
 
 # Scripts owners
-scripts/18.js @juanbrujo
-test/18.test.js @juanbrujo
+scripts/fechas-importantes.js @juanbrujo @hectorpalmatellez
+test/18.test.js @juanbrujo @hectorpalmatellez
 scripts/agencias.js @juanbrujo
 test/agencias.test.js @juanbrujo
 scripts/alegria.js @gmq
