@@ -3,7 +3,6 @@
 
 # Scripts owners
 scripts/fechas-importantes.js @juanbrujo @hectorpalmatellez
-test/18.test.js @juanbrujo @hectorpalmatellez
 scripts/agencias.js @juanbrujo
 test/agencias.test.js @juanbrujo
 scripts/alegria.js @gmq
