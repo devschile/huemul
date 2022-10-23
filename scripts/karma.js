@@ -18,11 +18,11 @@
 // Author
 //   @clsource
 
-const { WebClient } = require('@slack/web-api')
-const token = process.env.HUBOT_SLACK_TOKEN
-const web = new WebClient(token)
+const client = require('./helpers/client')
 const theme = require('./theme.js')
 const exceptions = ['c', 'C']
+const web = client.getClient()
+
 module.exports = robot => {
   const hubotHost = process.env.HEROKU_URL || process.env.HUBOT_URL || 'http://localhost:8080'
   const hubotWebSite = `${hubotHost}/${robot.name}`
@@ -216,7 +216,7 @@ module.exports = robot => {
         })
     }
     if (!tokens) return
-    if (robot.adapter.constructor.name === 'SlackBot') {
+    if (robot.adapter.constructor.name === 'SlackBot' || (robot.adapter.constructor.name === 'Room')) {
       web.conversations.info({ channel: response.envelope.room }).then(res => {
         if (res.channel && res.channel.is_channel) karmaHear()
       })
