@@ -20,7 +20,8 @@ module.exports = (robot) => {
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${process.env.CNPROVERB_GSHEET_ID}/values/Chinese_proverbs?alt=json&key=${process.env.CNPROVERB_GSHEET_API_KEY}`
     const language = {
       cn: 1,
-      zh: 2
+      zh: 2,
+      '': 3
     }
     const option = message.message.text.split(' ')[2]
     const languageIdentifier = option ? option.trim() : ''
@@ -29,7 +30,7 @@ module.exports = (robot) => {
       if (!error && response.statusCode === 200) {
         const data = JSON.parse(body)
 
-        message.send(message.random(data.values)[language[languageIdentifier] || 3])
+        message.send(message.random(data.values)[language[languageIdentifier]])
       } else {
         message.send(':facepalm: Error: ', error)
       }
