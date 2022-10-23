@@ -1,5 +1,5 @@
 // Description:
-//   Huemul te dice cuánto falta pal 18 de septiembre en Chile, fiestas patrias.
+//   Huemul te dice cuánto falta para una fecha importante definida
 //
 // Dependencies:
 //   Moment
@@ -8,6 +8,7 @@
 //   hubot 18 - Retorna la cantidad de días faltantes para el 18 de septiembre
 //   hubot navidad - Retorna la cantidad de días que faltan para navidad
 //   hubot año nuevo - Retorna la cantidad de días que faltan para año nuevo
+//   hubot aniversario - Retorna la cantidad de días que faltan para el aniversario de devsChile
 //
 // Author:
 //   @jorgeepunan
