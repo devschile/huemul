@@ -21,10 +21,10 @@ module.exports = (robot) => {
     const language = {
       cn: 1,
       zh: 2,
-      '': 3
+      en: 3
     }
     const option = message.message.text.split(' ')[2]
-    const languageIdentifier = option ? option.trim() : ''
+    const languageIdentifier = option ? option.trim() : 'en'
 
     robot.http(url).get()((error, response, body) => {
       if (!error && response.statusCode === 200) {
