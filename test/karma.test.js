@@ -1,14 +1,25 @@
 'use strict'
 
 require('coffee-script/register')
+const sinon = require('sinon')
 const test = require('ava')
 const Helper = require('hubot-test-helper')
 
+const client = require('../scripts/helpers/client.js')
 const helper = new Helper('../scripts/karma.js')
 const hubotHost = process.env.HEROKU_URL || process.env.HUBOT_URL || 'http://localhost:8080'
 
+const sandbox = sinon.createSandbox()
+
+sandbox.stub(client, 'getClient').returns({
+  conversations: {
+    open: () => { return Promise.resolve({ channel: { id: 'Room', is_channel: true } }) },
+    info: () => { return Promise.resolve({ channel: { id: 'Room', is_channel: true } }) }
+  }
+})
+
 test.beforeEach(t => {
-  t.context.room = helper.createRoom()
+  t.context.room = helper.createRoom({ name: 'SlackBot' })
   t.context.room.robot.golden = {
     isGold: () => false
   }
