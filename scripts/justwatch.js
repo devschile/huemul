@@ -63,19 +63,18 @@ const url = 'https://www.justwatch.com'
 const locale = 'es_CL'
 
 module.exports = robot => {
-  robot.respond(/donde ver (.*)/i, async res => {
+  robot.respond(/(dónde|donde)? ver (.*)/i, async res => {
     const jw = new JustWatch({ locale })
-
-    const toSearch = res.match[1]
+    const toSearch = res.match[2]
     const response = await jw.search(toSearch)
     let message = ''
 
-    if (response?.items.length) {
+    if (response.items && response.items.length) {
       const item = response.items[0]
-      const offers = Array.from(new Set(item.offers?.map(offer => offer.provider_id) || [])).map(providerId => providers[providerId])
+      const offers = Array.from(new Set((item.offers && item.offers.map(offer => offer.provider_id)) || [])).map(providerId => providers[providerId])
       const availabilityMessage =
         offers.length
-        ? `Puedes ver ${item.title} en: ${offers.join(', ')}`
+          ? `Puedes ver ${item.title} en: ${offers.join(', ')}`
           : `Actualmente, NO hay opciones para ver ${item.title} en Chile`
 
       message = [availabilityMessage, `Puedes ver más info en la página de JustWatch: ${url + item.full_path}`].join('\n')
