@@ -18,7 +18,7 @@ const cheerio = require('cheerio')
 const fetch = require('node-fetch')
 
 module.exports = function (robot) {
-  robot.respond(/(pólenes|polenes)/i, function (msg) {
+  robot.respond(/p(o|ó)lenes/i, function (msg) {
     const url = 'http://www.polenes.cl/?pagina=niveles'
     fetch(url)
       .then(res => res.text())
