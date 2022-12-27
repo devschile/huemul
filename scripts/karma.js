@@ -11,7 +11,8 @@ const web = client.getClient()
 
 module.exports = robot => {
   function getCleanName (user) {
-    return user.info.real_name || user.info.name || 'Usuario desconocido'
+    const displayName = user.info.slack && user.info.slack.profile.display_name
+    return displayName || user.info.real_name || user.info.name || 'Usuario desconocido'
   }
 
   function getUserKarma (userId) {
@@ -49,7 +50,6 @@ module.exports = robot => {
   }
 
   function applyKarma (userId, op, response) {
-    console.log(op)
     const thisUser = response.message.user
     const targetUser = matchUserIdWithMention(userId, response.message.mentions)
 
