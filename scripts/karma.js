@@ -49,6 +49,7 @@ module.exports = robot => {
   }
 
   function applyKarma (userId, op, response) {
+    console.log(op)
     const thisUser = response.message.user
     const targetUser = matchUserIdWithMention(userId, response.message.mentions)
 
@@ -92,10 +93,10 @@ module.exports = robot => {
       web.conversations.info({ channel: res.envelope.room }).then(convInfo => {
         if (convInfo.channel && convInfo.channel.is_channel) {
           const tokens = matches.reduce((acc, match) => {
-            const [userId, op] = match.split(/\s+/)
+            const [userId, op] = match.split(/>/)
             acc.push({
               userId: cleanUserId(userId),
-              op
+              op: op.trim()
             })
 
             return acc
