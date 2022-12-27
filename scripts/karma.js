@@ -10,11 +10,11 @@ const client = require('./helpers/client')
 const web = client.getClient()
 
 module.exports = robot => {
-  function getCleanName(user) {
+  function getCleanName (user) {
     return user.info.real_name || user.info.name || 'Usuario desconocido'
   }
 
-  function getUserKarma(userId) {
+  function getUserKarma (userId) {
     const karmaLog = robot.brain.get('karmaLog') || []
     return karmaLog.reduce((prev, curr) => {
       if (curr.targetId === userId) {
@@ -24,7 +24,7 @@ module.exports = robot => {
     }, 0)
   }
 
-  function canUpvote(user, victim) {
+  function canUpvote (user, victim) {
     const karmaLimits = robot.brain.get('karmaLimits') || {}
     karmaLimits[user.id] = karmaLimits[user.id] || {}
     if (!karmaLimits[user.id][victim.id]) {
@@ -48,8 +48,8 @@ module.exports = robot => {
     }
   }
 
-  function applyKarma(userId, op, response) {
-    const thisUser = response.message.user;
+  function applyKarma (userId, op, response) {
+    const thisUser = response.message.user
     const targetUser = matchUserIdWithMention(userId, response.message.mentions)
 
     if (thisUser.id === targetUser.id && op !== '--') {
@@ -77,11 +77,11 @@ module.exports = robot => {
     response.send(`${getCleanName(targetUser)} ahora tiene ${getUserKarma(targetUser.id)} puntos de karma.`)
   }
 
-  function matchUserIdWithMention(userId, mentions) {
+  function matchUserIdWithMention (userId, mentions) {
     return mentions.find(mention => mention.id === userId)
   }
 
-  function cleanUserId(userId) {
+  function cleanUserId (userId) {
     return userId.replace(/<@|>|\+\+|--/g, '')
   }
 
@@ -95,17 +95,17 @@ module.exports = robot => {
             const [userId, op] = match.split(/\s+/)
             acc.push({
               userId: cleanUserId(userId),
-              op,
-            });
+              op
+            })
 
             return acc
-          }, []);
+          }, [])
 
           tokens.forEach(token => {
-            applyKarma(token.userId, token.op, res);
-          });
+            applyKarma(token.userId, token.op, res)
+          })
         }
       })
     }
-  });
+  })
 }
