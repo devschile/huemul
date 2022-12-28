@@ -65,6 +65,20 @@ module.exports = function (robot) {
     return authorizedUsers.indexOf(user.id) !== -1
   }
 
+  function bannedWords (message) {
+    let forbiddenWords = process.env.HUBOT_BANNED_WORDS || ''
+    forbiddenWords = forbiddenWords.split(',').filter(word => word !== '')
+    for (let i = 0; i < forbiddenWords.length; i++) {
+      if (typeof message !== 'undefined' && message !== null) {
+        if (message.indexOf(forbiddenWords[i]) !== -1) {
+          return true
+        }
+      }
+    }
+
+    return false
+  }
+
   // done needed for callback
   robot.listenerMiddleware((context, next, done) => {
     //eslint-disable-line
@@ -72,22 +86,28 @@ module.exports = function (robot) {
       next()
     } else if (!isUserPunished(context.response.message.user)) {
       const command = context.response.message.text
-      let forbiddenWords = process.env.HUBOT_BANNED_WORDS || ''
-      forbiddenWords = forbiddenWords.split(',').filter(word => word !== '')
-      for (let i = 0; i < forbiddenWords.length; i++) {
-        if (typeof command !== 'undefined' && command !== null) {
-          if (command.indexOf(forbiddenWords[i]) !== -1) {
-            punishUser(context.response.message.user)
+      if (bannedWords(command)) {
+        punishUser(context.response.message.user)
 
-            return robot.messageRoom(
-              '#random',
-              `${context.response.message.user.name} me quiso maltratar. No lo voy a pescar por 5 minutos.`
-            )
-          }
-        }
+        return robot.messageRoom(
+          '#random',
+          `${context.response.message.user.name} me quiso maltratar. No lo voy a pescar por 5 minutos.`
+        )
       }
       next()
     }
+  })
+
+  robot.responseMiddleware((context, next, done) => {
+    if (bannedWords(context.strings)) {
+      punishUser(context.response.message.user)
+
+      return robot.messageRoom(
+        '#random',
+        `${context.response.message.user.name} me quiso maltratar. No lo voy a pescar por 5 minutos.`
+      )
+    }
+    next()
   })
 
   robot.respond(/ban (\w+)(\s\d+)?(h|m)?/i, res => {
