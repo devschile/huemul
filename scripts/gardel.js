@@ -13,28 +13,31 @@
 // Author:
 //   @hectorpalmatellez
 
-var moment = require('moment-business-days')
+const moment = require('moment-business-days')
 
 module.exports = function gardel (robot) {
   'use strict'
 
   moment.locale('es')
 
-  robot.respond(/gardel|cu[aá]ndo pagan/i, function (msg) {
-    var today = moment(`${moment().format('YYYY-MM-DD')}T00:00:00-04:00`)
-    var lastBusinessDayMoment = moment()
+  robot.respond(/gardel|cu[aá]ndo pagan(.*)/i, function (msg) {
+    const today = moment(`${moment().format('YYYY-MM-DD')}T00:00:00-04:00`)
+    const param = parseInt(msg.message.text.split(' ')[2], 10)
+    const isItOver = moment(`${moment().format('YYYY-MM')}-${param}`) < today
+    const paramDate = moment(`${moment().format('YYYY-MM')}-${param}`)
+    const lastBusinessDayMoment = param ? isItOver ? paramDate.add(1, 'month') : paramDate : moment()
       .endOf('month')
       .isBusinessDay()
       ? moment().endOf('month')
       : moment()
         .endOf('month')
         .prevBusinessDay()
-    var dateLastBusinessDay = lastBusinessDayMoment.format('YYYY-MM-DD')
-    var lastBusinessDay = moment(`${dateLastBusinessDay}T00:00:00-04:00`)
-    var dayMessage = moment.duration(lastBusinessDay.diff(today)).humanize()
-    var dayCount = lastBusinessDay.diff(today, 'days')
-    var message = ''
-    var plural = dayCount > 1 ? 'n' : ''
+    const dateLastBusinessDay = lastBusinessDayMoment.format('YYYY-MM-DD')
+    const lastBusinessDay = moment(`${dateLastBusinessDay}T00:00:00-04:00`)
+    const dayMessage = moment.duration(lastBusinessDay.diff(today)).humanize()
+    const dayCount = lastBusinessDay.diff(today, 'days')
+    let message = ''
+    const plural = dayCount > 1 ? 'n' : ''
 
     if (dayCount === 0) {
       message = ':tada: Hoy pagan :tada:'
