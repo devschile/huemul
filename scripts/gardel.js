@@ -1,5 +1,5 @@
 // Description:
-//   TODO
+//   Return pay day in current month
 //
 // Dependencies:
 //   moment-business-days
@@ -8,7 +8,8 @@
 //   None
 //
 // Commands:
-//   hubot gardel|cuando pagan|cuándo pagan - Indica la cantidad de dias que faltan para que paguen
+//   hubot gardel|cu[á|a]ndo pagan - Indica la cantidad de dias que faltan para que paguen
+//   hubot gardel|cu[á|a]ndo pagan <param> - Indica cuántos días faltan para la fecha de pago elegida
 //
 // Author:
 //   @hectorpalmatellez
@@ -23,15 +24,16 @@ module.exports = function gardel (robot) {
   robot.respond(/gardel|cu[aá]ndo pagan(.*)/i, function (msg) {
     const today = moment(`${moment().format('YYYY-MM-DD')}T00:00:00-04:00`)
     const param = parseInt(msg.message.text.split(' ')[2], 10)
-    const isItOver = moment(`${moment().format('YYYY-MM')}-${param}`) < today
-    const paramDate = moment(`${moment().format('YYYY-MM')}-${param}`)
-    const lastBusinessDayMoment = param ? isItOver ? paramDate.add(1, 'month') : paramDate : moment()
+    const formattedParamDate = moment(`${moment().format('YYYY-MM')}-${param}`)
+    const dateWithParam = formattedParamDate > today ? formattedParamDate : formattedParamDate.add(1, 'month')
+    const endOfBusinessDay = moment()
       .endOf('month')
       .isBusinessDay()
       ? moment().endOf('month')
       : moment()
         .endOf('month')
         .prevBusinessDay()
+    const lastBusinessDayMoment = param ? dateWithParam : endOfBusinessDay
     const dateLastBusinessDay = lastBusinessDayMoment.format('YYYY-MM-DD')
     const lastBusinessDay = moment(`${dateLastBusinessDay}T00:00:00-04:00`)
     const dayMessage = moment.duration(lastBusinessDay.diff(today)).humanize()
