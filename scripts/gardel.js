@@ -21,9 +21,9 @@ module.exports = function gardel (robot) {
 
   moment.locale('es')
 
-  robot.respond(/gardel|cu[aá]ndo pagan(.*)/i, function (msg) {
+  robot.respond(/(gardel|cu[aá]ndo pagan)(.*)/i, function (msg) {
     const today = moment(`${moment().format('YYYY-MM-DD')}T00:00:00-04:00`)
-    const param = parseInt(msg.message.text.split(' ')[2], 10)
+    const param = parseInt(msg.match[2], 10)
     const formattedParamDate = param ? moment(`${moment().format('YYYY-MM')}-${param}`) : null
     const dateWithParam = formattedParamDate ? formattedParamDate > today ? formattedParamDate : formattedParamDate.add(1, 'month') : null
     const endOfBusinessDay = moment()
