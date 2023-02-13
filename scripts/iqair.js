@@ -93,6 +93,14 @@ const cities = {
   'sao-paulo': {
     state: 'sao-paulo',
     country: 'brazil'
+  },
+  bogota: {
+    state: 'bogota',
+    country: 'colombia'
+  },
+  caracas: {
+    state: 'caracas',
+    country: 'venezuela'
   }
 }
 
