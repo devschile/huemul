@@ -95,12 +95,24 @@ const cities = {
     country: 'brazil'
   },
   bogota: {
-    state: 'bogota',
+    state: 'bogota-dc',
     country: 'colombia'
   },
-  caracas: {
-    state: 'caracas',
-    country: 'venezuela'
+  'buenos-aires': {
+    state: 'buenos-aires',
+    country: 'argentina'
+  },
+  montevideo: {
+    state: 'montevideo',
+    country: 'uruguay'
+  },
+  'la-paz': {
+    state: 'la-paz',
+    country: 'bolivia'
+  },
+  asuncion: {
+    state: 'asuncion',
+    country: 'paraguay'
   }
 }
 
