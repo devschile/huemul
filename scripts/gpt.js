@@ -66,7 +66,40 @@ module.exports = function (robot) {
     }
   })
 
-  robot.respond(/gpt (.*)/i, async function (res) {
+  robot.respond(/chat-gpt([^]*)/mi, async function (res) {
+    web.conversations.info({ channel: res.envelope.room }).then(async convInfo => {
+      if (convInfo.channel && convInfo.channel.is_channel) {
+        const prompt = `${res.match[1]}.`
+
+        if (checkRateLimit(robot, res)) {
+          return
+        }
+
+        try {
+          if (await isFlagged(prompt, res)) {
+            return
+          }
+
+          const completion = await openai.createChatCompletion({
+            model: 'gpt-3.5-turbo',
+            messages: [
+              {
+                role: 'user',
+                content: prompt
+              }
+            ]
+          })
+
+          const finalMessage = `${completion.data.choices[0].message.content}`
+          res.reply(finalMessage)
+        } catch (error) {
+          res.send(error.message)
+        }
+      }
+    })
+  })
+
+  robot.respond(/gpt([^]*)/mi, async function (res) {
     web.conversations.info({ channel: res.envelope.room }).then(async convInfo => {
       if (convInfo.channel && convInfo.channel.is_channel) {
         const prompt = `${res.match[1]}.`
