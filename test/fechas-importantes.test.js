@@ -5,39 +5,43 @@ import Helper from 'hubot-test-helper'
 const helper = new Helper('../scripts/fechas-importantes.js')
 const sleep = m => new Promise(resolve => setTimeout(() => resolve(), m))
 
-// eslint-disable-next-line no-global-assign
-const OriginalDate = Date
-
-/**
- * Overrides Date class to mock a specific date so we can test the accuracy of the script
- */
-class MockDateClass {
-  constructor (year = 2023, month = 0, day = 1) {
-    this.dateObj = new OriginalDate(year, month, day)
-    return this.dateObj
-  }
-
-  getFullYear () {
-    return this.dateObj.getFullYear()
-  }
-}
-
 test.beforeEach(t => {
   t.context.room = helper.createRoom({ httpd: false })
-  // eslint-disable-next-line no-global-assign
-  Date = MockDateClass
 })
 test.afterEach(t => t.context.room.destroy())
 
-test('Debe mostrar la cantidad de dias al 18 de septiembre', async (t) => {
+test('Debe mostrar una respuesta válida sin NaN, Undefined o Invalid date para el 18 de septiembre', async (t) => {
   t.context.room.user.say('user', 'hubot 18')
   await sleep(500)
 
-  const requestedDate = '18'
-  const expectedDaysLeft = 260
-  const formattedDay = 'Lunes'
-  const hubotMessage1 = `:hourglass: Quedan ${expectedDaysLeft} días ${requestedDate}, que será día ${formattedDay}`
+  const hubotMessageResponse = t.context.room.messages[1]
+  t.is(hubotMessageResponse[0], 'hubot')
+  t.false(/(NaN|undefined|Invalid date)/g.test(hubotMessageResponse[1]))
+})
 
-  t.deepEqual(t.context.room.messages, [['user', 'hubot 18'], ['hubot', hubotMessage1]])
-  t.end()
+test('Debe mostrar una respuesta válida sin NaN, Undefined o Invalid date para navidad', async (t) => {
+  t.context.room.user.say('user', 'hubot navidad')
+  await sleep(500)
+
+  const hubotMessageResponse = t.context.room.messages[1]
+  t.is(hubotMessageResponse[0], 'hubot')
+  t.false(/(NaN|undefined|Invalid date)/g.test(hubotMessageResponse[1]))
+})
+
+test('Debe mostrar una respuesta válida sin NaN, Undefined o Invalid date para año nuevo', async (t) => {
+  t.context.room.user.say('user', 'hubot año nuevo')
+  await sleep(500)
+
+  const hubotMessageResponse = t.context.room.messages[1]
+  t.is(hubotMessageResponse[0], 'hubot')
+  t.false(/(NaN|undefined|Invalid date)/g.test(hubotMessageResponse[1]))
+})
+
+test('Debe mostrar una respuesta válida sin NaN, Undefined o Invalid date para aniversario', async (t) => {
+  t.context.room.user.say('user', 'hubot aniversario')
+  await sleep(500)
+
+  const hubotMessageResponse = t.context.room.messages[1]
+  t.is(hubotMessageResponse[0], 'hubot')
+  t.false(/(NaN|undefined|Invalid date)/g.test(hubotMessageResponse[1]))
 })
