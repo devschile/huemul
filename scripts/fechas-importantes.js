@@ -47,7 +47,7 @@ const friendlyTarget = {
 module.exports = robot => {
   robot.respond(/18|navidad|año nuevo|aniversario\s?(.*)/i, msg => {
     const year = new Date().getFullYear()
-    const requestedDate = String(msg.match.input.replace(/huemul/g, '').trim().toLowerCase())
+    const requestedDate = msg.match[0].trim().substring(msg.match[0].indexOf(' ') + 1).toLowerCase()
 
     const month = () => {
       switch (requestedDate) {
@@ -78,8 +78,7 @@ module.exports = robot => {
       }
     }
 
-    const date = new Date(`${year}-${month()}-${day()}`)
-    let eventDate = moment(date).add(1, 'days')
+    let eventDate = moment(`${year}-${month()}-${day()}`).add(1, 'days')
     const weekday = eventDate.format('dddd')
     const todaysDate = moment()
 
