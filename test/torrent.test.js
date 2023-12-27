@@ -18,10 +18,13 @@ test('Torrent de Titanic', async t => {
     .query({ limit: 5, query_term: 'titanic' })
     .reply(200, {
       data: {
-        movie_count: 2,
+        movie_count: 20,
         movies: [
-          { url: 'https://yts.mx/movie/titanic-1997', title: 'Titanic', year: 1997, rating: 7.8 },
-          { url: 'https://yts.mx/movie/titanic-1953', title: 'Titanic', year: 1953, rating: 7.2 }
+          { url: 'https://yts.mx/movies/titanic-25-years-later-with-james-cameron-2023', title: 'Titanic: 25 Years Later with James Cameron', year: 2023, rating: 6.5 },
+          { url: 'https://yts.mx/movies/titanic-waltz-1965', title: 'Titanic Waltz', year: 1965, rating: 8.6 },
+          { url: 'https://yts.mx/movies/the-blind-man-who-did-not-want-to-see-titanic-2021', title: 'The Blind Man Who Did Not Want to See Titanic', year: 2021, rating: 7.5 },
+          { url: 'https://yts.mx/movies/titanic-666-2022', title: 'Titanic 666', year: 2022, rating: 3.2 },
+          { url: 'https://yts.mx/movies/the-chambermaid-on-the-titanic-1997', title: 'The Chambermaid on the Titanic', year: 1997, rating: 6.6 }
         ]
       }
     })
