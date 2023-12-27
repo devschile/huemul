@@ -1,10 +1,10 @@
 // Description:
-//   Search torrents from yts.ag
+//   Search torrents from yts.mx
 //
 //  Dependencies:
 //
 // Commands:
-//   hubot torrent <query> - Search torrents for query from yts.ag
+//   hubot torrent <query> - Search torrents for query from yts.mx
 //
 // Author:
 //   @jorgeepunan
@@ -14,7 +14,7 @@ module.exports = function (robot) {
     msg.send('Esperando respuesta de YTS YIFY... :loading:')
 
     var busqueda = msg.match[1]
-    var api = 'https://yts.am/api/v2/list_movies.json?limit=5&query_term='
+    var api = 'https://yts.mx/api/v2/list_movies.json?limit=5&query_term='
     var url = api + busqueda.split(' ').join('+')
 
     robot.http(url).get()(function (error, response, body) {
