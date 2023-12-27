@@ -13,15 +13,15 @@ test.beforeEach(t => {
 test.afterEach(t => t.context.room.destroy())
 
 test('Torrent de Titanic', async t => {
-  nock('https://yts.am')
+  nock('https://yts.mx')
     .get('/api/v2/list_movies.json')
     .query({ limit: 5, query_term: 'titanic' })
     .reply(200, {
       data: {
         movie_count: 2,
         movies: [
-          { url: 'https://yts.am/movie/titanic-1997', title: 'Titanic', year: 1997, rating: 7.8 },
-          { url: 'https://yts.am/movie/titanic-1953', title: 'Titanic', year: 1953, rating: 7.2 }
+          { url: 'https://yts.mx/movie/titanic-1997', title: 'Titanic', year: 1997, rating: 7.8 },
+          { url: 'https://yts.mx/movie/titanic-1953', title: 'Titanic', year: 1953, rating: 7.2 }
         ]
       }
     })
@@ -38,8 +38,8 @@ test('Torrent de Titanic', async t => {
   // test response messages of hubot
   t.deepEqual(hubotMessage1, ['hubot', 'Esperando respuesta de YTS YIFY... :loading:'])
   const text = `Encontradas 2 coincidencias:
-<https://yts.am/movie/titanic-1997|Titanic: año: 1997, rating: 7.8>
-<https://yts.am/movie/titanic-1953|Titanic: año: 1953, rating: 7.2>
-Todos los resultados en *<https://yts.ag/browse-movies/titanic|yts.arg>*`
+<https://yts.mx/movie/titanic-1997|Titanic: año: 1997, rating: 7.8>
+<https://yts.mx/movie/titanic-1953|Titanic: año: 1953, rating: 7.2>
+Todos los resultados en *<https://yts.mx/browse-movies/titanic|yts.arg>*`
   t.deepEqual(hubotMessage2, ['hubot', text])
 })
