@@ -8,6 +8,7 @@
 //   None
 //
 // Commands:
+//   hubot bin help
 //   hubot bin <bankname>
 //
 // Author:
@@ -65,16 +66,16 @@ module.exports = function (robot) {
           const cards = Array.from(cardsContainer).map(card => $(card).text().replace(/\n/g, ' ').trim())
 
           if (cards.length) {
-            msg.send(`Encontramos ${cards.length}💳 para ${bankName}\n${cards}`)
+            msg.send(`Encontramos *${cards.length}* 💳 para *${bankName}*:\n${cards.join(',').replace(/,/g, '\n').split()}`)
           } else {
-            msg.send(`No encontramos tarjetas para ${bankName}`)
+            msg.send(`No encontramos tarjetas para *${bankName}*`)
           }
         } else {
           msg.send(':facepalm: Error: ', error)
         }
       })
     } else {
-      msg.send('🏦 Banco no encontrado. Deja de inventar o haz un PR.')
+      msg.send('Banco 🏦 no encontrado. Deja de inventar o haz un PR.')
     }
   })
 }
