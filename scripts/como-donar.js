@@ -14,27 +14,16 @@
 // Author:
 //   @jorgeepunan
 
-const WALLET_BTC = process.env.WALLET_BTC
-const WALLET_ETH = process.env.WALLET_ETH
 const DONATION_AMOUNT = process.env.DONATION_AMOUNT || 'US$10'
 const PAYMENT_METHODS = new Map([
   [
     'Débito, Crédito',
-    'Desde el mismo sitio devschile.cl, abajo hay 2 botones: Donación voluntaria para mantener el servidor, e Impuesto Huemul por cambio de trabajo, también voluntario.'
+    'Usamos Reveniu para recibir <https://app.reveniu.com/huemul|donaciones con tarjetas de crédito y débito>. Puedes elegir entre un pago único o una suscripción mensual.'
   ],
   [
     'Transferencia',
-    `Puedes transferir en pesos chilenos lo equivalente a los ${DONATION_AMOUNT} a través de la cuenta del tesorero :gmq:, DM con él para su info bancaria.`
-  ],
-  [
-    'Suscripción mensual',
-    'Desde el mismo sitio devschile.cl, abajo hay un mensaje donde se permite suscribirte a que dones mensualmente a través del gateway integrado. Es la manera más cómoda de aportar a devsChile.'
-  ],
-  [
-    'Compra de swags',
-    'Tenemos una tienda virtual donde podrás estar a la moda y adquirir artículos exclusivos hechos para la comunidad, con stock y nuevos productos siempre actualizándose. Pago con débito / crédito y envío incluído. https://tienda.devschile.cl/'
-  ],
-  ['Cryptos', `Recibimos lo equivalente a ${DONATION_AMOUNT} en las wallets:\n₿ \`${WALLET_BTC}\`\nΞ \`${WALLET_ETH}\``]
+    `Puedes transferir en pesos chilenos lo equivalente a los ${DONATION_AMOUNT} a través de la cuenta de :gmq:, DM con él para su info bancaria.`
+  ]
 ])
 
 module.exports = robot => {
