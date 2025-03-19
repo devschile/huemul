@@ -40,7 +40,18 @@ module.exports = robot => {
       }
     }
     const room = process.env.SENTRY_CHANNEL || '#random'
-    robot.send({ room: room }, `${prefix}An error has occurred: \`${err.message}\``)
+
+    console.log('room: ', room)
+    console.log('prefix: ', prefix)
+    console.log('err: ', err)
+    console.log('res: ', res)
+    console.log('scriptName: ', scriptName)
+    console.log('robot.adapter: ', robot.adapter)
+
+    robot.send({ room: room }, `
+      script name: ${scriptName}
+      ${prefix}An error has occurred: \`${err.message}\`
+    `)
     Raven.captureException(err)
   })
 }
