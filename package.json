@@ -130,5 +130,8 @@
   },
   "resolutions": {
     "mongodb": "3.2.2"
-  }
+  },
+  "engines": {
+    "node": "10.15.1"
+  },
 }
