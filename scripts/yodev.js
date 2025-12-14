@@ -1,9 +1,20 @@
 // Description:
-//   Busca ofertas de trabajo en yodev.dev
-/*
-Commands:
-  hubot yodev <query> - Busca ofertas de trabajo relacionadas con el query
-*/
+//   Busca ofertas de trabajo en yodev.dev - plataforma de empleos para desarrolladores
+//
+// Dependencies:
+//   - process.env: Access to environment variables
+//
+// Configuration:
+//   YODEV_API_URL - URL del endpoint de InnovaJobs
+//
+// Commands:
+//   hubot yodev <query> - Busca ofertas de trabajo relacionadas con el query
+//
+// Examples:
+//   hubot yodev javascript        - Busca trabajos de JavaScript
+//
+// Author:
+//   @jorgeepunan
 
 const https = require('https')
 
