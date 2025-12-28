@@ -36,7 +36,7 @@ module.exports = (robot) => {
       return res.send(text)
     }
 
-    send(`🔎 Buscando *${query}*... explorando oportunidades en yodev.dev 🚀 💼`)
+    send(`🔎 Buscando *${query}*... explorando oportunidades en yodev.dev 🚀`)
 
     https.get(url, (response) => {
       let data = ''
@@ -63,27 +63,68 @@ module.exports = (robot) => {
           }
 
           const limitedJobs = jobs.slice(0, 5)
-          const messages = limitedJobs.map((job) => {
-            const lines = [`
-*${job.title}*`,
-              `🏢 *Empresa:* ${job.company}`,
-              `📍 *Ubicación:* ${job.location}`,
-              `🔗 *Postulación:* ${job.url}`,
-              `📅 *Publicado:* ${job.posted || job.date || ''}`
-            ]
+          const blocks = [
+            {
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text: `Encontré ${totalJobs} resultado(s):`
+              }
+            }
+          ]
 
-            if (job.salary) lines.push(`💰 *Sueldo:* ${job.salary}`)
-            if (job.type) lines.push(`🧩 *Tipo:* ${job.type}`)
-            if (job.source) lines.push(`🛰️ *Fuente:* ${job.source}`)
+          limitedJobs.forEach((job) => {
+            blocks.push({ type: 'divider' })
 
-            return lines.join('\n')
+            const lines = [`*<${job.url}|${job.title}>*`]
+            lines.push(`*Empresa:* ${job.company}`)
+            lines.push(`*Ubicación:* ${job.location}`)
+            if (job.posted || job.date) lines.push(`*Publicado:* ${job.posted || job.date}`)
+            if (job.salary) lines.push(`*Sueldo:* ${job.salary}`)
+            if (job.type) lines.push(`*Tipo:* ${job.type}`)
+            if (job.source) lines.push(`*Fuente:* ${job.source}`)
+
+            blocks.push({
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text: lines.join('\n')
+              }
+            })
           })
 
           if (viewMoreUrl) {
-            messages.push(`\n🔍 ¿Quieres ver más ofertas? Visita: ${viewMoreUrl}`)
+            blocks.push({ type: 'divider' })
+            blocks.push({
+              type: 'context',
+              elements: [{
+                type: 'mrkdwn',
+                text: `¿Quieres ver más ofertas? Visita: <${viewMoreUrl}|yodev.dev>`
+              }]
+            })
           }
 
-          send(`✅ Encontré ${totalJobs} resultado(s) en yodev.dev:\n\n${messages.join('\n\n---\n\n')}`)
+          if (isSlack && robot.adapter.client && robot.adapter.client.web) {
+            const options = { unfurl_links: false, unfurl_media: false, as_user: true, blocks }
+            return robot.adapter.client.web.chat.postMessage(res.message.room, '', options)
+          }
+
+          // Fallback para non-Slack
+          const messages = limitedJobs.map((job) => {
+            const lines = [`*${job.title}*`]
+            lines.push(`Empresa: ${job.company}`)
+            lines.push(`Ubicación: ${job.location}`)
+            lines.push(`Postulación: ${job.url}`)
+            if (job.posted || job.date) lines.push(`Publicado: ${job.posted || job.date}`)
+            if (job.salary) lines.push(`Sueldo: ${job.salary}`)
+            if (job.type) lines.push(`Tipo: ${job.type}`)
+            if (job.source) lines.push(`Fuente: ${job.source}`)
+            return lines.join('\n')
+          })
+          if (viewMoreUrl) {
+            messages.push(`\n¿Quieres ver más ofertas? Visita: ${viewMoreUrl}`)
+          }
+          send(`😎 Encontré ${totalJobs} resultado(s):\n\n${messages.join('\n\n---\n\n')}`)
         } catch (error) {
           robot.logger.error(`Error al parsear la respuesta: ${error.message}`)
           send('Ups! Ocurrió un error al procesar las ofertas de trabajo de yodev.dev. 😱')
