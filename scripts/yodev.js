@@ -36,7 +36,7 @@ module.exports = (robot) => {
       return res.send(text)
     }
 
-    send(`🔎 Buscando *${query}*... explorando oportunidades en yodev.dev 🚀`)
+    send(`🔎 Buscando *${query}*... explorando oportunidades en yodev.dev 💼`)
 
     https.get(url, (response) => {
       let data = ''
