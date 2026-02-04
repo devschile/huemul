@@ -1,150 +1,112 @@
+
 // Description:
-//   Dice cuándo es el feriado mas próximo en Chile
+//   Retorna cuándo es el feriado más próximo en Chile usando feriados.devschile.cl
 
 // Dependencies:
-//   none
-
-// Configuration:
-//   none
+//   moment
 
 // Commands:
-//   hubot proximo feriado - Retorna la cantidad de días, la fecha y el motivo del próximo feriado en Chile
-//   hubot próximo feriado - Retorna la cantidad de días, la fecha y el motivo del próximo feriado en Chile
+//   hubot proximo feriado - Retorna la fecha y motivo del próximo feriado en Chile
+//   hubot próximo feriado - Retorna la fecha y motivo del próximo feriado en Chile
 
 // Author:
-//   @victorsanmartin
-
-// Co-Author:
 //   @jorgeepunan
-//   @raerpo
 
 const moment = require('moment')
 
-// Constants
-const SATURDAY_ISO_DAY = 6
-const SUNDAY_ISO_DAY = 7
+const nerdMessages = [
+  'Está tan lejos que puedes terminar un sprint, refactorizar legacy y aún así no ver la luz del sol.',
+  'Falta tanto que tu backlog va a crecer más rápido que tu motivación por vivir.',
+  'Hay más chances de que te pidan deploy en viernes que de ver ese feriado pronto.',
+  'Puedes aprender un nuevo framework, olvidarlo y aún así no llega el feriado.',
+  'Falta tanto que hasta el código espagueti tiene tiempo de fermentar.',
+  '¿Pensando en vacaciones? Mejor piensa en unit tests, el feriado no viene pronto.',
+  'El próximo feriado está tan lejos que podrías terminar todos los tickets y aún así seguir esperando.'
+]
 
 function humanizeMonth (month) {
-  const monthNumber = month - 1
   const monthNames = [
-    'Enero',
-    'Febrero',
-    'Marzo',
-    'Abril',
-    'Mayo',
-    'Junio',
-    'Julio',
-    'Agosto',
-    'Sedtiembre',
-    'Octubre',
-    'Noviembre',
-    'Diciembre'
+    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
   ]
-
-  return monthNames[monthNumber]
+  return monthNames[parseInt(month, 10) - 1]
 }
 
 function humanizeDay (day) {
   const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
-
   return dayNames[day]
 }
 
-const getOutputMessage = (holiday, days, { isWorkDay = true }) => {
-  if (holiday === undefined) {
-    return
+function sarcasticWeekendMessage (weekday) {
+  if (weekday === 6) {
+    return '¡Qué suerte! El próximo feriado es sábado. ¡A disfrutar tu día libre proletario, como si fuera diferente a cualquier otro sábado!'
   }
-  const date = new Date(`${holiday.fecha}T00:00:00-04:00`)
-  const humanDate = holiday.fecha.split('-')
-  const humanDay = humanDate[2].replace(/^0+/, '')
-  const humanMonth = humanDate[1]
-  const humanWeekDay = humanizeDay(date.getDay())
-  const message = `${holiday.nombre} (_${holiday.tipo.toLowerCase()}_)`
-  const plural = days > 1 ? ['n', 's'] : ['', '']
-  const mensajeInicial = isWorkDay ? 'El próximo feriado es el' : 'El próximo feriado para los :gonzaleee: es el'
-  return `${mensajeInicial} *${humanWeekDay} ${humanDay} de ${humanizeMonth(humanMonth)}*, queda${
-    plural[0]
-  } *${days} día${plural[1]}*. Se celebra: *${message}*`
+  if (weekday === 0) {
+    return '¡Genial! El próximo feriado es domingo. El descanso del proletario, igual que todos los domingos, ¡no te emociones mucho!'
+  }
+  return null
 }
 
-const getNextWorkingHoliday = (holidays, refDate) => {
-  if (holidays.length === 0) {
-    return null
-  }
-  const futureHolidays = holidays.filter(holiday => moment(`${holiday.fecha}T00:00:00-04:00`).isAfter(moment(refDate)))
-  if (futureHolidays[0].isWorkDay) {
-    return futureHolidays[0]
-  } else {
-    // eslint-disable-next-line no-unused-vars
-    const [_, ...nextHolidays] = futureHolidays
-    return getNextWorkingHoliday(nextHolidays, refDate)
-  }
+function normalizeHolidays (feriadosData) {
+  const feriadosPorMes = feriadosData.feriados || {}
+  const feriados = Object.values(feriadosPorMes).reduce((acc, arr) => acc.concat(arr), [])
+  return feriados.map(f => {
+    const mes = String(f.mes).padStart(2, '0')
+    const dia = String(f.dia).padStart(2, '0')
+    return {
+      ...f,
+      date: `${feriadosData.year}-${mes}-${dia}`,
+      title: f.descripcion
+    }
+  })
 }
 
-exports.getNextWorkingHoliday = getNextWorkingHoliday
+function buildNextHolidayMessage (feriadosData, today, randomFn = Math.random) {
+  const feriadosConFecha = normalizeHolidays(feriadosData)
+  const nextHoliday = feriadosConFecha.find(h => moment(h.date).isSameOrAfter(today, 'day'))
+  if (!nextHoliday) {
+    return 'No hay más feriados este año. ¡A trabajar, proletario!'
+  }
+  const holidayDate = moment(nextHoliday.date)
+  const daysDiff = holidayDate.diff(today, 'days')
+  const dayOfWeek = holidayDate.day()
+  const humanDate = `${humanizeDay(dayOfWeek)} ${holidayDate.date()} de ${humanizeMonth(holidayDate.format('MM'))}`
+  let message = `El próximo feriado es el *${humanDate}* (${nextHoliday.title}). Quedan *${daysDiff} día${daysDiff === 1 ? '' : 's'}*.`
+  const sarcastic = sarcasticWeekendMessage(dayOfWeek)
+  if (sarcastic) {
+    message += `\n${sarcastic}`
+  } else if (dayOfWeek >= 1 && dayOfWeek <= 5 && daysDiff > 14) {
+    const randomMsg = nerdMessages[Math.floor(randomFn() * nerdMessages.length)]
+    message += `\n${randomMsg}`
+  }
+  return message
+}
 
 module.exports = function (robot) {
   robot.respond(/pr(o|ó)ximo feriado/i, function (msg) {
-    const today = new Date(
-      [
-        new Date().getFullYear(),
-        ('0' + (new Date().getMonth() + 1)).slice(-2),
-        ('0' + new Date().getDate()).slice(-2)
-      ].join('-') + 'T00:00:00-04:00'
-    )
-    const currentYear = new Date().getFullYear()
-
-    robot.http(`https://apis.digital.gob.cl/fl/feriados/${currentYear}`).get()(function (err, res, body) {
+    const today = moment()
+    const currentYear = today.year()
+    robot.http(`https://feriados.devschile.cl/api/holidays/${currentYear}`).get()(function (err, res, body) {
       if (err || res.statusCode !== 200) {
-        return robot.emit('error', err || new Error(`Status code ${res.statusCode}`), msg, 'proximo-feriado')
+        return msg.send('No se pudo obtener la información de los feriados. Intenta más tarde.')
       }
-
-      const bodyParsed = JSON.parse(body)
-
-      // Filter out data from past days
-      const nextHolidays = bodyParsed.filter(holiday => {
-        const date = new Date(`${holiday.fecha}T00:00:00-04:00`)
-        return moment(date).isSame(today) || moment(date).isAfter(today)
-      })
-
-      // No more holidays for this year :depressed:
-      if (nextHolidays.length === 0) {
-        msg.send('No hay más feriados este año :depressed:')
-      } else if (nextHolidays.length > 0) {
-        /**
-         * extend the holidays data with the property if it's a working day. I couldn't find a better name
-         * so I leave a comment instead
-         */
-        const extendedHolidays = nextHolidays.map(holiday => {
-          const date = moment(`${holiday.fecha}T00:00:00-04:00`)
-          const isWorkingDay = date.isoWeekday() !== SATURDAY_ISO_DAY && date.isoWeekday() !== SUNDAY_ISO_DAY
-          return { ...holiday, isWorkingDay }
-        })
-        /**
-         * print the next holiday and in case of being a non-working day show the next one
-         */
-        for (let i = 0; i <= extendedHolidays.length; i++) {
-          const holiday = extendedHolidays[i]
-          const date = moment(`${holiday.fecha}T00:00:00-04:00`)
-          const message = `${holiday.nombre} (_${holiday.tipo.toLowerCase()}_)`
-          if (moment(date).isSame(today)) {
-            msg.send(`*¡HOY es feriado!* Se celebra: *${message}*. ¡Disfrútalo!`)
-          } else if (moment(date).isAfter(today)) {
-            if (holiday.isWorkDay) {
-              msg.send(getOutputMessage(holiday, date.diff(today, 'days'), { isWorkDay: true }))
-            } else {
-              msg.send(getOutputMessage(holiday, date.diff(today, 'days'), { isWorkDay: true }))
-              const nextHoliday = getNextWorkingHoliday(extendedHolidays, holiday.fecha)
-              if (nextHoliday) {
-                msg.send(
-                  getOutputMessage(nextHoliday, moment(nextHoliday.fecha).diff(today, 'days'), { isWorkDay: false })
-                )
-              }
-            }
-            break
-          }
-        }
+      let feriadosData
+      try {
+        feriadosData = JSON.parse(body)
+      } catch (e) {
+        return msg.send('Error al procesar la información de los feriados.')
       }
+      const message = buildNextHolidayMessage(feriadosData, today)
+      msg.send(message)
     })
   })
+}
+
+module.exports._test = {
+  humanizeMonth,
+  humanizeDay,
+  sarcasticWeekendMessage,
+  normalizeHolidays,
+  buildNextHolidayMessage,
+  nerdMessages
 }

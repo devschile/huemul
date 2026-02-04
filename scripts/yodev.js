@@ -63,47 +63,27 @@ module.exports = (robot) => {
           }
 
           const limitedJobs = jobs.slice(0, 5)
-          const blocks = []
-          blocks.push({
-            type: 'section',
-            text: {
-              type: 'mrkdwn',
-              text: `✅ Encontré ${totalJobs} resultado(s) en yodev.dev:`
-            }
-          })
+          const messages = limitedJobs.map((job) => {
+            const lines = [`
+*${job.title}*`,
+              `*Empresa:* ${job.company}`,
+              `*Ubicación:* ${job.location}`,
+              `*Postulación:* ${job.url}`,
+              `*Publicado:* ${job.posted || job.date || ''}`
+            ]
 
-          limitedJobs.forEach((job) => {
-            blocks.push({
-              type: 'divider'
-            })
+            if (job.salary) lines.push(`*Sueldo:* ${job.salary}`)
+            if (job.type) lines.push(`*Tipo:* ${job.type}`)
+            if (job.source) lines.push(`*Fuente:* ${job.source}`)
 
-            blocks.push({
-              type: 'section',
-              text: {
-                type: 'mrkdwn',
-                text: `*<${job.url}|${job.title}>*\n*  · Empresa:* ${job.company}\n*  · Ubicación:* ${job.location}\n*  · Publicado:* ${job.posted || job.date || ''}${job.salary ? `\n*  · Sueldo:* ${job.salary}` : ''}${job.type ? `\n*  · Tipo:* ${job.type}` : ''}${job.source ? `\n*  · Fuente:* ${job.source}` : ''}`
-              }
-            })
+            return lines.join('\n')
           })
 
           if (viewMoreUrl) {
-            blocks.push({
-              type: 'divider'
-            })
-
-            blocks.push({
-              type: 'section',
-              text: {
-                type: 'mrkdwn',
-                text: `🔍 ¿Quieres ver más ofertas? Visita: <${viewMoreUrl}>`
-              }
-            })
+            messages.push(`\n🔍 ¿Quieres ver más ofertas? Visita: ${viewMoreUrl}`)
           }
 
-          robot.adapter.client.web.chat.postMessage({
-            channel: res.message.room,
-            blocks
-          })
+          send(`✅ Encontré ${totalJobs} resultado(s) en yodev.dev:\n\n${messages.join('\n\n---\n\n')}`)
         } catch (error) {
           robot.logger.error(`Error al parsear la respuesta: ${error.message}`)
           send('Ups! Ocurrió un error al procesar las ofertas de trabajo de yodev.dev. 😱')
