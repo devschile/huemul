@@ -8,6 +8,7 @@ En la medida que sea posible todo script _complejo_ que se quiera agregar deber�
 
 * Fork a tu cuenta de GitHub y clone este repo en tu local.
 * `$ cd ruta/a/huemul`
+* Usa Node.js 24 (`$ nvm use` lee automáticamente `.nvmrc`).
 * `$ npm install` o `$ yarn` (probablemente sea mejor usar `sudo` a menos que uses nodenv o nvm).
 * Si estás usando la carpeta de scripts deja tu código en `huemul/scripts`, sino:
 

@@ -12,6 +12,7 @@
 
 const { block, element, object, TEXT_FORMAT_MRKDWN, TEXT_FORMAT_PLAIN } = require('slack-block-kit')
 const { WebClient } = require('@slack/web-api')
+const { randomUUID } = require('node:crypto')
 const cron = require('node-cron')
 const atob = require('atob')
 
@@ -23,13 +24,6 @@ const {
   button
 } = element
 const { section, actions, divider, context, image } = block
-
-// https://gist.github.com/jed/982883
-const uuid = function b (a) {
-  return a
-    ? (a ^ Math.random() * 16 >> a / 4).toString(16)
-    : ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, b)
-}
 
 module.exports = bot => {
   const debug = false
@@ -112,7 +106,7 @@ module.exports = bot => {
   const buildPollOptions = (data, pId) => {
     const options = []
     data.forEach(({ title, subtitle }) => {
-      const id = uuid()
+      const id = randomUUID()
       const pollOption = {
         p: pId,
         o: id
@@ -371,7 +365,7 @@ module.exports = bot => {
 
   const getPoll = id => pollManager.polls[id]
 
-  const pushPoll = (id = uuid(), config = {}) => {
+  const pushPoll = (id = randomUUID(), config = {}) => {
     pollManager.polls[id] = {
       ...managedPollShape,
       ...config
@@ -565,7 +559,7 @@ module.exports = bot => {
         text: TXT_POLL_MIN_OPTIONS
       })
     }
-    const pollId = uuid()
+    const pollId = randomUUID()
     const options = buildPollOptions(splitCommand, pollId)
 
     const author = bot.brain.usersForFuzzyName(name)[0]

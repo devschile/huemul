@@ -21,7 +21,7 @@
 
 const express = require('express')
 const path = require('path')
-const uuidV4 = require('uuid/v4')
+const { v4: uuidV4 } = require('uuid')
 const querystring = require('querystring')
 
 const images = [
