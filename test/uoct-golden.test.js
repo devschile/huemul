@@ -1,7 +1,7 @@
-import 'coffee-script/register'
-import test from 'ava'
-import Helper from 'hubot-test-helper'
-import nock from 'nock'
+require('coffeescript/register')
+const test = require('./helpers/ava')
+const Helper = require('hubot-test-helper')
+const nock = require('nock')
 
 const emptyPayload = '{"response":"ok","data":[]}'
 const payload = `{"data":[{

@@ -1,7 +1,7 @@
-import 'coffee-script/register'
-import test from 'ava'
-import Helper from 'hubot-test-helper'
-import nock from 'nock'
+require('coffeescript/register')
+const test = require('./helpers/ava')
+const Helper = require('hubot-test-helper')
+const nock = require('nock')
 
 const helper = new Helper('../scripts/teleton.js')
 const sleep = m => new Promise(resolve => setTimeout(() => resolve(), m))

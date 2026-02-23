@@ -1,10 +1,9 @@
-import 'coffee-script/register'
-import Helper from 'hubot-test-helper'
-import test from 'ava'
+require('coffeescript/register')
+const Helper = require('hubot-test-helper')
+const test = require('./helpers/ava')
 
 const helper = new Helper('../scripts/discord.js')
 const sleep = m => new Promise(resolve => setTimeout(() => resolve(), m))
-
 
 test('Devuelve string con el link al discord de devsChile', async t => {
   t.context.room = helper.createRoom({ httpd: false })

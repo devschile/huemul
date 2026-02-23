@@ -1,8 +1,8 @@
-import 'coffee-script/register'
-import test from 'ava'
-import Helper from 'hubot-test-helper'
-import path from 'path'
-import nock from 'nock'
+require('coffeescript/register')
+const test = require('./helpers/ava')
+const Helper = require('hubot-test-helper')
+const path = require('path')
+const nock = require('nock')
 
 const helper = new Helper('../scripts/tiempo.js')
 const sleep = m => new Promise(resolve => setTimeout(() => resolve(), m))
@@ -47,7 +47,7 @@ test('Tiempo Paris, France', async t => {
 
 test('Tiempo Error 500', async t => {
   nock('http://wttr.in')
-    .get('/Santiago')
+    .get('/Santiago,%20Chile')
     .query({ m: '' })
     .reply(500)
   t.context.room.user.say('user', 'hubot tiempo')
@@ -65,7 +65,7 @@ test('Tiempo Error 500', async t => {
 
 test('Tiempo 301', async t => {
   nock('http://wttr.in')
-    .get('/Santiago')
+    .get('/Santiago,%20Chile')
     .query({ m: '' })
     .reply(301)
   t.context.room.user.say('user', 'hubot tiempo')
@@ -83,7 +83,7 @@ test('Tiempo 301', async t => {
 
 test('Tiempo request error', async t => {
   nock('http://wttr.in')
-    .get('/Santiago')
+    .get('/Santiago,%20Chile')
     .query({ m: '' })
     .replyWithFile(200, path.join(__dirname, 'html', 'tiempo-500.html'))
   t.context.room.user.say('user', 'hubot tiempo')

@@ -1,6 +1,6 @@
-import 'coffee-script/register'
-import test from 'ava'
-import Helper from 'hubot-test-helper'
+require('coffeescript/register')
+const test = require('./helpers/ava')
+const Helper = require('hubot-test-helper')
 
 const helper = new Helper('../scripts/fechas-importantes.js')
 const sleep = m => new Promise(resolve => setTimeout(() => resolve(), m))
