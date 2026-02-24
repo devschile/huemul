@@ -26,6 +26,16 @@ const storeHost = 'https://neeks.cl/'
 const productLimit = 5
 module.exports = function (robot) {
   robot.respond(/neeks (.*)/i, async function (msg) {
+    const sendBlocks = (channel, blocks) => {
+      return web.chat.postMessage({
+        channel,
+        blocks,
+        text: '*Neeks.cl*'
+      }).catch(err => {
+        robot.emit('error', err, msg, 'neeks')
+      })
+    }
+
     const buildAndSendBlockMessage = (searchTerm, results) => {
       const header = section(
         text(`*Buscando '${searchTerm}' en Neeks.cl 🚀*\n${results.length > 0 ? `Mostrando ${results.length} ${results.length > 1 ? 'resultados' : 'resultado'}` : ''}`, TEXT_FORMAT_MRKDWN)
@@ -41,11 +51,7 @@ module.exports = function (robot) {
       const blocks = [header, divider()]
       if (results.length === 0) {
         blocks.push(section(text('No se encontraron resultados')))
-        return web.chat.postMessage({
-          channel,
-          blocks: blocks,
-          text: '*Neeks.cl*'
-        })
+        return sendBlocks(channel, blocks)
       }
       results.forEach(result => {
         const actionId = `neeks_${result.name}`
@@ -67,11 +73,7 @@ module.exports = function (robot) {
         )
         blocks.push(divider())
       })
-      return web.chat.postMessage({
-        channel,
-        blocks: blocks,
-        text: '*Neeks.cl*'
-      })
+      return sendBlocks(channel, blocks)
     }
     const search = msg.match[1]
     const url = storeHost + '?s=' + search.replace(' ', '+') + '&post_type=product'
