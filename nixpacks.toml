@@ -1,0 +1,12 @@
+[phases.setup]
+nixPkgs = ["nodejs_24", "yarn", "git"]
+
+[phases.install]
+cmds = ["yarn install --frozen-lockfile --production"]
+
+[start]
+cmd = "if [ -n \"$HUBOT_MONGODB_URL\" ] && [ -z \"$MONGODB_URL\" ]; then export MONGODB_URL=\"$HUBOT_MONGODB_URL\"; fi; bin/hubot -a slack"
+
+[variables]
+NODE_ENV = "production"
+PORT = "8080"
