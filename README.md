@@ -39,6 +39,8 @@ El repositorio incluye `nixpacks.toml` para desplegar con Node 24 y `yarn`.
 5.  Carga variables de entorno desde `.env.coolify.example` (al menos las obligatorias).
 6.  Despliega.
 
+Nota: el `install` usa Corepack para asegurar Yarn ejecutándose sobre Node 24 dentro de Nixpacks.
+
 ### Variables mínimas obligatorias
 
 * `HUBOT_SLACK_TOKEN`
