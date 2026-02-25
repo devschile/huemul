@@ -1,6 +1,5 @@
 # Huemul
 
-[![Build Status](https://travis-ci.org/devschile/huemul.svg?branch=master)](https://travis-ci.org/devschile/huemul)
 [![dependency Status](https://img.shields.io/david/devschile/huemul.svg?style=flat-square)](https://david-dm.org/devschile/huemul#info=dependencies)
 [![devDependency Status](https://img.shields.io/david/dev/devschile/huemul.svg?style=flat-square)](https://david-dm.org/devschile/huemul#info=devDependencies)
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/devschile/huemul.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/devschile/huemul/alerts/)
