@@ -1,0 +1,16 @@
+[phases.setup]
+nixPkgs = ["nodejs_24", "git"]
+
+[phases.install]
+cmds = [
+  "corepack enable",
+  "corepack prepare yarn@1.22.22 --activate",
+  "yarn install --frozen-lockfile --production"
+]
+
+[start]
+cmd = "if [ -n \"$HUBOT_MONGODB_URL\" ] && [ -z \"$MONGODB_URL\" ]; then export MONGODB_URL=\"$HUBOT_MONGODB_URL\"; fi; bin/hubot -a slack"
+
+[variables]
+NODE_ENV = "production"
+PORT = "8080"

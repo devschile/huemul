@@ -15,17 +15,3 @@ jobs:
       - run: yarn test
         env:
           TZ: America/Santiago
-  deploy:
-    if: github.ref == 'refs/heads/master'
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: ssh deploy
-        uses: dokku/github-action@master
-        with:
-          git_remote_url: 'ssh://dokku@devschile.cl/huemul'
-          ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}

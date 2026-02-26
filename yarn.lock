@@ -4022,10 +4022,6 @@ hubot-diceware@3.0.0:
     diceware-wordlist-en-eff "1.0.1"
     diceware-wordlist-sp "1.0.0"
 
-hubot-dokku-hook@1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/hubot-dokku-hook/-/hubot-dokku-hook-1.0.0.tgz#99ac912213ebce656a0314003eedbc021e749f3c"
-
 hubot-earthimpact@0.0.1:
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/hubot-earthimpact/-/hubot-earthimpact-0.0.1.tgz#06fbb6bb67de982a76a631f067c096190565a9a1"
@@ -4150,10 +4146,6 @@ hubot-sentry-integration@0.0.2:
   version "0.0.2"
   resolved "https://registry.yarnpkg.com/hubot-sentry-integration/-/hubot-sentry-integration-0.0.2.tgz#14ee7639aecfd11f96b6d2cf657d326c1fc5940b"
 
-hubot-shipit@0.2.1:
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/hubot-shipit/-/hubot-shipit-0.2.1.tgz#4fbc9e161953bf7901fdc36e2a702c13103f16b2"
-
 hubot-slack@^4.10.0:
   version "4.10.0"
   resolved "https://registry.yarnpkg.com/hubot-slack/-/hubot-slack-4.10.0.tgz#da5db24782c74d17bc1d9fa60a62d3f9c4f009a9"
@@ -4175,12 +4167,6 @@ hubot-test-helper@1.9.0:
   integrity sha1-4+Szc2koH9dvH7Z4W13HXHloNPY=
   dependencies:
     hubot ">=3.0.0 <10 || 0.0.0-development"
-
-hubot-travis-ci-hook@1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/hubot-travis-ci-hook/-/hubot-travis-ci-hook-1.0.0.tgz#6137e859e56ff663e024c3c6481928ac97cf0caf"
-  dependencies:
-    parse-ms "1.0.1"
 
 "hubot-tweets@github:devschile/hubot-tweets":
   version "0.0.1"
@@ -6524,10 +6510,6 @@ parse-json@^4.0.0:
   dependencies:
     error-ex "^1.3.1"
     json-parse-better-errors "^1.0.1"
-
-parse-ms@1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/parse-ms/-/parse-ms-1.0.1.tgz#56346d4749d78f23430ca0c713850aef91aa361d"
 
 parse-ms@^2.1.0:
   version "2.1.0"
