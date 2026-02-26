@@ -1,7 +1,7 @@
 'use strict'
 
-require('coffee-script/register')
-const test = require('ava')
+require('coffeescript/register')
+const test = require('./helpers/ava')
 const Helper = require('hubot-test-helper')
 const sinon = require('sinon')
 

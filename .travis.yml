@@ -1,7 +1,7 @@
 ---
 language: node_js
 node_js:
-  - '10'
+  - '24'
 notifications:
   email: false
   webhooks: https://huemul.devschile.cl/travis-ci/huemul-devs

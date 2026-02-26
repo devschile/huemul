@@ -19,7 +19,7 @@
 const https = require('https')
 
 // Configuración desde variables de entorno
-const YODEV_API_URL = process.env.YODEV_API_URL
+const YODEV_API_URL = process.env.YODEV_API_URL || 'https://yodev.dev/api/jobs'
 
 module.exports = (robot) => {
   robot.respond(/yodev\s+(.+)/i, (res) => {

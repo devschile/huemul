@@ -1,8 +1,8 @@
-import 'coffee-script/register'
-import test from 'ava'
-import Helper from 'hubot-test-helper'
-import path from 'path'
-import nock from 'nock'
+require('coffeescript/register')
+const test = require('./helpers/ava')
+const Helper = require('hubot-test-helper')
+const path = require('path')
+const nock = require('nock')
 
 const helper = new Helper('../scripts/dameunatarjeta.js')
 const nockIsDone = n =>

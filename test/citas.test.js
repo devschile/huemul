@@ -1,7 +1,7 @@
 'use strict'
 
-require('coffee-script/register')
-const test = require('ava')
+require('coffeescript/register')
+const test = require('./helpers/ava')
 const Helper = require('hubot-test-helper')
 
 const helper = new Helper('../scripts/citas.js')
@@ -23,7 +23,6 @@ test.beforeEach(t => {
             text: text,
             options: options
           }
-          t.end()
         }
       }
     }

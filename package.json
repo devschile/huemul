@@ -26,6 +26,7 @@
   },
   "homepage": "https://github.com/devschile/huemul#readme",
   "dependencies": {
+    "@sentry/node": "^10.18.0",
     "@slack/web-api": "^5.10.0",
     "atob": "^2.1.2",
     "bip": "3.0.2",
@@ -97,24 +98,22 @@
     "numbertoclpformater": "1.0.0",
     "openai": "^3.2.1",
     "password-generator": "2.2.0",
-    "phantom": "4.0.12",
     "pug": "3.0.1",
-    "raven": "2.6.2",
     "rutjs": "0.1.1",
     "slack-block-kit": "^0.9.9",
     "string": "3.3.3",
     "superheroes": "1.0.0",
     "tax-cl": "^0.0.1",
     "twitter-rss-feed": "1.4.0",
-    "uuid": "3.2.1",
+    "uuid": "^9.0.1",
     "whilst": "1.0.2",
     "yelp": "1.0.2"
   },
   "devDependencies": {
     "@sinonjs/fake-timers": "^9.1.2",
     "@types/nock": "^11.1.0",
-    "ava": "0.25.0",
-    "coffee-script": "1.12.7",
+    "ava": "^4.3.3",
+    "coffeescript": "^2.7.0",
     "eslint": "6.5.1",
     "eslint-config-standard": "14.1.0",
     "eslint-plugin-import": "2.18.2",
@@ -124,7 +123,7 @@
     "hubot-test-helper": "1.9.0",
     "husky": "0.14.3",
     "lint-staged": "9.4.2",
-    "nock": "9.2.6",
+    "nock": "^13.5.6",
     "prettier": "1.12.1",
     "sinon": "^14.0.0"
   },
@@ -132,6 +131,6 @@
     "mongodb": "3.2.2"
   },
   "engines": {
-    "node": "~10.0.0"
+    "node": ">=24 <25"
   }
 }

@@ -1,8 +1,8 @@
-import 'coffee-script/register'
-import test from 'ava'
-import Helper from 'hubot-test-helper'
-import nock from 'nock'
-import querystring from 'querystring'
+require('coffeescript/register')
+const test = require('./helpers/ava')
+const Helper = require('hubot-test-helper')
+const nock = require('nock')
+const querystring = require('querystring')
 
 const helper = new Helper('../scripts/noticias.js')
 const sleep = m => new Promise(resolve => setTimeout(() => resolve(), m))

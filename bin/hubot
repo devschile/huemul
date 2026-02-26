@@ -4,4 +4,10 @@ set -e
 
 export PATH="node_modules/.bin:node_modules/hubot/node_modules/.bin:$PATH"
 
+COMPAT_SHIM="$(cd "$(dirname "$0")/.." && pwd)/scripts/node24-http-headers-compat.js"
+
+if [ -f "$COMPAT_SHIM" ]; then
+  export NODE_OPTIONS="--require=$COMPAT_SHIM ${NODE_OPTIONS:-}"
+fi
+
 exec node_modules/.bin/hubot --name "huemul" "$@"
