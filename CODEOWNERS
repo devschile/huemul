@@ -33,8 +33,7 @@ test/html/clima-* @juanbrujo
 test/clima.test.js @juanbrujo
 scripts/coinmarketcap.js @hectorpalmatellez
 test/coinmarketcap.test.js @hectorpalmatellez
-scripts/como-donar.js @juanbrujo
-test/como.test-donar.js @juanbrujo
+scripts/como-apoyar.js @juanbrujo
 scripts/concurso.js @juanbrujo
 test/concurso.test.js @juanbrujo
 scripts/correos.js @hectorpalmatellez

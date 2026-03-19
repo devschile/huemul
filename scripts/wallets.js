@@ -1,5 +1,5 @@
 // Description:
-//   Display :huemul: addresses to receive crypto currencies as donation
+//   Display :huemul: addresses to receive crypto as subscriptions
 //
 // Dependencies:
 //   none
@@ -9,10 +9,10 @@
 //   WALLET_ETH
 //
 // Commands:
-//   hubot wallet btc - Display :huemul: addresses to receive bitcoin as donation
-//   hubot wallet bitcoin - Display :huemul: addresses to receive bitcoin as donation
-//   hubot wallet eth - Display :huemul: addresses to receive ethereum as donation
-//   hubot wallet ethereum - Display :huemul: addresses to receive ethereum as donation
+//   hubot wallet btc - Display :huemul: addresses to receive bitcoin as subscription fee
+//   hubot wallet bitcoin - Display :huemul: addresses to receive bitcoin as subscription fee
+//   hubot wallet eth - Display :huemul: addresses to receive ethereum as subscription fee
+//   hubot wallet ethereum - Display :huemul: addresses to receive ethereum as subscription fee
 //   hubot wallet help - Display help
 //
 // Author:
@@ -33,9 +33,9 @@ module.exports = function (robot) {
     const currency = msg.match[1].toLowerCase()
 
     if (currency === 'btc' || currency === 'bitcoin') {
-      msg.send(`Mi wallet de Bitcoin para donaciones es \`${WALLET_BTC}\``)
+      msg.send(`Mi wallet de Bitcoin para suscripciones es \`${WALLET_BTC}\``)
     } else if (currency === 'eth' || currency === 'ethereum') {
-      msg.send(`Mi wallet de Ethereum para donaciones es \`${WALLET_ETH}\``)
+      msg.send(`Mi wallet de Ethereum para suscripciones es \`${WALLET_ETH}\``)
     } else if (currency === 'help') {
       msg.send('Por ahora solo tengo 👜 de ETH y BTC, se utiliza así: `huemul wallet btc`')
     }
