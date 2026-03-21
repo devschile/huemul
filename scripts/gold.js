@@ -1,5 +1,5 @@
 // Description:
-//   Obtener gold con una key válida ó una donación
+//   Obtener gold con una key válida ó una suscripción
 //
 // Dependencies:
 //   None
@@ -95,7 +95,7 @@ module.exports = robot => {
       if (key === null) {
         const channel = res.channels.find(channel => channel.name === process.env.GOLD_CHANNEL || channel.name === 'random')
         channelId = channel.id
-        message = `:clap2: *${name}* donó a :huemul:, se lleva swag :devschile: y es miembro gold :monea: por ${humanizedDuration}!`
+        message = `:clap2: *${name}* se suscribió a :huemul:, se lleva un regalito :devschile: y es miembro gold :monea: por ${humanizedDuration}!`
       } else {
         goldUsers[name].key = key
       }
@@ -194,7 +194,7 @@ module.exports = robot => {
       } else {
         const admins = process.env.HUBOT_AUTH_ADMIN
         if (admins) {
-          let message = `El email ${req.body.email} acaba de donar pero no `
+          let message = `El email ${req.body.email} acaba de suscribirse pero no `
           message += 'logré determinar qué usuario es para agregarlo a los '
           message += 'gold :monea:.\nEste mensaje fue enviado a todos los '
           message += 'administradores DevsChile.'
