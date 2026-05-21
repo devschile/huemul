@@ -46,6 +46,9 @@ const isValidDate = (day, month) => {
   return day >= 1 && day <= daysInMonth
 }
 
+const getDisplayName = user =>
+  (user.slack && user.slack.profile && user.slack.profile.display_name) || user.name
+
 module.exports = robot => {
   let channelId = null
 
@@ -63,8 +66,9 @@ module.exports = robot => {
     if (!isValidDate(day, month)) {
       return msg.send(`La fecha ${day}/${month} no es válida.`)
     }
+    const nickname = getDisplayName(msg.message.user)
     const birthdays = JSON.parse(robot.brain.get('birthdays') || '{}')
-    birthdays[msg.message.user.name] = { user: msg.message.user.name, day, month }
+    birthdays[msg.message.user.name] = { user: nickname, day, month }
     robot.brain.set('birthdays', JSON.stringify(birthdays))
     robot.brain.save()
     msg.send(`Listo, registré tu cumpleaños el ${day}/${month} 🎂`)
