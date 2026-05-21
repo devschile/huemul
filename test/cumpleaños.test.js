@@ -21,10 +21,10 @@ test.afterEach(t => {
 })
 
 test.cb('cumple set - registra cumpleaños válido', t => {
-  t.context.room.user.say('user', 'huemul cumple set 21/05')
+  t.context.room.user.say('user', 'hubot cumple set 21/05')
   setTimeout(() => {
     t.deepEqual(t.context.room.messages, [
-      ['user', 'huemul cumple set 21/05'],
+      ['user', 'hubot cumple set 21/05'],
       ['hubot', 'Listo, registré tu cumpleaños el 21/5 🎂']
     ])
     t.end()
@@ -32,10 +32,10 @@ test.cb('cumple set - registra cumpleaños válido', t => {
 })
 
 test.cb('cumple set - rechaza fecha inválida', t => {
-  t.context.room.user.say('user', 'huemul cumple set 32/01')
+  t.context.room.user.say('user', 'hubot cumple set 32/01')
   setTimeout(() => {
     t.deepEqual(t.context.room.messages, [
-      ['user', 'huemul cumple set 32/01'],
+      ['user', 'hubot cumple set 32/01'],
       ['hubot', 'La fecha 32/1 no es válida.']
     ])
     t.end()
@@ -43,10 +43,10 @@ test.cb('cumple set - rechaza fecha inválida', t => {
 })
 
 test.cb('cumple set - rechaza mes inválido', t => {
-  t.context.room.user.say('user', 'huemul cumple set 01/13')
+  t.context.room.user.say('user', 'hubot cumple set 01/13')
   setTimeout(() => {
     t.deepEqual(t.context.room.messages, [
-      ['user', 'huemul cumple set 01/13'],
+      ['user', 'hubot cumple set 01/13'],
       ['hubot', 'La fecha 1/13 no es válida.']
     ])
     t.end()
@@ -57,10 +57,10 @@ test.cb('cumple delete - elimina cumpleaños registrado', t => {
   const brain = t.context.room.robot.brain
   brain.set('birthdays', JSON.stringify({ user: { user: 'user', day: 21, month: 5 } }))
 
-  t.context.room.user.say('user', 'huemul cumple delete')
+  t.context.room.user.say('user', 'hubot cumple delete')
   setTimeout(() => {
     t.deepEqual(t.context.room.messages, [
-      ['user', 'huemul cumple delete'],
+      ['user', 'hubot cumple delete'],
       ['hubot', 'Tu cumpleaños fue eliminado del calendario.']
     ])
     const birthdays = JSON.parse(brain.get('birthdays') || '{}')
@@ -72,10 +72,10 @@ test.cb('cumple delete - elimina cumpleaños registrado', t => {
 test.cb('cumple hoy - sin cumpleaños hoy', t => {
   t.context.room.robot.brain.set('birthdays', JSON.stringify({}))
 
-  t.context.room.user.say('user', 'huemul cumple hoy')
+  t.context.room.user.say('user', 'hubot cumple hoy')
   setTimeout(() => {
     t.deepEqual(t.context.room.messages, [
-      ['user', 'huemul cumple hoy'],
+      ['user', 'hubot cumple hoy'],
       ['hubot', 'Nadie cumple años hoy.']
     ])
     t.end()
@@ -90,10 +90,10 @@ test.cb('cumple hoy - con cumpleaños hoy', t => {
     pepe: { user: 'pepe', day, month }
   }))
 
-  t.context.room.user.say('user', 'huemul cumple hoy')
+  t.context.room.user.say('user', 'hubot cumple hoy')
   setTimeout(() => {
     t.deepEqual(t.context.room.messages, [
-      ['user', 'huemul cumple hoy'],
+      ['user', 'hubot cumple hoy'],
       ['hubot', 'Hoy cumplen años: pepe']
     ])
     t.end()
@@ -103,10 +103,10 @@ test.cb('cumple hoy - con cumpleaños hoy', t => {
 test.cb('cumple mes - sin cumpleaños este mes', t => {
   t.context.room.robot.brain.set('birthdays', JSON.stringify({}))
 
-  t.context.room.user.say('user', 'huemul cumple mes')
+  t.context.room.user.say('user', 'hubot cumple mes')
   setTimeout(() => {
     t.deepEqual(t.context.room.messages, [
-      ['user', 'huemul cumple mes'],
+      ['user', 'hubot cumple mes'],
       ['hubot', 'Nadie cumple años este mes.']
     ])
     t.end()
@@ -121,10 +121,10 @@ test.cb('cumple mes - muestra cumpleaños del mes actual ordenados por día', t 
     otro: { user: 'otro', day: 1, month: month === 1 ? 2 : 1 }
   }))
 
-  t.context.room.user.say('user', 'huemul cumple mes')
+  t.context.room.user.say('user', 'hubot cumple mes')
   setTimeout(() => {
     t.deepEqual(t.context.room.messages, [
-      ['user', 'huemul cumple mes'],
+      ['user', 'hubot cumple mes'],
       ['hubot', `Cumpleaños de este mes:\nbeto (5/${month})\nana (20/${month})`]
     ])
     t.end()
@@ -134,10 +134,10 @@ test.cb('cumple mes - muestra cumpleaños del mes actual ordenados por día', t 
 test.cb('cumple lista - lista vacía', t => {
   t.context.room.robot.brain.set('birthdays', JSON.stringify({}))
 
-  t.context.room.user.say('user', 'huemul cumple lista')
+  t.context.room.user.say('user', 'hubot cumple lista')
   setTimeout(() => {
     t.deepEqual(t.context.room.messages, [
-      ['user', 'huemul cumple lista'],
+      ['user', 'hubot cumple lista'],
       ['hubot', 'No hay cumpleaños registrados.']
     ])
     t.end()
@@ -151,10 +151,10 @@ test.cb('cumple lista - ordenada por mes y día', t => {
     beto: { user: 'beto', day: 1, month: 6 }
   }))
 
-  t.context.room.user.say('user', 'huemul cumple lista')
+  t.context.room.user.say('user', 'hubot cumple lista')
   setTimeout(() => {
     t.deepEqual(t.context.room.messages, [
-      ['user', 'huemul cumple lista'],
+      ['user', 'hubot cumple lista'],
       ['hubot', 'Calendario de cumpleaños:\nana: 3/2\nbeto: 1/6\ncarlos: 15/6']
     ])
     t.end()
