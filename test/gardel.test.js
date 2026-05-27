@@ -42,3 +42,12 @@ test.cb('Debe mostrar un mensaje de error si se envia un dia invalido', t => {
     t.end()
   }, 500)
 })
+
+test.cb('Debe calcular para el viernes si se ingresa un fin de semana y mostrar mensaje explicativo', t => {
+  t.context.room.user.say('user', 'hubot gardel 21')
+  setTimeout(() => {
+    const gardel = 'Faltan 3 días para que paguen. Este mes pagan el 20, que cae viernes :tired_face:\nNota: el 21 cae en fin de semana y no es un día hábil, así que lo calculé para el viernes anterior.'
+    t.deepEqual(t.context.room.messages, [['user', 'hubot gardel 21'], ['hubot', gardel]])
+    t.end()
+  }, 500)
+})

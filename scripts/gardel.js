@@ -32,6 +32,11 @@ module.exports = function gardel (robot) {
 
     const formattedParamDate = param ? moment(`${moment().format('YYYY-MM')}-${param}`) : null
     const dateWithParam = formattedParamDate ? formattedParamDate > today ? formattedParamDate : formattedParamDate.add(1, 'month') : null
+    let isWeekend = false
+    if (param && dateWithParam && !dateWithParam.isBusinessDay()) {
+      isWeekend = true
+      dateWithParam.prevBusinessDay()
+    }
     const endOfBusinessDay = moment()
       .endOf('month')
       .isBusinessDay()
@@ -58,6 +63,11 @@ module.exports = function gardel (robot) {
         'D'
       )}, que cae ${lastBusinessDay.format('dddd')} :tired_face:`
     }
+
+    if (isWeekend) {
+      message += `\nNota: el ${param} cae en fin de semana y no es un día hábil, así que lo calculé para el viernes anterior.`
+    }
+
     return msg.send(message)
   })
 }
