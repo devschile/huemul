@@ -33,3 +33,12 @@ test.cb('Debe mostrar los dias faltantes cuando se eliga un dia en particular', 
     t.end()
   }, 500)
 })
+
+test.cb('Debe mostrar un mensaje de error si se envia un dia invalido', t => {
+  t.context.room.user.say('user', 'hubot gardel 32')
+  setTimeout(() => {
+    const gardel = 'Te creís chistosito'
+    t.deepEqual(t.context.room.messages, [['user', 'hubot gardel 32'], ['hubot', gardel]])
+    t.end()
+  }, 500)
+})
