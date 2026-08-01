@@ -47,8 +47,8 @@ module.exports = function gardel (robot) {
     const lastBusinessDayMoment = param ? dateWithParam : endOfBusinessDay
     const dateLastBusinessDay = lastBusinessDayMoment.format('YYYY-MM-DD')
     const lastBusinessDay = moment(`${dateLastBusinessDay}T00:00:00-04:00`)
-    const dayMessage = moment.duration(lastBusinessDay.diff(today)).humanize()
     const dayCount = lastBusinessDay.diff(today, 'days')
+    const dayMessage = Math.abs(dayCount) === 1 ? 'un día' : `${Math.abs(dayCount)} días`
     let message = ''
     const plural = dayCount > 1 ? 'n' : ''
 
