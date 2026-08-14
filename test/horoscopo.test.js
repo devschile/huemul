@@ -29,14 +29,21 @@ const respuestaValida = {
 }
 
 // Stub encadenable: .header().timeout().get()(cb) — misma forma que usa el
-// script contra scoped-http-client.
-const httpStub = (statusCode, body) => () => {
-  const client = {
-    header: () => client,
-    timeout: () => client,
-    get: () => cb => cb(null, { statusCode }, JSON.stringify(body))
+// script contra scoped-http-client. Expone la URL pedida en `.calls` para
+// poder verificar a qué endpoint apuntó cada comando.
+const httpStub = (statusCode, body) => {
+  const calls = []
+  const factory = url => {
+    calls.push(url)
+    const client = {
+      header: () => client,
+      timeout: () => client,
+      get: () => cb => cb(null, { statusCode }, JSON.stringify(body))
+    }
+    return client
   }
-  return client
+  factory.calls = calls
+  return factory
 }
 
 const httpErrorStub = err => () => {
@@ -98,6 +105,69 @@ test('con signo válido, responde con el horóscopo', async t => {
     ['user', 'hubot horoscopo geminis'],
     ['hubot', expected]
   ])
+})
+
+test('horoscopo <signo> --dev responde con el horóscopo y pega contra el endpoint dev', async t => {
+  const stub = httpStub(200, respuestaValida)
+  t.context.room.robot.http = stub
+
+  t.context.room.user.say('user', 'hubot horoscopo geminis --dev')
+  await sleep(300)
+
+  const expected = _test.buildHoroscopeText(respuestaValida)
+
+  t.deepEqual(t.context.room.messages, [
+    ['user', 'hubot horoscopo geminis --dev'],
+    ['hubot', expected]
+  ])
+  t.is(stub.calls.length, 1)
+  t.true(stub.calls[0].startsWith('https://horoscopo.devschile.cl/api/horoscopo-dev?'))
+})
+
+test('horoscopo --dev <signo> (orden invertido) también pega contra el endpoint dev', async t => {
+  const stub = httpStub(200, respuestaValida)
+  t.context.room.robot.http = stub
+
+  t.context.room.user.say('user', 'hubot horoscopo --dev geminis')
+  await sleep(300)
+
+  t.is(stub.calls.length, 1)
+  t.true(stub.calls[0].startsWith('https://horoscopo.devschile.cl/api/horoscopo-dev?'))
+})
+
+test('horoscopo (sin --dev) pega contra el endpoint clásico, no el dev', async t => {
+  const stub = httpStub(200, respuestaValida)
+  t.context.room.robot.http = stub
+
+  t.context.room.user.say('user', 'hubot horoscopo geminis')
+  await sleep(300)
+
+  t.is(stub.calls.length, 1)
+  t.true(stub.calls[0].startsWith('https://horoscopo.devschile.cl/api/horoscopo?'))
+  t.false(stub.calls[0].includes('horoscopo-dev'))
+})
+
+test('horoscopo --dev (sin signo) responde con el mensaje de ayuda, sin llamar a la API', async t => {
+  const stub = httpStub(200, respuestaValida)
+  t.context.room.robot.http = stub
+
+  t.context.room.user.say('user', 'hubot horoscopo --dev')
+  await sleep(300)
+
+  t.is(stub.calls.length, 0)
+  t.deepEqual(t.context.room.messages, [
+    ['user', 'hubot horoscopo --dev'],
+    ['hubot', _test.buildHelpMessage()]
+  ])
+})
+
+test('parseArgs distingue el signo de la bandera --dev, en cualquier orden', t => {
+  t.deepEqual(_test.parseArgs('leo --dev'), { signoTexto: 'leo', isDev: true })
+  t.deepEqual(_test.parseArgs('--dev leo'), { signoTexto: 'leo', isDev: true })
+  t.deepEqual(_test.parseArgs('leo'), { signoTexto: 'leo', isDev: false })
+  t.deepEqual(_test.parseArgs('--dev'), { signoTexto: null, isDev: true })
+  t.deepEqual(_test.parseArgs(null), { signoTexto: null, isDev: false })
+  t.deepEqual(_test.parseArgs('LEO --DEV'), { signoTexto: 'leo', isDev: true })
 })
 
 test('acepta el signo escrito con tilde y con "horóscopo" con tilde', async t => {

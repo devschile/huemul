@@ -3,6 +3,7 @@
 //
 // Dependencies:
 //   https://horoscopo.devschile.cl/api/horoscopo
+//   https://horoscopo.devschile.cl/api/horoscopo-dev
 //
 // Configuration:
 //   HOROSCOPO_API_KEY - API key requerida por horoscopo.devschile.cl (ver README del proyecto)
@@ -10,13 +11,16 @@
 // Commands:
 //   hubot horóscopo <signo zodiacal> - Muestra el horóscopo del día para el signo indicado. Ejemplo: `hubot horóscopo leo`
 //   hubot horoscopo <signo zodiacal> - Muestra el horóscopo del día para el signo indicado. Ejemplo: `hubot horoscopo leo`
+//   hubot horoscopo <signo zodiacal> --dev - Como el anterior, pero con la vida de quien programa. Ejemplo: `hubot horoscopo leo --dev`
 //
 // Author:
 //   @jorgeepunan
 
 'use strict'
 
-const url = 'https://horoscopo.devschile.cl/api/horoscopo'
+const CLASSIC_URL = 'https://horoscopo.devschile.cl/api/horoscopo'
+const DEV_URL = 'https://horoscopo.devschile.cl/api/horoscopo-dev'
+const DEV_FLAG = '--dev'
 
 // Lista solo para el mensaje de ayuda cuando no se indica signo. La
 // validación real del signo la hace la API (acepta tildes, "escorpio" como
@@ -45,13 +49,26 @@ const buildOptions = () => ({
   attachments: [{}]
 })
 
-const buildHelpMessage = () => `Debes agregar un signo zodiacal (${SIGNS.join(', ')}).`
+const buildHelpMessage = () =>
+  `Debes agregar un signo zodiacal (${SIGNS.join(', ')}). Agrega "${DEV_FLAG}" al final para la variante para developers.`
 
 const buildErrorMessage = () => 'Ocurrió un error con la búsqueda'
 
 const buildUnknownSignMessage = signosValidos => {
   const lista = Array.isArray(signosValidos) && signosValidos.length ? signosValidos.join(', ') : SIGNS.join(', ')
   return `No reconozco ese signo. Usa uno de: ${lista}.`
+}
+
+// Todo lo que sigue a "horóscopo" llega como un solo bloque de texto (ver el
+// patrón en `module.exports`), porque el orden entre el signo y "--dev" no
+// está fijo ("horoscopo leo --dev" y "horoscopo --dev leo" deben funcionar
+// igual). Se separa en tokens y se distingue la bandera del signo por su
+// valor literal, no por posición.
+const parseArgs = rawArgs => {
+  const tokens = rawArgs ? rawArgs.trim().split(/\s+/).filter(Boolean) : []
+  const isDev = tokens.some(token => token.toLowerCase() === DEV_FLAG)
+  const signoToken = tokens.find(token => token.toLowerCase() !== DEV_FLAG)
+  return { signoTexto: signoToken ? signoToken.toLowerCase() : null, isDev }
 }
 
 // Con ?signo= la API siempre devuelve un solo signo bajo `horoscopo`. Se lee
@@ -95,7 +112,7 @@ const buildHoroscopeFields = data => {
 }
 
 module.exports = function (robot) {
-  const pattern = /hor[oó]scopo(\s+(\S+))?$/i
+  const pattern = /hor[oó]scopo(\s+(.+))?$/i
 
   robot.respond(pattern, function (res) {
     const send = options => {
@@ -116,10 +133,8 @@ module.exports = function (robot) {
       send(options)
     }
 
-    // Se captura cualquier palabra suelta después de "horóscopo" (con o sin
-    // tilde en la palabra "horóscopo" misma, y con o sin tilde en el
-    // signo): la validación de si es un signo real la hace la API.
-    const signoTexto = res.match[2] ? res.match[2].toLowerCase() : null
+    const { signoTexto, isDev } = parseArgs(res.match[2])
+    const url = isDev ? DEV_URL : CLASSIC_URL
 
     if (!signoTexto) {
       const options = buildOptions()
@@ -189,6 +204,7 @@ module.exports = function (robot) {
 
 module.exports._test = {
   SIGNS,
+  parseArgs,
   buildOptions,
   buildHelpMessage,
   buildErrorMessage,
