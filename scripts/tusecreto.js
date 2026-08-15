@@ -1,13 +1,13 @@
 // Description:
 //   Tu secreto queda entre tú y :huemul:
-//   Dile un secreto a @huemul por DM y éste lo anunciará en el canal seleccionado o #random sin mencionarte.
+//   Dile un secreto a @huemul por DM y este lo anunciará en el canal seleccionado o #random sin mencionarte.
 //
 // Dependencies:
 //   None
 //
 // Configuration:
 //   HUBOT_MYSECRET_ALLOWED_CHANNELS: Lista de canales separados por comas.
-//                                    Ej: '#random,#pegas,#otrocanal'
+//                                    Ej: '#random,#trabajos,#otrocanal'
 //
 // Commands:
 //   hubot mi secreto <secreto> - Envia el secreto al canal #random.
@@ -16,12 +16,15 @@
 // Author:
 //   @jorgeepunan
 
-module.exports = function (robot) {
-  return robot.respond(/mi secreto (.*)/i, function (msg) {
-    var secreto = msg.match[1]
-    var channel = '#random'
-    var allowedChannels = process.env.HUBOT_MYSECRET_ALLOWED_CHANNELS || '#random'
-    var secretoArr = secreto.split(' ')
+const { getClient } = require('./helpers/client')
+
+module.exports = robot => {
+  const web = getClient()
+  robot.respond(/mi secreto (.*)/i, msg => {
+    let secreto = msg.match[1]
+    let channel = '#random'
+    let allowedChannels = process.env.HUBOT_MYSECRET_ALLOWED_CHANNELS || '#random'
+    const secretoArr = secreto.split(' ')
 
     allowedChannels = allowedChannels.split(',')
 
@@ -34,24 +37,26 @@ module.exports = function (robot) {
       return robot.messageRoom(msg.message.user.id, '¿Y el secreto?')
     }
 
-    var slackChannel = robot.adapter.client.rtm.dataStore.getChannelByName(channel)
+    const forbiddenWords = ['@here', '@channel', '@group', '@everyone']
 
-    if (!slackChannel) {
-      return robot.messageRoom(msg.message.user.id, 'No sé qué canal es ese.')
-    }
-
-    if (!slackChannel.is_member) {
-      return robot.messageRoom(msg.message.user.id, 'No estoy en ' + channel + '. :sadhuemul:')
-    }
-
-    var forbiddenWords = ['@here', '@channel', '@group', '@everyone']
-
-    for (var i = 0; i < forbiddenWords.length; i++) {
+    for (let i = 0; i < forbiddenWords.length; i++) {
       if (secreto.indexOf(forbiddenWords[i]) !== -1) {
-        return robot.messageRoom(slackChannel.id, 'El tonto de ' + msg.message.user.name + ' trató de usar @')
+        return robot.messageRoom(msg.message.user.id, 'El tonto de ' + msg.message.user.name + ' trató de usar @')
       }
     }
 
-    return robot.messageRoom(slackChannel.id, ':speak_no_evil: *Un secreto:* ' + secreto)
+    web.conversations.list({ types: 'public_channel,private_channel' }).then(res => {
+      const slackChannel = res.channels.find(c => c.name === channel.replace(/^#/, ''))
+
+      if (!slackChannel) {
+        return robot.messageRoom(msg.message.user.id, 'No sé qué canal es ese.')
+      }
+
+      if (!slackChannel.is_member) {
+        return robot.messageRoom(msg.message.user.id, 'No estoy en ' + channel + '. :sadhuemul:')
+      }
+
+      return robot.messageRoom(slackChannel.id, ':speak_no_evil: *Un secreto:* ' + secreto)
+    })
   })
 }
