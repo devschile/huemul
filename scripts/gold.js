@@ -297,6 +297,13 @@ module.exports = robot => {
     res.status(204).end()
   })
 
+  robot.router.post('/gold/webhook', (req, res) => {
+    res.status(410).json({
+      error: 'moved',
+      to: 'https://soy.devschile.cl/api/webhooks/reveniu'
+    })
+  })
+
   robot.brain.on('loaded', () => {
     if (pollTimer) clearInterval(pollTimer)
     pollTimer = setInterval(() => refresh().catch(logRefreshError), POLL_MS)
