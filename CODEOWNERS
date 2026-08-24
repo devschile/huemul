@@ -85,8 +85,6 @@ scripts/gmq.js @lgaticaq
 test/gmq.test.js @lgaticaq
 scripts/gold.js @lgaticaq
 test/gold.test.js @lgaticaq
-scripts/golden-escorts.js @juanbrujo
-test/golden.test-escorts.js @juanbrujo
 scripts/gotico.js @davidlaym
 test/gotico.test.js @davidlaym
 scripts/guruguru.js @quest
@@ -184,8 +182,6 @@ scripts/thicc.js @hectorpalmatellez
 test/thicc.test.js @hectorpalmatellez
 scripts/timezone.js @juanbrujo
 test/timezone.test.js @juanbrujo
-scripts/torrent.js @juanbrujo
-test/torrent.test.js @juanbrujo
 scripts/tupoto.js @quest
 test/tupoto.test.js @quest
 scripts/tusecreto.js @juanbrujo
