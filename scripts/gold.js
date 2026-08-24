@@ -12,6 +12,7 @@
 //   hubot gold insert <key> - Agregar una gold key para ser un miembro gold
 //   hubot gold add <user> [days] - Dar la membresía gold a un usuario
 //   hubot gold remove <user> - Quitar la membresía gold a un usuario
+//   hubot gold link <code> - Vincular tu cuenta de devsChile con Slack
 //   hubot gold list - Listar todos los miembros gold
 //
 // Author:
@@ -285,6 +286,20 @@ module.exports = robot => {
     const hasRole = robot.auth.hasRole(res.message.user, 'gold')
     if (!isAdmin && !hasRole) return
     revokeMembership(res)
+  })
+
+  robot.respond(/gold link (\S+)/i, res => {
+    const code = res.match[1]
+    postJson('/api/link/slack', {
+      code,
+      slackId: res.message.user.id,
+      handle: res.message.user.name
+    })
+      .then(() => res.send(':clap2: cuenta vinculada :monea:'))
+      .catch(err => {
+        robot.logger.error(`gold: falló la vinculación de cuenta: ${err && err.message}`)
+        res.send('El código no es válido o expiró :monea:.')
+      })
   })
 
   robot.router.post('/gold/sync', (req, res) => {
