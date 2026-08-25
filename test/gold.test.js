@@ -228,6 +228,23 @@ test.serial('POST /gold/sync comparte un refresh en curso entre pushes simultán
   t.true(scope.isDone())
 })
 
+test.serial('gold add por mención resuelve el handle desde el perfil si falta el nombre legado', async t => {
+  absorbAutoRefresh()
+  mockSlack()
+  const room = createRoom(t)
+  room.robot.auth = { isAdmin: () => true, hasRole: () => false }
+  nock('https://slack.com')
+    .post('/api/users.info')
+    .reply(200, { ok: true, user: { id: 'U999', profile: { display_normalized_name: 'dave' } } })
+  const grantScope = nock('http://gold.test')
+    .post('/api/grants', body => body.slack && body.slack.id === 'U999' && body.slack.handle === 'dave')
+    .reply(200, { paidThrough: iso(7 * DAY) })
+
+  room.user.say('user', 'hubot gold add <@U999>')
+  await waitUntil(() => hubotMessages(room).some(text => text.includes('*dave* se suscribió a :huemul:')))
+  t.true(grantScope.isDone())
+})
+
 test.serial('gold insert canjea una clave válida y anuncia', async t => {
   absorbAutoRefresh()
   const room = createRoom(t)

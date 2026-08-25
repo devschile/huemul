@@ -221,8 +221,11 @@ module.exports = robot => {
 
   const resolveHandle = (res, parsed, fn) => {
     web.users.info({ user: parsed.slackId }).then(result => {
-      if (!result.user || !result.user.name) return res.send('No se encontró el usuario')
-      fn(result.user.name)
+      const profile = result.user && result.user.profile
+      const handle = (result.user && result.user.name) ||
+        (profile && profile.display_normalized_name)
+      if (!handle) return res.send('No se encontró el usuario')
+      fn(handle)
     }).catch(err => {
       robot.logger.error(`gold: no pude resolver el usuario de Slack: ${err && err.message}`)
       res.send('No se encontró el usuario')
