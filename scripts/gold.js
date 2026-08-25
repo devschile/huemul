@@ -36,6 +36,16 @@ const timingSafeEqualStr = (value, expected) => {
   return crypto.timingSafeEqual(left, right)
 }
 
+const FETCH_TIMEOUT_MS = 10000
+
+const fetchWithTimeout = (url, options, parseBody) => {
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
+  return fetch(url, Object.assign({}, options, { signal: controller.signal }))
+    .then(async response => ({ response, data: await parseBody(response) }))
+    .finally(() => clearTimeout(timer))
+}
+
 module.exports = robot => {
   let pollTimer = null
 
@@ -125,13 +135,15 @@ module.exports = robot => {
   }
 
   const refresh = () => {
-    return fetch(`${apiUrl()}/api/huemul/projection`, { headers: authHeaders() })
-      .then(response => {
-        if (!response.ok) throw new Error(`HTTP ${response.status}`)
-        return response.json()
-      })
-      .then(payload => {
-        const projection = normalizeProjection(payload)
+    return fetchWithTimeout(`${apiUrl()}/api/huemul/projection`, { headers: authHeaders() }, async response => {
+      if (!response.ok) {
+        await response.text().catch(() => '')
+        throw new Error(`HTTP ${response.status}`)
+      }
+      return response.json()
+    })
+      .then(({ data }) => {
+        const projection = normalizeProjection(data)
         if (!projection) throw new Error('payload inválido')
         robot.brain.set(PROJECTION_KEY, projection)
         return projection
@@ -139,20 +151,18 @@ module.exports = robot => {
   }
 
   const postJson = (path, body) => {
-    return fetch(`${apiUrl()}${path}`, {
+    return fetchWithTimeout(`${apiUrl()}${path}`, {
       method: 'POST',
       headers: Object.assign({ 'content-type': 'application/json' }, authHeaders()),
       body: JSON.stringify(body)
-    }).then(response => {
-      return response.json().catch(() => ({})).then(data => {
-        if (!response.ok) {
-          const err = new Error(`HTTP ${response.status}`)
-          err.status = response.status
-          err.body = data
-          throw err
-        }
-        return data
-      })
+    }, response => response.json().catch(() => ({}))).then(({ response, data }) => {
+      if (!response.ok) {
+        const err = new Error(`HTTP ${response.status}`)
+        err.status = response.status
+        err.body = data
+        throw err
+      }
+      return data
     })
   }
 
