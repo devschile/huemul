@@ -48,6 +48,7 @@ const fetchWithTimeout = (url, options, parseBody) => {
 
 module.exports = robot => {
   let pollTimer = null
+  let syncRefresh = null
 
   const apiUrl = () => (process.env.GOLD_API_URL || 'https://soy.devschile.cl').replace(/\/$/, '')
 
@@ -333,14 +334,20 @@ module.exports = robot => {
       })
   })
 
-  robot.router.post('/gold/sync', (req, res) => {
+  robot.router.post('/gold/sync', async (req, res) => {
     const secret = process.env.GOLD_SYNC_SECRET
     const header = req.get('authorization') || ''
     if (!secret || !timingSafeEqualStr(header, `Bearer ${secret}`)) {
       return res.status(401).json({ error: 'unauthorized' })
     }
-    refresh().catch(logRefreshError)
-    res.status(204).end()
+    try {
+      if (!syncRefresh) syncRefresh = refresh().finally(() => { syncRefresh = null })
+      await syncRefresh
+      res.status(204).end()
+    } catch (err) {
+      logRefreshError(err)
+      res.status(502).json({ error: 'sync_failed' })
+    }
   })
 
   robot.router.post('/gold/webhook', (req, res) => {

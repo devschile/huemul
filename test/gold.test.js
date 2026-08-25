@@ -195,6 +195,39 @@ test.serial('el anuncio pagina conversations.list y prefiere el canal configurad
   t.is(sentRoom, 'CGOLD')
 })
 
+test.serial('POST /gold/sync devuelve 502 cuando el maestro falla', async t => {
+  blockAutoRefresh()
+  const room = createRoom(t, { httpd: true })
+  await waitUntil(() => room.robot.server && room.robot.server.listening)
+  const port = room.robot.server.address().port
+
+  const response = await fetch(`http://127.0.0.1:${port}/gold/sync`, {
+    method: 'POST',
+    headers: { authorization: 'Bearer sync-secret' }
+  })
+  t.is(response.status, 502)
+  t.deepEqual(await response.json(), { error: 'sync_failed' })
+})
+
+test.serial('POST /gold/sync comparte un refresh en curso entre pushes simultáneos', async t => {
+  absorbAutoRefresh()
+  const room = createRoom(t, { httpd: true })
+  await waitUntil(() => room.robot.server && room.robot.server.listening)
+  const port = room.robot.server.address().port
+  const base = `http://127.0.0.1:${port}`
+
+  const scope = mockProjection([{ handle: 'erin', paidThrough: iso(5 * DAY) }])
+
+  const [a, b] = await Promise.all([
+    fetch(`${base}/gold/sync`, { method: 'POST', headers: { authorization: 'Bearer sync-secret' } }),
+    fetch(`${base}/gold/sync`, { method: 'POST', headers: { authorization: 'Bearer sync-secret' } })
+  ])
+  t.is(a.status, 204)
+  t.is(b.status, 204)
+  await waitUntil(() => room.robot.golden.isGold('erin'))
+  t.true(scope.isDone())
+})
+
 test.serial('gold insert canjea una clave válida y anuncia', async t => {
   absorbAutoRefresh()
   const room = createRoom(t)
