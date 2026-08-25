@@ -79,11 +79,13 @@ const createRoom = (t, options) => {
   return room
 }
 
+// Exactly ONE boot refresh fires per room: the brain 'loaded' handler is
+// guarded so it cannot re-enter itself (Brain#set re-emits 'loaded'). This used
+// to need .times(3) to soak up a self-sustaining refresh loop.
 const absorbAutoRefresh = () => {
   nock('http://gold.test')
     .matchHeader('authorization', 'Bearer token-test')
     .get('/api/huemul/projection')
-    .times(3)
     .reply(200, projectionOf([]))
 }
 
@@ -123,18 +125,83 @@ test.serial('hidrata la proyección persistida en el brain', async t => {
 
 test.serial('refresh exitoso reemplaza la proyección y el fallo conserva la última buena', async t => {
   mockProjection([{ handle: 'carol', paidThrough: iso(30 * DAY) }])
-  const room = createRoom(t)
+  // httpd + /gold/sync is the only way to force a refresh from a test: the poll
+  // is 60s away and brain.emit('loaded') is deliberately inert after boot.
+  const room = createRoom(t, { httpd: true })
+  await waitUntil(() => room.robot.server && room.robot.server.listening)
+  const base = `http://127.0.0.1:${room.robot.server.address().port}`
+
   await waitUntil(() => room.robot.golden.isGold('carol'))
   const stored = room.robot.brain.get('gold_projection')
   t.is(stored.members[0].handle, 'carol')
 
-  nock('http://gold.test')
+  const failing = nock('http://gold.test')
     .matchHeader('authorization', 'Bearer token-test')
     .get('/api/huemul/projection')
     .reply(500)
-  room.robot.brain.emit('loaded')
-  await delay(150)
+  const response = await fetch(`${base}/gold/sync`, {
+    method: 'POST',
+    headers: { authorization: 'Bearer sync-secret' }
+  })
+  t.is(response.status, 502)
+  t.true(failing.isDone())
+  // Un maestro caído nunca revoca a nadie.
   t.true(room.robot.golden.isGold('carol'))
+  t.is(room.robot.brain.get('gold_projection').members[0].handle, 'carol')
+})
+
+test.serial('el handler de brain loaded no se re-entra a sí mismo', async t => {
+  // Brain#set re-emite 'loaded'. Sin la guarda, escribir la proyección
+  // disparaba otro refresh, que volvía a escribir: un bucle de requests contra
+  // el maestro sin fin. Solo el PRIMER interceptor puede consumirse.
+  const first = mockProjection([{ handle: 'zoe', paidThrough: iso(5 * DAY) }])
+  const second = mockProjection([{ handle: 'zoe', paidThrough: iso(9 * DAY) }])
+
+  const room = createRoom(t)
+  await waitUntil(() => room.robot.golden.isGold('zoe'))
+  await delay(200)
+  t.true(first.isDone())
+  t.false(second.isDone())
+
+  // Una escritura ajena en el brain tampoco puede disparar un refresh.
+  room.robot.brain.set('algo_no_relacionado', Date.now())
+  await delay(200)
+  t.false(second.isDone())
+})
+
+test.serial('no reescribe el brain cuando la proyección no cambió', async t => {
+  const members = [{ handle: 'nora', paidThrough: iso(12 * DAY) }]
+  mockProjection(members)
+  const room = createRoom(t, { httpd: true })
+  await waitUntil(() => room.robot.server && room.robot.server.listening)
+  const base = `http://127.0.0.1:${room.robot.server.address().port}`
+  await waitUntil(() => room.robot.golden.isGold('nora'))
+
+  // brain.set ensucia el brain completo y hubot-mongodb-brain persiste TODO,
+  // así que un payload idéntico no debe escribir nada.
+  let writes = 0
+  const realSet = room.robot.brain.set.bind(room.robot.brain)
+  room.robot.brain.set = (...args) => {
+    if (args[0] === 'gold_projection') writes++
+    return realSet(...args)
+  }
+
+  mockProjection(members)
+  let response = await fetch(`${base}/gold/sync`, {
+    method: 'POST',
+    headers: { authorization: 'Bearer sync-secret' }
+  })
+  t.is(response.status, 204)
+  t.is(writes, 0)
+
+  // Un payload distinto sí se escribe.
+  mockProjection([{ handle: 'nora', paidThrough: iso(40 * DAY) }])
+  response = await fetch(`${base}/gold/sync`, {
+    method: 'POST',
+    headers: { authorization: 'Bearer sync-secret' }
+  })
+  t.is(response.status, 204)
+  t.is(writes, 1)
 })
 
 test.serial('POST /gold/sync exige el secreto y dispara refresh con el correcto', async t => {

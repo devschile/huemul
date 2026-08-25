@@ -91,6 +91,13 @@ module.exports = robot => {
     return raw
   }
 
+  const sameMembers = (a, b) => {
+    if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false
+    // Both sides come from normalizeProjection, and the master sorts by handle,
+    // so a positional comparison is enough.
+    return a.every((member, i) => member.handle === b[i].handle && member.paidThrough === b[i].paidThrough)
+  }
+
   const findMember = name => {
     const projection = readProjection()
     if (!projection || !Array.isArray(projection.members)) return null
@@ -146,6 +153,19 @@ module.exports = robot => {
       .then(({ data }) => {
         const projection = normalizeProjection(data)
         if (!projection) throw new Error('payload inválido')
+        // Skip the write when the membership list is byte-identical: brain.set
+        // dirties the whole brain and hubot-mongodb-brain persists ALL of it,
+        // so rewriting an unchanged projection every 60s costs a full-document
+        // write for nothing.
+        //
+        // Deliberately compares the PAYLOAD, not `version`: a membership that
+        // lapses naturally drops out of the projection without any row's
+        // updated_at changing, so the master's version can stay put while the
+        // member list moves.
+        const current = readProjection()
+        if (current && sameMembers(current.members, projection.members)) {
+          return current
+        }
         robot.brain.set(PROJECTION_KEY, projection)
         return projection
       })
@@ -240,7 +260,12 @@ module.exports = robot => {
     const applyGrant = handle => {
       if (!handle) return res.send('No se encontró el usuario')
       const slack = parsed.slackId ? { id: parsed.slackId, handle } : { handle }
-      const body = { slack, grantedBy: res.message.user.name, note: 'bot gold add' }
+      // Idempotency key: the Slack message id identifies THIS command, so a
+      // retried request replays onto the same source_ref and the master's
+      // UNIQUE (source, source_ref) turns it into a no-op instead of a second
+      // period. Falls back to a per-invocation id when the adapter has no ts.
+      const ref = `add:${res.message.id || `${Date.now()}-${Math.random().toString(36).slice(2)}`}`
+      const body = { slack, grantedBy: res.message.user.name, note: 'bot gold add', ref }
       if (parsed.days) body.days = parsed.days
       postJson('/api/grants', body)
         .then(result => announceSubscription(handle, paidThroughOf(result)))
@@ -261,7 +286,14 @@ module.exports = robot => {
       if (!handle) return res.send('No se encontró el usuario')
       const slack = parsed.slackId ? { id: parsed.slackId, handle } : { handle }
       postJson('/api/grants/revoke', { slack })
-        .then(() => res.send(`${handle} ya no es miembro gold :monea:`))
+        .then(result => {
+          // The master answers revoked:false for a member who never had gold
+          // (or does not exist at all) — say so instead of claiming a change.
+          if (result && result.revoked === false) {
+            return res.send(`${handle} no era miembro gold :monea:`)
+          }
+          res.send(`${handle} ya no es miembro gold :monea:`)
+        })
         .catch(err => {
           robot.logger.error(`gold: falló la revocación para ${handle}: ${err && err.message}`)
           res.send(`No pude quitar la membresía gold a ${handle} ahora mismo :monea:`)
@@ -363,8 +395,14 @@ module.exports = robot => {
     })
   })
 
+  // Hubot's Brain#set emits 'loaded' (brain.coffee:31), not just the initial
+  // load — so an unguarded handler here re-entered itself: refresh() wrote the
+  // projection, the write emitted 'loaded', which called refresh() again, with
+  // no delay and no end. Boot-time wiring must happen exactly once.
+  let started = false
   robot.brain.on('loaded', () => {
-    if (pollTimer) clearInterval(pollTimer)
+    if (started) return
+    started = true
     pollTimer = setInterval(() => refresh().catch(logRefreshError), POLL_MS)
     if (typeof pollTimer.unref === 'function') pollTimer.unref()
     refresh().catch(logRefreshError)
