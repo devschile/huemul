@@ -176,13 +176,34 @@ module.exports = robot => {
     return null
   }
 
+  const listChannels = async () => {
+    const channels = []
+    let cursor
+    for (let page = 0; page < 10 && (page === 0 || cursor); page++) {
+      const result = await web.conversations.list({
+        limit: 200,
+        cursor,
+        types: 'public_channel,private_channel'
+      })
+      channels.push(...(result.channels || []))
+      cursor = result.response_metadata && result.response_metadata.next_cursor
+    }
+    return channels
+  }
+
   const announceSubscription = (name, paidThrough) => {
     const date = formatDate(paidThrough)
     const until = date ? ` hasta el ${date}` : ''
     const message = `:clap2: *${name}* se suscribió a :huemul:, se lleva un regalito :devschile: y es miembro gold :monea:${until}!`
-    web.conversations.list().then(result => {
-      const channel = result.channels.find(ch => ch.name === process.env.GOLD_CHANNEL || ch.name === 'random')
-      if (channel) robot.send({ room: channel.id }, message)
+    listChannels().then(channels => {
+      const configured = process.env.GOLD_CHANNEL &&
+        channels.find(ch => ch.name === process.env.GOLD_CHANNEL)
+      const channel = configured || channels.find(ch => ch.name === 'random')
+      if (!channel) return
+      if (!configured) {
+        robot.logger.warning(`gold: canal ${process.env.GOLD_CHANNEL || '(sin configurar)'} no encontrado, anunciando en #${channel.name}`)
+      }
+      robot.send({ room: channel.id }, message)
     }).catch(err => {
       robot.logger.error(`gold: no pude resolver el canal de anuncios: ${err && err.message}`)
     })

@@ -166,6 +166,35 @@ test.serial('POST /gold/sync exige el secreto y dispara refresh con el correcto'
   await waitUntil(() => room.robot.golden.isGold('dave'))
 })
 
+test.serial('el anuncio pagina conversations.list y prefiere el canal configurado a random', async t => {
+  absorbAutoRefresh()
+  nock('https://slack.com')
+    .post('/api/conversations.list')
+    .reply(200, {
+      ok: true,
+      channels: [{ id: 'CRANDOM', name: 'random' }],
+      response_metadata: { next_cursor: 'pagina-2' }
+    })
+    .post('/api/conversations.list')
+    .reply(200, { ok: true, channels: [{ id: 'CGOLD', name: 'gold' }] })
+  const room = createRoom(t)
+  room.robot.auth = { isAdmin: () => true, hasRole: () => false }
+  let sentRoom = null
+  const originalSend = room.robot.send.bind(room.robot)
+  room.robot.send = (envelope, str) => {
+    sentRoom = envelope.room
+    return originalSend(envelope, str)
+  }
+  nock('http://gold.test')
+    .matchHeader('authorization', 'Bearer token-test')
+    .post('/api/grants')
+    .reply(200, { paidThrough: iso(10 * DAY) })
+
+  room.user.say('user', 'hubot gold add bob')
+  await waitUntil(() => sentRoom !== null)
+  t.is(sentRoom, 'CGOLD')
+})
+
 test.serial('gold insert canjea una clave válida y anuncia', async t => {
   absorbAutoRefresh()
   const room = createRoom(t)
