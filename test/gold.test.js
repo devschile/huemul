@@ -4,9 +4,18 @@ require('coffeescript/register')
 const test = require('./helpers/ava')
 const Helper = require('hubot-test-helper')
 const nock = require('nock')
+const Path = require('path')
 const fetch = require('node-fetch')
 
 const helper = new Helper('../scripts/gold.js')
+
+// hubot-test-helper requires `hubot/es2015` (compiled JS) from its own tree —
+// the top-level hubot 2.x ships only .coffee that this CoffeeScript can't
+// compile. Resolve the SAME copy it uses instead of hardcoding a nested path,
+// so hoisting changes don't silently break this.
+const Hubot = require(require.resolve('hubot/es2015', {
+  paths: [Path.dirname(require.resolve('hubot-test-helper'))]
+}))
 
 process.env.PORT = '0'
 process.env.GOLD_API_URL = 'http://gold.test'
@@ -375,7 +384,9 @@ test.serial('gold add acepta username plano y mención <@U123>', async t => {
       !body.slack.id &&
       body.days === 15 &&
       body.grantedBy === 'user' &&
-      body.note === 'bot gold add')
+      body.note === 'bot gold add' &&
+      // Idempotency key: sin esto un reintento otorga un segundo período.
+      typeof body.ref === 'string' && body.ref.startsWith('add:') && body.ref.length > 4)
     .reply(200, { paidThrough: iso(15 * DAY) })
 
   room.user.say('user', 'hubot gold add bob 15')
@@ -397,6 +408,33 @@ test.serial('gold add acepta username plano y mención <@U123>', async t => {
   room.user.say('user', 'hubot gold add <@U123> 7')
   await waitUntil(() => hubotMessages(room).length > before && hubotMessages(room).some(text => text.includes('*carol* se suscribió a :huemul:')))
   t.true(mentionScope.isDone())
+})
+
+test.serial('gold add keya la idempotencia en el id del mensaje de Slack', async t => {
+  // SlackTextMessage pasa rawMessage.ts como el id de TextMessage
+  // (hubot-slack/src/message.coffee), así que en producción el ref identifica
+  // ESTE comando: un reintento cae sobre el mismo source_ref y el maestro lo
+  // deduplica en UNIQUE (source, source_ref).
+  absorbAutoRefresh()
+  mockSlack()
+  const room = createRoom(t)
+  room.robot.auth = { isAdmin: () => true, hasRole: () => false }
+
+  let sentRef = null
+  const scope = nock('http://gold.test')
+    .post('/api/grants', body => {
+      sentRef = body.ref
+      return true
+    })
+    .reply(200, { paidThrough: iso(30 * DAY) })
+
+  // El tercer argumento de TextMessage es el id — SlackTextMessage le pasa
+  // rawMessage.ts (hubot-slack/src/message.coffee).
+  const user = new Hubot.User('user', { room: room.name })
+  room.user.say('user', new Hubot.TextMessage(user, 'hubot gold add dana', '1712345678.000100'))
+
+  await waitUntil(() => scope.isDone())
+  t.is(sentRef, 'add:1712345678.000100')
 })
 
 test.serial('gold add ignora a quien no tiene permisos', async t => {

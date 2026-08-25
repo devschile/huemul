@@ -399,6 +399,11 @@ module.exports = robot => {
   // load — so an unguarded handler here re-entered itself: refresh() wrote the
   // projection, the write emitted 'loaded', which called refresh() again, with
   // no delay and no end. Boot-time wiring must happen exactly once.
+  //
+  // Known consequence: if another script writes to the brain before Mongo
+  // finishes hydrating, we initialize on THAT emit and the later mergeData can
+  // overwrite our fresh projection with the persisted one. The 60s poll heals
+  // it, so the worst case is one stale minute — accepted over re-entrancy.
   let started = false
   robot.brain.on('loaded', () => {
     if (started) return
