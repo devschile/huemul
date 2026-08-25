@@ -245,6 +245,24 @@ test.serial('gold add por mención resuelve el handle desde el perfil si falta e
   t.true(grantScope.isDone())
 })
 
+test.serial('gold add rechaza días inválidos y gold remove argumentos extra', async t => {
+  absorbAutoRefresh()
+  const room = createRoom(t)
+  room.robot.auth = { isAdmin: () => true, hasRole: () => false }
+
+  room.user.say('user', 'hubot gold add bob abc')
+  await waitUntil(() => hubotMessages(room).some(text => text.includes('Uso: hubot gold add <usuario> [días]')))
+
+  room.user.say('user', 'hubot gold add bob 0')
+  await waitUntil(() => hubotMessages(room).filter(text => text.includes('Uso: hubot gold add <usuario> [días]')).length >= 2)
+
+  room.user.say('user', 'hubot gold remove alice extra')
+  await waitUntil(() => hubotMessages(room).some(text => text.includes('Uso: hubot gold remove <usuario>')))
+
+  t.true(hubotMessages(room).some(text => text.includes('Uso: hubot gold add <usuario> [días]')))
+  t.true(hubotMessages(room).some(text => text.includes('Uso: hubot gold remove <usuario>')))
+})
+
 test.serial('gold insert canjea una clave válida y anuncia', async t => {
   absorbAutoRefresh()
   const room = createRoom(t)

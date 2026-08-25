@@ -213,8 +213,9 @@ module.exports = robot => {
   const parseTarget = input => {
     const tokens = String(input || '').trim().split(/\s+/).filter(Boolean)
     if (tokens.length === 0) return null
+    if (tokens.length > 1 && !/^[1-9][0-9]*$/.test(tokens[1])) return { invalidDays: true }
+    const days = tokens.length > 1 ? Number(tokens[1]) : undefined
     const mention = String(tokens[0]).match(/^<@([A-Za-z0-9]+)>$/)
-    const days = tokens.length > 1 && /^\d+$/.test(tokens[1]) ? Number(tokens[1]) : undefined
     if (mention) return { slackId: mention[1], days }
     return { handle: tokens[0].replace(/^@/, ''), days }
   }
@@ -234,6 +235,7 @@ module.exports = robot => {
 
   const grantMembership = res => {
     const parsed = parseTarget(res.match[1])
+    if (parsed && parsed.invalidDays) return res.send('Los días deben ser un número. Uso: hubot gold add <usuario> [días]')
     if (!parsed || (!parsed.handle && !parsed.slackId)) return res.send('No entendí a quién agregar :monea:.')
     const applyGrant = handle => {
       if (!handle) return res.send('No se encontró el usuario')
@@ -253,6 +255,7 @@ module.exports = robot => {
 
   const revokeMembership = res => {
     const parsed = parseTarget(res.match[1])
+    if (parsed && parsed.invalidDays) return res.send('Uso: hubot gold remove <usuario>')
     if (!parsed || (!parsed.handle && !parsed.slackId)) return res.send('No entendí a quién quitar :monea:.')
     const revoke = handle => {
       if (!handle) return res.send('No se encontró el usuario')
