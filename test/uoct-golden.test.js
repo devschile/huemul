@@ -78,9 +78,9 @@ test('UOCT - restringido para usuarios gold', async t => {
   t.deepEqual(t.context.postMessage.options.attachments, [
     {
       fallback:
-        'Esta funcionalidad es exclusiva para socios golden :monea: de devsChile. Dona en www.devschile.cl para participar de este selecto grupo :huemul-patitas: .',
+        'Esta funcionalidad es exclusiva para socios gold :monea: de devsChile. Suscríbete en https://gold.devschile.cl para unirte a este selecto grupo :huemul-patitas: .',
       text:
-        'Esta funcionalidad es exclusiva para socios golden :monea: de devsChile. Dona en www.devschile.cl para participar de este selecto grupo :huemul-patitas: .',
+        'Esta funcionalidad es exclusiva para socios gold :monea: de devsChile. Suscríbete en https://gold.devschile.cl para unirte a este selecto grupo :huemul-patitas: .',
       title: 'Estado del tránsito:'
     }
   ])

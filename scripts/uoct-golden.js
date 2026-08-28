@@ -16,6 +16,7 @@
 const fetch = require('node-fetch')
 const { URLSearchParams } = require('url')
 const moment = require('moment')
+const { GOLD_DENIAL } = require('./helpers/gold-gate')
 
 /**
  * @typedef {Object} Event
@@ -109,11 +110,9 @@ module.exports = function (robot) {
     }
 
     if (!robot.golden.isGold(msg.message.user.name)) {
-      const text =
-        'Esta funcionalidad es exclusiva para socios golden :monea: de devsChile. Dona en www.devschile.cl para participar de este selecto grupo :huemul-patitas: .'
       options.attachments.push({
-        fallback: text,
-        text,
+        fallback: GOLD_DENIAL,
+        text: GOLD_DENIAL,
         title: 'Estado del tránsito:',
       })
       return send(options)

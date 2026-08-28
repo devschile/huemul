@@ -12,6 +12,8 @@
 
 const cheerio = require('cheerio')
 const DEFAULT_LANGUAGE = 'español'
+const { GOLD_DENIAL } = require('./helpers/gold-gate')
+
 const LANGUAGES = {
   español: 'es',
   ingles: 'en',
@@ -78,9 +80,7 @@ module.exports = function (robot) {
         }
       })
     } else {
-      msg.send(
-        'Esta funcionalidad es exclusiva para socios golden :monea: de devsChile. Dona en www.devschile.cl para unirte y utilizarla.'
-      )
+      msg.send(GOLD_DENIAL)
     }
   })
 }

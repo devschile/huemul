@@ -14,15 +14,19 @@
 // Authors:
 //   @jorgeepunan @hectorpalmatellez
 
-const SUPPORT_AMOUNT = process.env.SUBSCRIPTION_AMOUNT || 'US$5'
+const SUPPORT_AMOUNT = process.env.SUBSCRIPTION_AMOUNT || '$4.000'
 const PAYMENT_METHODS = new Map([
   [
-    'Suscripción',
-    'Usamos Reveniu para recibir <https://app.reveniu.com/checkout-custom-link/9VamNpRD9b0LNZ3N4NAl2MG5TyY98zln| suscripciones con tarjetas de crédito y débito>. Puedes elegir entre un <https://app.reveniu.com/checkout-custom-link/X6wYvaeZJ4RDFJFKEF93bTBEUOXhTUVV|pago único> o una <https://app.reveniu.com/checkout-custom-link/9VamNpRD9b0LNZ3N4NAl2MG5TyY98zln|suscripción mensual>.'
+    'devsChile gold',
+    'Hazte socio en <https://gold.devschile.cl|gold.devschile.cl>: pagas con tarjeta o débito, quedas con cuenta propia y la membresía se activa sola.'
+  ],
+  [
+    'Suscripción mensual',
+    'Si prefieres que se renueve solo, la <https://app.reveniu.com/checkout-custom-link/9VamNpRD9b0LNZ3N4NAl2MG5TyY98zln|suscripción mensual por Reveniu> sigue disponible y también te deja como socio gold.'
   ],
   [
     'Transferencia',
-    `Puedes transferir en pesos chilenos lo equivalente a ${SUPPORT_AMOUNT} a través de la cuenta de :devschile:, escríbele a un admin para que te dé la info bancaria.`
+    `Puedes transferir ${SUPPORT_AMOUNT} en pesos chilenos a través de la cuenta de :devschile:, escríbele a un admin para que te dé la info bancaria.`
   ]
 ])
 

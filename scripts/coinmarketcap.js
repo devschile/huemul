@@ -15,37 +15,32 @@
 //   @hectorpalmatellez
 
 const CLP = require('numbertoclpformater').numberToCLPFormater
+const { GOLD_DENIAL } = require('./helpers/gold-gate')
 
 module.exports = function (robot) {
   robot.respond(/(cmc|coinmarketcap) (.*)/i, function (msg) {
+    if (!robot.golden.isGold(msg.message.user.name)) {
+      return msg.send(GOLD_DENIAL)
+    }
+
     const currency = msg.match[2]
+    if (currency === 'help') {
+      return msg.send('Ejemplos de comando: \n * `huemul coinmarketcap bitcoin` \n * `huemul cmc htmlcoin`')
+    }
+
     const url = `https://api.coinmarketcap.com/v1/ticker/${currency}/?convert=CLP`
 
     robot.http(url).get()(function (err, res, body) {
-      if (robot.golden.isGold(msg.message.user.name)) {
-        if (currency === 'help') {
-          msg.send('Ejemplos de comando: \n * `huemul coinmarketcap bitcoin` \n * `huemul cmc htmlcoin`')
-        } else {
-          if (err || res.statusCode !== 200) {
-            msg.send(`Moneda no encontrada. Para ejemplos usa \`${msg.match[1]} help\``)
-          } else {
-            res.setEncoding('utf-8')
-            const data = JSON.parse(body)
-            if (data) {
-              return (() => {
-                const priceCLP = CLP(data[0].price_clp, 'CLP$', true)
-                msg.send(`1 *${currency}* está a ${priceCLP} según Coinmarketcap.`)
-              })()
-            } else {
-              msg.send('ERROR')
-            }
-          }
-        }
-      } else {
-        msg.send(
-          'Esta funcionalidad es exclusiva para socios golden :monea: de devsChile. Dona en www.devschile.cl para unirte y utilizarla.'
-        )
+      if (err || res.statusCode !== 200) {
+        return msg.send(`Moneda no encontrada. Para ejemplos usa \`${msg.match[1]} help\``)
       }
+      res.setEncoding('utf-8')
+      const data = JSON.parse(body)
+      if (!data) {
+        return msg.send('ERROR')
+      }
+      const priceCLP = CLP(data[0].price_clp, 'CLP$', true)
+      msg.send(`1 *${currency}* está a ${priceCLP} según Coinmarketcap.`)
     })
   })
 }
