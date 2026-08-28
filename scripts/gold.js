@@ -8,12 +8,12 @@
 //   GOLD_API_URL, GOLD_API_TOKEN, GOLD_SYNC_SECRET, GOLD_CHANNEL
 //
 // Commands:
-//   hubot gold status <name> - Verificar si un usuario posee la membresía gold
+//   hubot gold status <name> - Verificar si un usuario posee la membresía gold (de terceros: admin o rol gold)
 //   hubot gold insert <key> - Agregar una gold key para ser un miembro gold
-//   hubot gold add <user> [days] - Dar la membresía gold a un usuario
-//   hubot gold remove <user> - Quitar la membresía gold a un usuario
+//   hubot gold add <user> [days] - Dar la membresía gold a un usuario (admin o rol gold)
+//   hubot gold remove <user> - Quitar la membresía gold a un usuario (admin o rol gold)
 //   hubot gold link <code> - Vincular tu cuenta de devsChile con Slack
-//   hubot gold list - Listar todos los miembros gold
+//   hubot gold list - Listar todos los miembros gold (admin o rol gold)
 //
 // Author:
 //   @lgaticaq
@@ -121,6 +121,14 @@ module.exports = robot => {
   }
 
   robot.golden = new Golden()
+
+  const NOT_ALLOWED = 'Necesitas ser admin o tener el rol `gold` :monea: para usar este comando.'
+
+  const canManageGold = user => {
+    const auth = robot.auth
+    if (!auth) return false
+    return Boolean(auth.isAdmin(user) || auth.hasRole(user, 'gold'))
+  }
 
   const normalizeProjection = payload => {
     if (!payload || typeof payload !== 'object' || !Array.isArray(payload.members)) return null
@@ -305,6 +313,9 @@ module.exports = robot => {
 
   robot.respond(/gold status (\S+)/i, res => {
     const name = res.match[1].replace(/^@/, '')
+    if (name !== res.message.user.name && !canManageGold(res.message.user)) {
+      return res.send(NOT_ALLOWED)
+    }
     const member = findMember(name)
     if (!member) return res.send(`${name} no es gold :monea:`)
     const date = formatDate(member.paidThrough)
@@ -316,6 +327,7 @@ module.exports = robot => {
   })
 
   robot.respond(/gold list\s*$/i, res => {
+    if (!canManageGold(res.message.user)) return res.send(NOT_ALLOWED)
     const projection = readProjection()
     const members = (projection && Array.isArray(projection.members)) ? projection.members : []
     const names = members.filter(member => isActive(member)).map(member => member.handle)
@@ -345,16 +357,12 @@ module.exports = robot => {
   })
 
   robot.respond(/gold add (.+)/i, res => {
-    const isAdmin = robot.auth.isAdmin(res.message.user)
-    const hasRole = robot.auth.hasRole(res.message.user, 'gold')
-    if (!isAdmin && !hasRole) return
+    if (!canManageGold(res.message.user)) return res.send(NOT_ALLOWED)
     grantMembership(res)
   })
 
   robot.respond(/gold remove (.+)/i, res => {
-    const isAdmin = robot.auth.isAdmin(res.message.user)
-    const hasRole = robot.auth.hasRole(res.message.user, 'gold')
-    if (!isAdmin && !hasRole) return
+    if (!canManageGold(res.message.user)) return res.send(NOT_ALLOWED)
     revokeMembership(res)
   })
 

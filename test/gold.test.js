@@ -437,16 +437,18 @@ test.serial('gold add keya la idempotencia en el id del mensaje de Slack', async
   t.is(sentRef, 'add:1712345678.000100')
 })
 
-test.serial('gold add ignora a quien no tiene permisos', async t => {
+test.serial('gold add y gold remove responden a quien no tiene permisos', async t => {
   absorbAutoRefresh()
   mockSlack()
   const room = createRoom(t)
   room.robot.auth = { isAdmin: () => false, hasRole: () => false }
 
-  const before = hubotMessages(room).length
   room.user.say('user', 'hubot gold add bob 15')
-  await delay(150)
-  t.is(hubotMessages(room).length, before)
+  await waitUntil(() => hubotMessages(room).some(text => text.includes('Necesitas ser admin')))
+  room.user.say('user', 'hubot gold remove bob')
+  await waitUntil(() => hubotMessages(room).filter(text => text.includes('Necesitas ser admin')).length === 2)
+
+  t.is(hubotMessages(room).filter(text => text.includes('Necesitas ser admin')).length, 2)
 })
 
 test.serial('gold remove acepta username plano y mención <@U123>', async t => {
@@ -509,6 +511,7 @@ test.serial('gold link vincula la cuenta', async t => {
 test.serial('gold status y gold list son lecturas puras de la proyección local', async t => {
   blockAutoRefresh()
   const room = createRoom(t)
+  room.robot.auth = { isAdmin: () => true, hasRole: () => false }
   room.robot.brain.set('gold_projection', projectionOf([
     { handle: 'alice', paidThrough: '2027-03-15T12:00:00.000Z' },
     { handle: 'bob', paidThrough: '2020-01-01T03:00:00.000Z' }
@@ -531,9 +534,30 @@ test.serial('gold status y gold list son lecturas puras de la proyección local'
 
   blockAutoRefresh()
   const emptyRoom = createRoom(t)
+  emptyRoom.robot.auth = { isAdmin: () => true, hasRole: () => false }
   emptyRoom.user.say('user', 'hubot gold list')
   await waitUntil(() => hubotMessages(emptyRoom).length >= 1)
   t.deepEqual(hubotMessages(emptyRoom)[0], 'No hay usuarios gold :monea:')
+})
+
+test.serial('gold status deja consultarse a uno mismo, pero no el padrón ajeno', async t => {
+  blockAutoRefresh()
+  const room = createRoom(t)
+  room.robot.auth = { isAdmin: () => false, hasRole: () => false }
+  room.robot.brain.set('gold_projection', projectionOf([
+    { handle: 'user', paidThrough: '2027-03-15T12:00:00.000Z' },
+    { handle: 'alice', paidThrough: '2027-03-15T12:00:00.000Z' }
+  ]))
+
+  room.user.say('user', 'hubot gold status user')
+  await waitUntil(() => hubotMessages(room).some(text => text.includes('user es gold')))
+
+  room.user.say('user', 'hubot gold status alice')
+  await waitUntil(() => hubotMessages(room).some(text => text.includes('Necesitas ser admin')))
+  room.user.say('user', 'hubot gold list')
+  await waitUntil(() => hubotMessages(room).filter(text => text.includes('Necesitas ser admin')).length === 2)
+
+  t.false(hubotMessages(room).some(text => text.includes('alice es gold')))
 })
 
 test.serial('/gold/webhook legado responde 410', async t => {
