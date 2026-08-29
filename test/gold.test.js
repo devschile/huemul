@@ -111,37 +111,50 @@ test.serial('carga con el maestro inaccesible y isGold responde false sin lanzar
   const room = createRoom(t)
   t.is(typeof room.robot.golden.isGold, 'function')
   await delay(100)
-  t.false(room.robot.golden.isGold('someone'))
+  t.false(room.robot.golden.isGold({ id: 'USOMEONE', name: 'someone' }))
 })
 
 test.serial('hidrata la proyección persistida en el brain', async t => {
   blockAutoRefresh()
   const room = createRoom(t)
   room.robot.brain.set('gold_projection', projectionOf([
-    { handle: 'alice', paidThrough: iso(10 * DAY) },
-    { handle: 'bob', paidThrough: iso(-10 * DAY) }
+    { slackId: 'UALICE', handle: 'alice', paidThrough: iso(10 * DAY) },
+    { slackId: 'UBOB', handle: 'bob', paidThrough: iso(-10 * DAY) }
   ]))
-  t.true(room.robot.golden.isGold('alice'))
-  t.false(room.robot.golden.isGold('bob'))
-  t.false(room.robot.golden.isGold('carol'))
+  t.true(room.robot.golden.isGold({ id: 'UALICE', name: 'alice' }))
+  t.false(room.robot.golden.isGold({ id: 'UBOB', name: 'bob' }))
+  t.false(room.robot.golden.isGold({ id: 'UCAROL', name: 'carol' }))
 
   const roomB = createRoom(t)
   roomB.robot.brain.set('gold_projection', JSON.stringify(projectionOf([
-    { handle: 'alice', paidThrough: iso(10 * DAY) }
+    { slackId: 'UALICE', handle: 'alice', paidThrough: iso(10 * DAY) }
   ])))
-  t.true(roomB.robot.golden.isGold('alice'))
+  t.true(roomB.robot.golden.isGold({ id: 'UALICE', name: 'alice' }))
 })
 
-test.serial('refresh exitoso reemplaza la proyección y el fallo conserva la última buena', async t => {
-  mockProjection([{ handle: 'carol', paidThrough: iso(30 * DAY) }])
+test.serial('isGold autoriza por Slack ID aunque el usuario haya cambiado de handle', async t => {
+  blockAutoRefresh()
+  const room = createRoom(t)
+  room.robot.brain.set('gold_projection', projectionOf([
+    { slackId: 'UALICE', handle: 'alice-antigua', paidThrough: iso(10 * DAY) }
+  ]))
+
+  t.true(room.robot.golden.isGold({ id: 'UALICE', name: 'alice-actual' }))
+  t.false(room.robot.golden.isGold({ id: 'UOTRA', name: 'alice-antigua' }))
+  t.false(room.robot.golden.isGold('alice-antigua'))
+})
+
+test.serial('refresh exitoso conserva la id de Slack y el fallo conserva la última buena', async t => {
+  mockProjection([{ slackId: 'UCAROL', handle: 'carol', paidThrough: iso(30 * DAY) }])
   // httpd + /gold/sync is the only way to force a refresh from a test: the poll
   // is 60s away and brain.emit('loaded') is deliberately inert after boot.
   const room = createRoom(t, { httpd: true })
   await waitUntil(() => room.robot.server && room.robot.server.listening)
   const base = `http://127.0.0.1:${room.robot.server.address().port}`
 
-  await waitUntil(() => room.robot.golden.isGold('carol'))
+  await waitUntil(() => room.robot.golden.isGold({ id: 'UCAROL', name: 'carol' }))
   const stored = room.robot.brain.get('gold_projection')
+  t.is(stored.members[0].slackId, 'UCAROL')
   t.is(stored.members[0].handle, 'carol')
 
   const failing = nock('http://gold.test')
@@ -155,7 +168,7 @@ test.serial('refresh exitoso reemplaza la proyección y el fallo conserva la úl
   t.is(response.status, 502)
   t.true(failing.isDone())
   // Un maestro caído nunca revoca a nadie.
-  t.true(room.robot.golden.isGold('carol'))
+  t.true(room.robot.golden.isGold({ id: 'UCAROL', name: 'carol' }))
   t.is(room.robot.brain.get('gold_projection').members[0].handle, 'carol')
 })
 
@@ -163,11 +176,11 @@ test.serial('el handler de brain loaded no se re-entra a sí mismo', async t => 
   // Brain#set re-emite 'loaded'. Sin la guarda, escribir la proyección
   // disparaba otro refresh, que volvía a escribir: un bucle de requests contra
   // el maestro sin fin. Solo el PRIMER interceptor puede consumirse.
-  const first = mockProjection([{ handle: 'zoe', paidThrough: iso(5 * DAY) }])
-  const second = mockProjection([{ handle: 'zoe', paidThrough: iso(9 * DAY) }])
+  const first = mockProjection([{ slackId: 'UZOE', handle: 'zoe', paidThrough: iso(5 * DAY) }])
+  const second = mockProjection([{ slackId: 'UZOE', handle: 'zoe', paidThrough: iso(9 * DAY) }])
 
   const room = createRoom(t)
-  await waitUntil(() => room.robot.golden.isGold('zoe'))
+  await waitUntil(() => room.robot.golden.isGold({ id: 'UZOE', name: 'zoe' }))
   await delay(200)
   t.true(first.isDone())
   t.false(second.isDone())
@@ -179,12 +192,12 @@ test.serial('el handler de brain loaded no se re-entra a sí mismo', async t => 
 })
 
 test.serial('no reescribe el brain cuando la proyección no cambió', async t => {
-  const members = [{ handle: 'nora', paidThrough: iso(12 * DAY) }]
+  const members = [{ slackId: 'UNORA', handle: 'nora', paidThrough: iso(12 * DAY) }]
   mockProjection(members)
   const room = createRoom(t, { httpd: true })
   await waitUntil(() => room.robot.server && room.robot.server.listening)
   const base = `http://127.0.0.1:${room.robot.server.address().port}`
-  await waitUntil(() => room.robot.golden.isGold('nora'))
+  await waitUntil(() => room.robot.golden.isGold({ id: 'UNORA', name: 'nora' }))
 
   // brain.set ensucia el brain completo y hubot-mongodb-brain persiste TODO,
   // así que un payload idéntico no debe escribir nada.
@@ -204,7 +217,7 @@ test.serial('no reescribe el brain cuando la proyección no cambió', async t =>
   t.is(writes, 0)
 
   // Un payload distinto sí se escribe.
-  mockProjection([{ handle: 'nora', paidThrough: iso(40 * DAY) }])
+  mockProjection([{ slackId: 'UNORA', handle: 'nora', paidThrough: iso(40 * DAY) }])
   response = await fetch(`${base}/gold/sync`, {
     method: 'POST',
     headers: { authorization: 'Bearer sync-secret' }
@@ -220,7 +233,7 @@ test.serial('POST /gold/sync exige el secreto y dispara refresh con el correcto'
   const port = room.robot.server.address().port
   const base = `http://127.0.0.1:${port}`
 
-  const scope = mockProjection([{ handle: 'dave', paidThrough: iso(5 * DAY) }])
+  const scope = mockProjection([{ slackId: 'UDAVE', handle: 'dave', paidThrough: iso(5 * DAY) }])
 
   let response = await fetch(`${base}/gold/sync`, { method: 'POST' })
   t.is(response.status, 401)
@@ -239,7 +252,7 @@ test.serial('POST /gold/sync exige el secreto y dispara refresh con el correcto'
   })
   t.is(response.status, 204)
   await waitUntil(() => scope.isDone())
-  await waitUntil(() => room.robot.golden.isGold('dave'))
+  await waitUntil(() => room.robot.golden.isGold({ id: 'UDAVE', name: 'dave' }))
 })
 
 test.serial('el anuncio pagina conversations.list y prefiere el canal configurado a random', async t => {
@@ -292,7 +305,7 @@ test.serial('POST /gold/sync comparte un refresh en curso entre pushes simultán
   const port = room.robot.server.address().port
   const base = `http://127.0.0.1:${port}`
 
-  const scope = mockProjection([{ handle: 'erin', paidThrough: iso(5 * DAY) }])
+  const scope = mockProjection([{ slackId: 'UERIN', handle: 'erin', paidThrough: iso(5 * DAY) }])
 
   const [a, b] = await Promise.all([
     fetch(`${base}/gold/sync`, { method: 'POST', headers: { authorization: 'Bearer sync-secret' } }),
@@ -300,7 +313,7 @@ test.serial('POST /gold/sync comparte un refresh en curso entre pushes simultán
   ])
   t.is(a.status, 204)
   t.is(b.status, 204)
-  await waitUntil(() => room.robot.golden.isGold('erin'))
+  await waitUntil(() => room.robot.golden.isGold({ id: 'UERIN', name: 'erin' }))
   t.true(scope.isDone())
 })
 
@@ -513,8 +526,8 @@ test.serial('gold status y gold list son lecturas puras de la proyección local'
   const room = createRoom(t)
   room.robot.auth = { isAdmin: () => true, hasRole: () => false }
   room.robot.brain.set('gold_projection', projectionOf([
-    { handle: 'alice', paidThrough: '2027-03-15T12:00:00.000Z' },
-    { handle: 'bob', paidThrough: '2020-01-01T03:00:00.000Z' }
+    { slackId: 'UALICE', handle: 'alice', paidThrough: '2027-03-15T12:00:00.000Z' },
+    { slackId: 'UBOB', handle: 'bob', paidThrough: '2020-01-01T03:00:00.000Z' }
   ]))
   const snapshot = JSON.stringify(room.robot.brain.get('gold_projection'))
 
@@ -545,8 +558,8 @@ test.serial('gold status deja consultarse a uno mismo, pero no el padrón ajeno'
   const room = createRoom(t)
   room.robot.auth = { isAdmin: () => false, hasRole: () => false }
   room.robot.brain.set('gold_projection', projectionOf([
-    { handle: 'user', paidThrough: '2027-03-15T12:00:00.000Z' },
-    { handle: 'alice', paidThrough: '2027-03-15T12:00:00.000Z' }
+    { slackId: 'user', handle: 'user', paidThrough: '2027-03-15T12:00:00.000Z' },
+    { slackId: 'UALICE', handle: 'alice', paidThrough: '2027-03-15T12:00:00.000Z' }
   ]))
 
   room.user.say('user', 'hubot gold status user')

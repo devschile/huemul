@@ -95,24 +95,30 @@ module.exports = robot => {
     if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false
     // Both sides come from normalizeProjection, and the master sorts by handle,
     // so a positional comparison is enough.
-    return a.every((member, i) => member.handle === b[i].handle && member.paidThrough === b[i].paidThrough)
+    return a.every((member, i) =>
+      member.slackId === b[i].slackId &&
+      member.handle === b[i].handle &&
+      member.paidThrough === b[i].paidThrough)
   }
 
-  const findMember = name => {
+  const findMember = target => {
     const projection = readProjection()
     if (!projection || !Array.isArray(projection.members)) return null
-    return projection.members.find(member => member && member.handle === name) || null
+    const identity = typeof target === 'string' ? { handle: target } : target
+    const slackId = identity && identity.slackId
+    const handle = identity && identity.handle
+    if (slackId) {
+      return projection.members.find(member => member && member.slackId === slackId) || null
+    }
+    return (handle && projection.members.find(member => member && member.handle === handle)) || null
   }
 
   class Golden {
-    /**
-     * Verifica si un determinado usuario es gold
-     * @param  {String}  name
-     * @return {Boolean}
-     */
-    isGold (name) {
+    isGold (user) {
       try {
-        const member = findMember(name)
+        const slackId = user && typeof user === 'object' && user.id
+        if (!slackId) return false
+        const member = findMember({ slackId })
         return isActive(member)
       } catch (err) {
         return false
@@ -136,7 +142,9 @@ module.exports = robot => {
     for (const member of payload.members) {
       const paidThrough = member && (member.paidThrough || member.paid_through)
       if (member && typeof member.handle === 'string' && paidThrough) {
-        members.push({ handle: member.handle, paidThrough })
+        const slackId = member.slackId || member.slack_id
+        if (typeof slackId !== 'string' || !slackId) continue
+        members.push({ slackId, handle: member.handle, paidThrough })
       }
     }
     return {

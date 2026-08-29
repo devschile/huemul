@@ -29,7 +29,7 @@ const admins = process.env.HUBOT_AUTH_ADMIN ? process.env.HUBOT_AUTH_ADMIN.split
 function checkRateLimit (robot, res) {
   const rateLimitTime = robot.brain.get('GPTrateLimitTime') || 0
   const rateLimit = robot.brain.get('GPTrateLimit') || {}
-  const timeLimit = robot.golden.isGold(res.message.user.name) ? rateLimitTime / 2 : rateLimitTime
+  const timeLimit = robot.golden.isGold(res.message.user) ? rateLimitTime / 2 : rateLimitTime
   const now = new Date()
   const user = res.message.user.id
   if (rateLimit[user] && rateLimit[user] > now && admins.indexOf(user) === -1) {

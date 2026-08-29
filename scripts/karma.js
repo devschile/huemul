@@ -34,7 +34,7 @@ module.exports = robot => {
       robot.brain.save()
       return true
     } else {
-      const limit1 = robot.golden.isGold(user.name) ? 15 : 60
+      const limit1 = robot.golden.isGold(user) ? 15 : 60
       const limit2 = limit1 - 1
       const oldDate = karmaLimits[user.id][victim.id]
       const timePast = Math.round(new Date().getTime() - oldDate.getTime()) / 60000
