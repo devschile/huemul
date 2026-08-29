@@ -143,11 +143,9 @@ module.exports = robot => {
     const members = []
     for (const member of payload.members) {
       const paidThrough = member && (member.paidThrough || member.paid_through)
-      if (member && typeof member.handle === 'string' && paidThrough) {
-        const slackId = member.slackId || member.slack_id
-        if (typeof slackId !== 'string' || !slackId) continue
-        members.push({ slackId, handle: member.handle, paidThrough })
-      }
+      const slackId = member && (member.slackId || member.slack_id)
+      if (!member || typeof member.handle !== 'string' || !paidThrough || typeof slackId !== 'string' || !slackId) return null
+      members.push({ slackId, handle: member.handle, paidThrough })
     }
     return {
       version: typeof payload.version === 'number' ? payload.version : 0,
@@ -262,7 +260,8 @@ module.exports = robot => {
       if (!identity || !['hubot', 'slack'].includes(identity.handleSource) || !slackId || !handle) continue
       next[slackId] = { handle, resolvedAt }
       if (identity.handleSource === 'slack' && typeof robot.brain.userForId === 'function') {
-        robot.brain.userForId(slackId).name = handle
+        const user = robot.brain.userForId(slackId)
+        if (user) user.name = handle
       }
       changed = true
     }
