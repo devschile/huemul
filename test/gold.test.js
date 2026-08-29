@@ -562,7 +562,7 @@ test.serial('gold link vincula la cuenta', async t => {
   t.true(failingScope.isDone())
 })
 
-test.serial('gold status y gold list son lecturas puras de la proyección local', async t => {
+test.serial('gold status y gold list muestran usernames actuales usando las ids de la proyección', async t => {
   blockAutoRefresh()
   const room = createRoom(t)
   room.robot.auth = { isAdmin: () => true, hasRole: () => false }
@@ -570,21 +570,28 @@ test.serial('gold status y gold list son lecturas puras de la proyección local'
     { slackId: 'UALICE', handle: 'alice', paidThrough: '2027-03-15T12:00:00.000Z' },
     { slackId: 'UBOB', handle: 'bob', paidThrough: '2020-01-01T03:00:00.000Z' }
   ]))
-  const snapshot = JSON.stringify(room.robot.brain.get('gold_projection'))
+  const projectionBefore = JSON.stringify(room.robot.brain.get('gold_projection'))
+  mockUserInfo('UALICE', 'alice-actual')
+  mockUserInfo('UBOB', 'bob-actual')
 
   room.user.say('user', 'hubot gold status alice')
-  room.user.say('user', 'hubot gold status bob')
+  await waitUntil(() => hubotMessages(room).length >= 1)
+  room.user.say('user', 'hubot gold status <@UBOB>')
+  await waitUntil(() => hubotMessages(room).length >= 2)
   room.user.say('user', 'hubot gold status nobody')
+  await waitUntil(() => hubotMessages(room).length >= 3)
   room.user.say('user', 'hubot gold list')
   await waitUntil(() => hubotMessages(room).length >= 4)
 
   const messages = hubotMessages(room)
-  t.deepEqual(messages[0], 'alice es gold :monea: hasta el 2027-03-15')
-  t.deepEqual(messages[1], 'bob ya no es gold :monea:, expiró el 2020-01-01')
+  t.deepEqual(messages[0], 'alice-actual es gold :monea: hasta el 2027-03-15')
+  t.deepEqual(messages[1], 'bob-actual ya no es gold :monea:, expiró el 2020-01-01')
   t.deepEqual(messages[2], 'nobody no es gold :monea:')
-  t.deepEqual(messages[3], 'alice')
+  t.deepEqual(messages[3], 'alice-actual')
 
-  t.deepEqual(JSON.stringify(room.robot.brain.get('gold_projection')), snapshot)
+  t.is(JSON.stringify(room.robot.brain.get('gold_projection')), projectionBefore)
+  t.is(room.robot.brain.get('gold_slack_handles').UALICE.handle, 'alice-actual')
+  t.is(room.robot.brain.get('gold_slack_handles').UBOB.handle, 'bob-actual')
 
   blockAutoRefresh()
   const emptyRoom = createRoom(t)
@@ -594,7 +601,119 @@ test.serial('gold status y gold list son lecturas puras de la proyección local'
   t.deepEqual(hubotMessages(emptyRoom)[0], 'No hay usuarios gold :monea:')
 })
 
-test.serial('gold status usa la id del adaptador y respeta permisos', async t => {
+test.serial('gold status persiste el username resuelto y gold list no repite users.info', async t => {
+  blockAutoRefresh()
+  const room = createRoom(t)
+  room.robot.auth = { isAdmin: () => true, hasRole: () => false }
+  room.robot.brain.set('gold_projection', projectionOf([
+    { slackId: 'UALICE', handle: 'alice-antigua', paidThrough: '2027-03-15T12:00:00.000Z' }
+  ]))
+  const lookup = mockUserInfo('UALICE', 'alice-actual')
+
+  room.user.say('user', 'hubot gold status <@UALICE>')
+  await waitUntil(() => hubotMessages(room).some(text => text.includes('alice-actual es gold')))
+  room.user.say('user', 'hubot gold list')
+  await waitUntil(() => hubotMessages(room).length >= 2)
+
+  t.true(lookup.isDone())
+  t.deepEqual(hubotMessages(room).slice(0, 2), [
+    'alice-actual es gold :monea: hasta el 2027-03-15',
+    'alice-actual'
+  ])
+  t.is(room.robot.brain.get('gold_slack_handles').UALICE.handle, 'alice-actual')
+})
+
+test.serial('gold status y gold list responden si falla la resolución de usernames', async t => {
+  blockAutoRefresh()
+  const room = createRoom(t)
+  room.robot.auth = { isAdmin: () => true, hasRole: () => false }
+  room.robot.brain.set('gold_projection', projectionOf([
+    { slackId: 'UALICE', handle: 'alice', paidThrough: '2027-03-15T12:00:00.000Z' }
+  ]))
+  room.robot.brain.users = () => { throw new Error('brain cache unavailable') }
+  room.robot.on('error', () => {})
+
+  room.user.say('user', 'hubot gold status <@UALICE>')
+  await waitUntil(() => hubotMessages(room).some(text => text.includes('No pude consultar el estado gold')))
+  room.user.say('user', 'hubot gold list')
+  await waitUntil(() => hubotMessages(room).some(text => text.includes('No pude listar los usuarios gold')))
+
+  t.true(hubotMessages(room).some(text => text.includes('No pude consultar el estado gold')))
+  t.true(hubotMessages(room).some(text => text.includes('No pude listar los usuarios gold')))
+})
+
+test.serial('gold status y gold list contienen fallos al leer la proyección', async t => {
+  blockAutoRefresh()
+  const room = createRoom(t)
+  room.robot.auth = { isAdmin: () => true, hasRole: () => false }
+  const realGet = room.robot.brain.get.bind(room.robot.brain)
+  room.robot.brain.get = key => {
+    if (key === 'gold_projection') throw new Error('projection unavailable')
+    return realGet(key)
+  }
+  room.robot.on('error', () => {})
+
+  room.user.say('user', 'hubot gold status <@UALICE>')
+  await waitUntil(() => hubotMessages(room).some(text => text.includes('No pude consultar el estado gold')))
+  room.user.say('user', 'hubot gold list')
+  await waitUntil(() => hubotMessages(room).some(text => text.includes('No pude listar los usuarios gold')))
+
+  t.true(hubotMessages(room).some(text => text.includes('No pude consultar el estado gold')))
+  t.true(hubotMessages(room).some(text => text.includes('No pude listar los usuarios gold')))
+})
+
+test.serial('un cache Gold vencido se revalida aunque el cache de Hubot conserve el handle viejo', async t => {
+  blockAutoRefresh()
+  const room = createRoom(t)
+  room.robot.auth = { isAdmin: () => true, hasRole: () => false }
+  room.robot.brain.set('gold_projection', projectionOf([
+    { slackId: 'UALICE', handle: 'alice-antigua', paidThrough: '2027-03-15T12:00:00.000Z' }
+  ]))
+  room.robot.brain.set('gold_slack_handles', {
+    UALICE: { handle: 'alice-antigua', resolvedAt: Date.now() - DAY - 1 }
+  })
+  room.robot.brain.userForId('UALICE').name = 'alice-antigua'
+  const lookup = mockUserInfo('UALICE', 'alice-actual')
+
+  room.user.say('user', 'hubot gold status <@UALICE>')
+  await waitUntil(() => hubotMessages(room).some(text => text.includes('alice-actual es gold')))
+  room.user.say('user', 'hubot gold list')
+  await waitUntil(() => hubotMessages(room).length >= 2)
+
+  t.true(lookup.isDone())
+  t.deepEqual(hubotMessages(room).slice(0, 2), [
+    'alice-actual es gold :monea: hasta el 2027-03-15',
+    'alice-actual'
+  ])
+  t.is(room.robot.brain.get('gold_slack_handles').UALICE.handle, 'alice-actual')
+})
+
+test.serial('gold list agrupa el cache de handles y no modifica la proyección', async t => {
+  blockAutoRefresh()
+  const room = createRoom(t)
+  room.robot.auth = { isAdmin: () => true, hasRole: () => false }
+  room.robot.brain.set('gold_projection', projectionOf([
+    { slackId: 'UALICE', handle: 'alice-antigua', paidThrough: '2027-03-15T12:00:00.000Z' },
+    { slackId: 'UBOB', handle: 'bob-antiguo', paidThrough: '2027-03-15T12:00:00.000Z' }
+  ]))
+  room.robot.brain.userForId('UALICE').name = 'alice-actual'
+  room.robot.brain.userForId('UBOB').name = 'bob-actual'
+  const projectionBefore = JSON.stringify(room.robot.brain.get('gold_projection'))
+  let cacheWrites = 0
+  const realSet = room.robot.brain.set.bind(room.robot.brain)
+  room.robot.brain.set = (key, value) => {
+    if (key === 'gold_slack_handles') cacheWrites++
+    return realSet(key, value)
+  }
+
+  room.user.say('user', 'hubot gold list')
+  await waitUntil(() => hubotMessages(room).some(text => text === 'alice-actual, bob-actual'))
+
+  t.is(cacheWrites, 1)
+  t.is(JSON.stringify(room.robot.brain.get('gold_projection')), projectionBefore)
+})
+
+test.serial('gold status usa la id del adaptador, no cae en el handle de otro y respeta permisos', async t => {
   blockAutoRefresh()
   const room = createRoom(t)
   room.robot.auth = { isAdmin: () => false, hasRole: () => false }
@@ -602,6 +721,7 @@ test.serial('gold status usa la id del adaptador y respeta permisos', async t =>
     { slackId: 'UALICE', handle: 'username-actual', paidThrough: '2020-01-01T03:00:00.000Z' },
     { slackId: 'user', handle: 'username-antiguo', paidThrough: '2027-03-15T12:00:00.000Z' }
   ]))
+  room.robot.brain.userForId('user').name = 'username-actual'
 
   room.user.say('user', slackAdapterCommand(
     room,
@@ -618,6 +738,22 @@ test.serial('gold status usa la id del adaptador y respeta permisos', async t =>
   t.false(hubotMessages(room).some(text => text.includes('alice es gold')))
 })
 
+test.serial('gold status conserva el handle guardado si Slack falla y no envía una mención', async t => {
+  blockAutoRefresh()
+  const room = createRoom(t)
+  room.robot.auth = { isAdmin: () => true, hasRole: () => false }
+  room.robot.brain.set('gold_projection', projectionOf([
+    { slackId: 'UFAIL', handle: 'nombre-guardado', paidThrough: '2027-03-15T12:00:00.000Z' }
+  ]))
+  nock('https://slack.com')
+    .post('/api/users.info')
+    .reply(200, { ok: false, error: 'slack_no_disponible' })
+
+  room.user.say('user', 'hubot gold status <@UFAIL>')
+  await waitUntil(() => hubotMessages(room).some(text => text.includes('nombre-guardado es gold')))
+  t.false(hubotMessages(room).some(text => text.includes('<@UFAIL>')))
+})
+
 test.serial('gold status no confía en el label literal para consultar otra identidad', async t => {
   blockAutoRefresh()
   const room = createRoom(t)
@@ -625,9 +761,10 @@ test.serial('gold status no confía en el label literal para consultar otra iden
   room.robot.brain.set('gold_projection', projectionOf([
     { slackId: 'UVICTIMA', handle: 'victima', paidThrough: '2027-03-15T12:00:00.000Z' }
   ]))
+  mockUserInfo('user', 'usuario-actual')
 
   room.user.say('user', 'hubot gold status <@user|victima>')
-  await waitUntil(() => hubotMessages(room).some(text => text.includes('user no es gold')))
+  await waitUntil(() => hubotMessages(room).some(text => text.includes('usuario-actual no es gold')))
   t.false(hubotMessages(room).some(text => text.includes('victima es gold')))
 })
 

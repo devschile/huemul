@@ -23,7 +23,9 @@ const fetch = require('node-fetch')
 const { WebClient } = require('@slack/web-api')
 
 const PROJECTION_KEY = 'gold_projection'
+const SLACK_HANDLE_CACHE_KEY = 'gold_slack_handles'
 const POLL_MS = 60000
+const SLACK_HANDLE_CACHE_TTL_MS = 24 * 60 * 60 * 1000
 const TIMEZONE = 'America/Santiago'
 
 const web = new WebClient(process.env.HUBOT_SLACK_TOKEN)
@@ -236,6 +238,37 @@ module.exports = robot => {
     return normalized
   }
 
+  const readSlackHandleCache = () => {
+    const cache = robot.brain.get(SLACK_HANDLE_CACHE_KEY)
+    return cache && typeof cache === 'object' && !Array.isArray(cache) ? cache : {}
+  }
+
+  const readSlackHandleCacheEntry = slackId => {
+    const entry = readSlackHandleCache()[slackId]
+    if (!entry || typeof entry !== 'object') return null
+    const handle = normalizeSlackHandle(entry.handle, slackId)
+    if (!handle || !Number.isFinite(entry.resolvedAt)) return null
+    return { handle, resolvedAt: entry.resolvedAt }
+  }
+
+  const persistResolvedSlackHandles = identities => {
+    const cache = readSlackHandleCache()
+    const next = Object.assign({}, cache)
+    const resolvedAt = Date.now()
+    let changed = false
+    for (const identity of identities) {
+      const slackId = identity && identity.id
+      const handle = normalizeSlackHandle(identity && identity.handle, slackId)
+      if (!identity || !['hubot', 'slack'].includes(identity.handleSource) || !slackId || !handle) continue
+      next[slackId] = { handle, resolvedAt }
+      if (identity.handleSource === 'slack' && typeof robot.brain.userForId === 'function') {
+        robot.brain.userForId(slackId).name = handle
+      }
+      changed = true
+    }
+    if (changed) robot.brain.set(SLACK_HANDLE_CACHE_KEY, next)
+  }
+
   const plainUserReference = identity => {
     const slackId = identity && (identity.id || identity.slackId)
     const handle = normalizeSlackHandle(identity && identity.handle, slackId)
@@ -304,6 +337,28 @@ module.exports = robot => {
     })
   }
 
+  const resolveCurrentSlackIdentity = target => {
+    if (!target.slackId) return Promise.resolve({ handle: target.handle, handleSource: 'command' })
+    const cacheEntry = readSlackHandleCacheEntry(target.slackId)
+    const users = typeof robot.brain.users === 'function' && robot.brain.users()
+    const hubotUser = users && users[target.slackId]
+    const hubotHandle = normalizeSlackHandle(hubotUser && hubotUser.name, target.slackId)
+    if (hubotHandle && (!cacheEntry || hubotHandle !== cacheEntry.handle)) {
+      return Promise.resolve({ id: target.slackId, handle: hubotHandle, handleSource: 'hubot' })
+    }
+    if (cacheEntry && Date.now() - cacheEntry.resolvedAt < SLACK_HANDLE_CACHE_TTL_MS) {
+      return Promise.resolve({ id: target.slackId, handle: cacheEntry.handle, handleSource: 'gold-cache' })
+    }
+    return fetchSlackIdentity(Object.assign({}, target, {
+      handle: hubotHandle || target.handle
+    }))
+  }
+
+  const handleCommandError = (res, operation, message) => err => {
+    robot.logger.error(`gold: ${operation}: ${err && err.message}`)
+    res.send(message)
+  }
+
   const grantMembership = res => {
     const parsed = parseCommandTarget(res.match[1], res, 'add')
     if (parsed && parsed.invalidDays) return res.send('Los días deben ser un número. Uso: hubot gold add <usuario> [días]')
@@ -362,27 +417,55 @@ module.exports = robot => {
     if (!isSelf && !canManageGold(res.message.user)) {
       return res.send(NOT_ALLOWED)
     }
-    const member = findMember(target)
-    const identity = member
-      ? Object.assign({}, member, { handle: target.handle || member.handle })
-      : target
-    const reference = plainUserReference(identity)
-    if (!member) return res.send(`${reference} no es gold :monea:`)
-    const date = formatDate(member.paidThrough)
-    if (isActive(member)) {
-      res.send(`${reference} es gold :monea: hasta el ${date}`)
-    } else {
-      res.send(`${reference} ya no es gold :monea:, expiró el ${date}`)
+    const sendStatus = (member, identity) => {
+      const reference = plainUserReference(identity)
+      if (!member) return res.send(`${reference} no es gold :monea:`)
+      const date = formatDate(member.paidThrough)
+      if (isActive(member)) {
+        res.send(`${reference} es gold :monea: hasta el ${date}`)
+      } else {
+        res.send(`${reference} ya no es gold :monea:, expiró el ${date}`)
+      }
     }
+    Promise.resolve()
+      .then(() => {
+        const member = findMember(target)
+        const identity = member
+          ? Object.assign({}, member, { handle: target.handle || member.handle })
+          : target
+        return resolveCurrentSlackIdentity(identity).then(identity => ({ member, identity }))
+      })
+      .then(({ member, identity }) => {
+        if (member) persistResolvedSlackHandles([identity])
+        sendStatus(member, identity)
+      })
+      .catch(handleCommandError(
+        res,
+        'falló gold status',
+        'No pude consultar el estado gold ahora mismo :monea:.'
+      ))
   })
 
   robot.respond(/gold list\s*$/i, res => {
     if (!canManageGold(res.message.user)) return res.send(NOT_ALLOWED)
-    const projection = readProjection()
-    const members = (projection && Array.isArray(projection.members)) ? projection.members : []
-    const names = members.filter(member => isActive(member)).map(member => member.handle)
-    if (names.length === 0) return res.send('No hay usuarios gold :monea:')
-    res.send(names.join(', '))
+    Promise.resolve()
+      .then(() => {
+        const projection = readProjection()
+        const members = (projection && Array.isArray(projection.members)) ? projection.members : []
+        const active = members.filter(member => isActive(member))
+        if (active.length === 0) return null
+        return Promise.all(active.map(member => resolveCurrentSlackIdentity(member)))
+      })
+      .then(identities => {
+        if (!identities) return res.send('No hay usuarios gold :monea:')
+        persistResolvedSlackHandles(identities)
+        res.send(identities.map(plainUserReference).join(', '))
+      })
+      .catch(handleCommandError(
+        res,
+        'falló gold list',
+        'No pude listar los usuarios gold ahora mismo :monea:.'
+      ))
   })
 
   robot.respond(/gold insert (.+)/i, res => {
