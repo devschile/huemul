@@ -28,7 +28,7 @@ module.exports = robot => {
 
     allowedChannels = allowedChannels.split(',')
 
-    if (allowedChannels.indexOf('#' + secretoArr[0]) !== -1 || robot.golden.isGold(msg.message.user.name)) {
+    if (allowedChannels.indexOf('#' + secretoArr[0]) !== -1 || robot.golden.isGold(msg.message.user)) {
       channel = '#' + secretoArr.shift()
       secreto = secretoArr.join(' ')
     }

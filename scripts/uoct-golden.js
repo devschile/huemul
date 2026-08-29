@@ -109,7 +109,7 @@ module.exports = function (robot) {
       attachments: [],
     }
 
-    if (!robot.golden.isGold(msg.message.user.name)) {
+    if (!robot.golden.isGold(msg.message.user)) {
       options.attachments.push({
         fallback: GOLD_DENIAL,
         text: GOLD_DENIAL,

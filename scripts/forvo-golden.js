@@ -30,7 +30,7 @@ var detectLanguage = function (phrase) {
 
 module.exports = function (robot) {
   robot.respond(/pronuncia(.*)/i, function (msg) {
-    if (robot.golden.isGold(msg.message.user.name)) {
+    if (robot.golden.isGold(msg.message.user)) {
       const baseURL = 'https://forvo.com/search'
       const palabra = msg.match[1].split(' ')[1]
       const language = detectLanguage(msg.match[1])

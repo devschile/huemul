@@ -19,7 +19,7 @@ const { GOLD_DENIAL } = require('./helpers/gold-gate')
 
 module.exports = function (robot) {
   robot.respond(/(cmc|coinmarketcap) (.*)/i, function (msg) {
-    if (!robot.golden.isGold(msg.message.user.name)) {
+    if (!robot.golden.isGold(msg.message.user)) {
       return msg.send(GOLD_DENIAL)
     }
 

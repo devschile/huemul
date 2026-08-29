@@ -23,7 +23,9 @@ const fetch = require('node-fetch')
 const { WebClient } = require('@slack/web-api')
 
 const PROJECTION_KEY = 'gold_projection'
+const SLACK_HANDLE_CACHE_KEY = 'gold_slack_handles'
 const POLL_MS = 60000
+const SLACK_HANDLE_CACHE_TTL_MS = 24 * 60 * 60 * 1000
 const TIMEZONE = 'America/Santiago'
 
 const web = new WebClient(process.env.HUBOT_SLACK_TOKEN)
@@ -95,24 +97,30 @@ module.exports = robot => {
     if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false
     // Both sides come from normalizeProjection, and the master sorts by handle,
     // so a positional comparison is enough.
-    return a.every((member, i) => member.handle === b[i].handle && member.paidThrough === b[i].paidThrough)
+    return a.every((member, i) =>
+      member.slackId === b[i].slackId &&
+      member.handle === b[i].handle &&
+      member.paidThrough === b[i].paidThrough)
   }
 
-  const findMember = name => {
+  const findMember = target => {
     const projection = readProjection()
     if (!projection || !Array.isArray(projection.members)) return null
-    return projection.members.find(member => member && member.handle === name) || null
+    const identity = typeof target === 'string' ? { handle: target } : target
+    const slackId = identity && identity.slackId
+    const handle = identity && identity.handle
+    if (slackId) {
+      return projection.members.find(member => member && member.slackId === slackId) || null
+    }
+    return (handle && projection.members.find(member => member && member.handle === handle)) || null
   }
 
   class Golden {
-    /**
-     * Verifica si un determinado usuario es gold
-     * @param  {String}  name
-     * @return {Boolean}
-     */
-    isGold (name) {
+    isGold (user) {
       try {
-        const member = findMember(name)
+        const slackId = user && typeof user === 'object' && user.id
+        if (!slackId) return false
+        const member = findMember({ slackId })
         return isActive(member)
       } catch (err) {
         return false
@@ -136,7 +144,9 @@ module.exports = robot => {
     for (const member of payload.members) {
       const paidThrough = member && (member.paidThrough || member.paid_through)
       if (member && typeof member.handle === 'string' && paidThrough) {
-        members.push({ handle: member.handle, paidThrough })
+        const slackId = member.slackId || member.slack_id
+        if (typeof slackId !== 'string' || !slackId) continue
+        members.push({ slackId, handle: member.handle, paidThrough })
       }
     }
     return {
@@ -220,10 +230,63 @@ module.exports = robot => {
     return channels
   }
 
-  const announceSubscription = (name, paidThrough) => {
+  const normalizeSlackHandle = (handle, slackId) => {
+    if (typeof handle !== 'string') return null
+    const normalized = handle.trim().replace(/^@/, '')
+    const sentinel = normalized.toLowerCase()
+    if (!normalized || normalized === slackId || sentinel === 'undefined' || sentinel === 'null') return null
+    return normalized
+  }
+
+  const readSlackHandleCache = () => {
+    const cache = robot.brain.get(SLACK_HANDLE_CACHE_KEY)
+    return cache && typeof cache === 'object' && !Array.isArray(cache) ? cache : {}
+  }
+
+  const readSlackHandleCacheEntry = slackId => {
+    const entry = readSlackHandleCache()[slackId]
+    if (!entry || typeof entry !== 'object') return null
+    const handle = normalizeSlackHandle(entry.handle, slackId)
+    if (!handle || !Number.isFinite(entry.resolvedAt)) return null
+    return { handle, resolvedAt: entry.resolvedAt }
+  }
+
+  const persistResolvedSlackHandles = identities => {
+    const cache = readSlackHandleCache()
+    const next = Object.assign({}, cache)
+    const resolvedAt = Date.now()
+    let changed = false
+    for (const identity of identities) {
+      const slackId = identity && identity.id
+      const handle = normalizeSlackHandle(identity && identity.handle, slackId)
+      if (!identity || !['hubot', 'slack'].includes(identity.handleSource) || !slackId || !handle) continue
+      next[slackId] = { handle, resolvedAt }
+      if (identity.handleSource === 'slack' && typeof robot.brain.userForId === 'function') {
+        robot.brain.userForId(slackId).name = handle
+      }
+      changed = true
+    }
+    if (changed) robot.brain.set(SLACK_HANDLE_CACHE_KEY, next)
+  }
+
+  const plainUserReference = identity => {
+    const slackId = identity && (identity.id || identity.slackId)
+    const handle = normalizeSlackHandle(identity && identity.handle, slackId)
+    if (handle) return handle
+    if (typeof slackId === 'string' && slackId) return slackId
+    return 'usuario desconocido'
+  }
+
+  const membershipIdentityPayload = identity => {
+    const payload = { handle: identity.handle }
+    if (identity.id) payload.id = identity.id
+    return payload
+  }
+
+  const announceSubscription = (reference, paidThrough) => {
     const date = formatDate(paidThrough)
     const until = date ? ` hasta el ${date}` : ''
-    const message = `:clap2: *${name}* se suscribió a :huemul:, se lleva un regalito :devschile: y es miembro gold :monea:${until}!`
+    const message = `:clap2: *${reference}* se suscribió a :huemul:, se lleva un regalito :devschile: y es miembro gold :monea:${until}!`
     listChannels().then(channels => {
       const configured = process.env.GOLD_CHANNEL &&
         channels.find(ch => ch.name === process.env.GOLD_CHANNEL)
@@ -238,36 +301,72 @@ module.exports = robot => {
     })
   }
 
-  const parseTarget = input => {
+  const slackIdFromRawCommand = (res, command) => {
+    const message = res && res.message
+    const raw = message && (message.rawText || (message.rawMessage && message.rawMessage.text))
+    if (typeof raw !== 'string') return null
+    const match = raw.match(new RegExp(`\\bgold\\s+${command}\\s+<@([A-Za-z0-9]+)(?:\\|[^>]+)?>`, 'i'))
+    return match && match[1]
+  }
+
+  const parseCommandTarget = (input, res, command) => {
     const tokens = String(input || '').trim().split(/\s+/).filter(Boolean)
     if (tokens.length === 0) return null
     if (tokens.length > 1 && !/^[1-9][0-9]*$/.test(tokens[1])) return { invalidDays: true }
     const days = tokens.length > 1 ? Number(tokens[1]) : undefined
-    const mention = String(tokens[0]).match(/^<@([A-Za-z0-9]+)>$/)
-    if (mention) return { slackId: mention[1], days }
-    return { handle: tokens[0].replace(/^@/, ''), days }
+    const literalMention = String(tokens[0]).match(/^<@([A-Za-z0-9]+)(?:\|[^>]+)?>$/)
+    if (literalMention) return { slackId: literalMention[1], handle: null, days }
+    const slackId = slackIdFromRawCommand(res, command)
+    return {
+      slackId,
+      handle: normalizeSlackHandle(tokens[0], slackId),
+      days
+    }
   }
 
-  const resolveHandle = (res, parsed, fn) => {
-    web.users.info({ user: parsed.slackId }).then(result => {
-      const profile = result.user && result.user.profile
-      const handle = (result.user && result.user.name) ||
-        (profile && profile.display_normalized_name)
-      if (!handle) return res.send('No se encontró el usuario')
-      fn(handle)
+  const fetchSlackIdentity = target => {
+    if (!target.slackId) return Promise.resolve({ handle: target.handle, handleSource: 'command' })
+    return web.users.info({ user: target.slackId }).then(result => {
+      const currentHandle = normalizeSlackHandle(result.user && result.user.name, target.slackId)
+      const handle = currentHandle || normalizeSlackHandle(target.handle, target.slackId)
+      const handleSource = currentHandle ? 'slack' : 'fallback'
+      return { id: target.slackId, handle, handleSource }
     }).catch(err => {
-      robot.logger.error(`gold: no pude resolver el usuario de Slack: ${err && err.message}`)
-      res.send('No se encontró el usuario')
+      robot.logger.warning(`gold: no pude actualizar el username de Slack para ${target.slackId}: ${err && err.message}`)
+      return { id: target.slackId, handle: target.handle, handleSource: 'fallback' }
     })
   }
 
+  const resolveCurrentSlackIdentity = target => {
+    if (!target.slackId) return Promise.resolve({ handle: target.handle, handleSource: 'command' })
+    const cacheEntry = readSlackHandleCacheEntry(target.slackId)
+    const users = typeof robot.brain.users === 'function' && robot.brain.users()
+    const hubotUser = users && users[target.slackId]
+    const hubotHandle = normalizeSlackHandle(hubotUser && hubotUser.name, target.slackId)
+    if (hubotHandle && (!cacheEntry || hubotHandle !== cacheEntry.handle)) {
+      return Promise.resolve({ id: target.slackId, handle: hubotHandle, handleSource: 'hubot' })
+    }
+    if (cacheEntry && Date.now() - cacheEntry.resolvedAt < SLACK_HANDLE_CACHE_TTL_MS) {
+      return Promise.resolve({ id: target.slackId, handle: cacheEntry.handle, handleSource: 'gold-cache' })
+    }
+    return fetchSlackIdentity(Object.assign({}, target, {
+      handle: hubotHandle || target.handle
+    }))
+  }
+
+  const handleCommandError = (res, operation, message) => err => {
+    robot.logger.error(`gold: ${operation}: ${err && err.message}`)
+    res.send(message)
+  }
+
   const grantMembership = res => {
-    const parsed = parseTarget(res.match[1])
+    const parsed = parseCommandTarget(res.match[1], res, 'add')
     if (parsed && parsed.invalidDays) return res.send('Los días deben ser un número. Uso: hubot gold add <usuario> [días]')
     if (!parsed || (!parsed.handle && !parsed.slackId)) return res.send('No entendí a quién agregar :monea:.')
-    const applyGrant = handle => {
-      if (!handle) return res.send('No se encontró el usuario')
-      const slack = parsed.slackId ? { id: parsed.slackId, handle } : { handle }
+    const applyGrant = identity => {
+      if (!identity.handle) return res.send('No pude obtener el username actual de Slack :monea:.')
+      const reference = plainUserReference(identity)
+      const slack = membershipIdentityPayload(identity)
       // Idempotency key: the Slack message id identifies THIS command, so a
       // retried request replays onto the same source_ref and the master's
       // UNIQUE (source, source_ref) turns it into a no-op instead of a second
@@ -276,63 +375,97 @@ module.exports = robot => {
       const body = { slack, grantedBy: res.message.user.name, note: 'bot gold add', ref }
       if (parsed.days) body.days = parsed.days
       postJson('/api/grants', body)
-        .then(result => announceSubscription(handle, paidThroughOf(result)))
+        .then(result => announceSubscription(reference, paidThroughOf(result)))
         .catch(err => {
-          robot.logger.error(`gold: falló el grant para ${handle}: ${err && err.message}`)
-          res.send(`No pude dar la membresía gold a ${handle} ahora mismo :monea:.`)
+          robot.logger.error(`gold: falló el grant para ${reference}: ${err && err.message}`)
+          res.send(`No pude dar la membresía gold a ${reference} ahora mismo :monea:.`)
         })
     }
-    if (parsed.slackId) return resolveHandle(res, parsed, applyGrant)
-    applyGrant(parsed.handle)
+    fetchSlackIdentity(parsed).then(applyGrant)
   }
 
   const revokeMembership = res => {
-    const parsed = parseTarget(res.match[1])
+    const parsed = parseCommandTarget(res.match[1], res, 'remove')
     if (parsed && parsed.invalidDays) return res.send('Uso: hubot gold remove <usuario>')
     if (!parsed || (!parsed.handle && !parsed.slackId)) return res.send('No entendí a quién quitar :monea:.')
-    const revoke = handle => {
-      if (!handle) return res.send('No se encontró el usuario')
-      const slack = parsed.slackId ? { id: parsed.slackId, handle } : { handle }
+    const revoke = identity => {
+      const reference = plainUserReference(identity)
+      const slack = membershipIdentityPayload(identity)
       postJson('/api/grants/revoke', { slack })
         .then(result => {
           // The master answers revoked:false for a member who never had gold
           // (or does not exist at all) — say so instead of claiming a change.
           if (result && result.revoked === false) {
-            return res.send(`${handle} no era miembro gold :monea:`)
+            return res.send(`${reference} no era miembro gold :monea:`)
           }
-          res.send(`${handle} ya no es miembro gold :monea:`)
+          res.send(`${reference} ya no es miembro gold :monea:`)
         })
         .catch(err => {
-          robot.logger.error(`gold: falló la revocación para ${handle}: ${err && err.message}`)
-          res.send(`No pude quitar la membresía gold a ${handle} ahora mismo :monea:`)
+          robot.logger.error(`gold: falló la revocación para ${reference}: ${err && err.message}`)
+          res.send(`No pude quitar la membresía gold a ${reference} ahora mismo :monea:`)
         })
     }
-    if (parsed.slackId) return resolveHandle(res, parsed, revoke)
-    revoke(parsed.handle)
+    fetchSlackIdentity(parsed).then(revoke)
   }
 
   robot.respond(/gold status (\S+)/i, res => {
-    const name = res.match[1].replace(/^@/, '')
-    if (name !== res.message.user.name && !canManageGold(res.message.user)) {
+    const target = parseCommandTarget(res.match[1], res, 'status')
+    if (!target) return res.send('No entendí a quién consultar :monea:.')
+    const isSelf = target.slackId
+      ? target.slackId === res.message.user.id
+      : target.handle === res.message.user.name
+    if (!isSelf && !canManageGold(res.message.user)) {
       return res.send(NOT_ALLOWED)
     }
-    const member = findMember(name)
-    if (!member) return res.send(`${name} no es gold :monea:`)
-    const date = formatDate(member.paidThrough)
-    if (isActive(member)) {
-      res.send(`${name} es gold :monea: hasta el ${date}`)
-    } else {
-      res.send(`${name} ya no es gold :monea:, expiró el ${date}`)
+    const sendStatus = (member, identity) => {
+      const reference = plainUserReference(identity)
+      if (!member) return res.send(`${reference} no es gold :monea:`)
+      const date = formatDate(member.paidThrough)
+      if (isActive(member)) {
+        res.send(`${reference} es gold :monea: hasta el ${date}`)
+      } else {
+        res.send(`${reference} ya no es gold :monea:, expiró el ${date}`)
+      }
     }
+    Promise.resolve()
+      .then(() => {
+        const member = findMember(target)
+        const identity = member
+          ? Object.assign({}, member, { handle: target.handle || member.handle })
+          : target
+        return resolveCurrentSlackIdentity(identity).then(identity => ({ member, identity }))
+      })
+      .then(({ member, identity }) => {
+        if (member) persistResolvedSlackHandles([identity])
+        sendStatus(member, identity)
+      })
+      .catch(handleCommandError(
+        res,
+        'falló gold status',
+        'No pude consultar el estado gold ahora mismo :monea:.'
+      ))
   })
 
   robot.respond(/gold list\s*$/i, res => {
     if (!canManageGold(res.message.user)) return res.send(NOT_ALLOWED)
-    const projection = readProjection()
-    const members = (projection && Array.isArray(projection.members)) ? projection.members : []
-    const names = members.filter(member => isActive(member)).map(member => member.handle)
-    if (names.length === 0) return res.send('No hay usuarios gold :monea:')
-    res.send(names.join(', '))
+    Promise.resolve()
+      .then(() => {
+        const projection = readProjection()
+        const members = (projection && Array.isArray(projection.members)) ? projection.members : []
+        const active = members.filter(member => isActive(member))
+        if (active.length === 0) return null
+        return Promise.all(active.map(member => resolveCurrentSlackIdentity(member)))
+      })
+      .then(identities => {
+        if (!identities) return res.send('No hay usuarios gold :monea:')
+        persistResolvedSlackHandles(identities)
+        res.send(identities.map(plainUserReference).join(', '))
+      })
+      .catch(handleCommandError(
+        res,
+        'falló gold list',
+        'No pude listar los usuarios gold ahora mismo :monea:.'
+      ))
   })
 
   robot.respond(/gold insert (.+)/i, res => {

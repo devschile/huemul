@@ -1,0 +1,160 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 1600 900"
+  preserveAspectRatio="xMidYMid meet"
+  style="display:block;width:100%;height:auto;max-width:1600px;margin-inline:auto"
+  role="img"
+  aria-labelledby="title desc">
+  <title id="title">New Gold implementation flow</title>
+  <desc id="desc">A member identifies through Slack or email, gets Gold through payment, key redemption, or a legacy renewal, and Soy applies one idempotent expiry rule. The resulting membership unlocks Slack Gold access through Huemul and a Gold discount in Tienda.</desc>
+
+  <defs>
+    <pattern id="dot-grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.5" fill="#CBD3E1" opacity="0.42"/>
+    </pattern>
+
+    <filter id="card-shadow" x="-20%" y="-25%" width="140%" height="160%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#53647B" flood-opacity="0.12"/>
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#53647B" flood-opacity="0.08"/>
+    </filter>
+
+    <linearGradient id="blue" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#E5F0FF"/>
+      <stop offset="1" stop-color="#D5E7FF"/>
+    </linearGradient>
+    <linearGradient id="pink" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#FDE8EA"/>
+      <stop offset="1" stop-color="#F9DCDC"/>
+    </linearGradient>
+    <linearGradient id="yellow" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#FFF3C9"/>
+      <stop offset="1" stop-color="#FBE9AD"/>
+    </linearGradient>
+    <linearGradient id="purple" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#EEE9FF"/>
+      <stop offset="1" stop-color="#E1D9FC"/>
+    </linearGradient>
+    <linearGradient id="green" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#E8F8D7"/>
+      <stop offset="1" stop-color="#D8F2BE"/>
+    </linearGradient>
+
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="7.5" refY="4.5" orient="auto" markerUnits="strokeWidth">
+      <path d="M1 1L7.5 4.5L1 8" fill="none" stroke="#617188" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+
+    <style>
+      text {
+        font-family: Inter, "Avenir Next", "Segoe UI", sans-serif;
+        font-style: normal;
+      }
+      .title {
+        fill: #18283F;
+        font-size: 34px;
+        font-weight: 700;
+        letter-spacing: 2.2px;
+      }
+      .heading {
+        fill: #17253A;
+        font-size: 20px;
+        font-weight: 650;
+      }
+      .body {
+        fill: #5E6C81;
+        font-size: 17px;
+        font-weight: 450;
+      }
+      .branch-heading {
+        fill: #17253A;
+        font-size: 18px;
+        font-weight: 650;
+      }
+      .chip {
+        fill: #47566C;
+        font-size: 16px;
+        font-weight: 550;
+      }
+      .connector {
+        fill: none;
+        stroke: #617188;
+        stroke-width: 2.25;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        marker-end: url(#arrow);
+      }
+      .card {
+        fill: #FFFFFF;
+        stroke: #ECF0F6;
+        stroke-width: 1;
+        filter: url(#card-shadow);
+      }
+    </style>
+  </defs>
+
+  <rect width="1600" height="900" fill="#F7F8FC"/>
+  <rect x="120" y="54" width="1360" height="804" rx="38" fill="url(#dot-grid)"/>
+  <ellipse cx="800" cy="455" rx="515" ry="390" fill="#FFFFFF" opacity="0.36"/>
+
+  <text class="title" x="800" y="53" text-anchor="middle">NEW GOLD IMPLEMENTATION</text>
+
+  <path class="connector" d="M800 118V142"/>
+  <path class="connector" d="M800 232V258"/>
+  <path class="connector" d="M800 372V402"/>
+  <path class="connector" d="M800 494V524"/>
+  <path class="connector" d="M800 616V642H490V674"/>
+  <path class="connector" d="M800 616V642H1110V674"/>
+  <path class="connector" d="M490 750V782"/>
+  <path class="connector" d="M1110 750V782"/>
+
+  <rect x="712" y="74" width="176" height="44" rx="22" fill="url(#green)"/>
+  <circle cx="748" cy="96" r="7" fill="none" stroke="#70A844" stroke-width="2"/>
+  <path d="M736 110C738 102 758 102 760 110" fill="none" stroke="#70A844" stroke-width="2" stroke-linecap="round"/>
+  <text class="heading" x="817" y="103" text-anchor="middle">Start</text>
+
+  <rect class="card" x="590" y="142" width="420" height="90" rx="22"/>
+  <rect x="620" y="156" width="360" height="38" rx="19" fill="url(#blue)"/>
+  <circle cx="665" cy="175" r="7" fill="none" stroke="#3E80DD" stroke-width="2"/>
+  <path d="M653 188C655 180 675 180 677 188" fill="none" stroke="#3E80DD" stroke-width="2" stroke-linecap="round"/>
+  <text class="heading" x="815" y="182" text-anchor="middle">Identify the member</text>
+  <text class="body" x="800" y="218" text-anchor="middle">Slack or email</text>
+
+  <rect class="card" x="520" y="258" width="560" height="114" rx="22"/>
+  <rect x="548" y="272" width="504" height="38" rx="19" fill="url(#pink)"/>
+  <text class="heading" x="800" y="298" text-anchor="middle">Get Gold</text>
+
+  <rect x="548" y="323" width="146" height="34" rx="10" fill="#FFF7F7" stroke="#F5C6CA"/>
+  <rect x="727" y="323" width="146" height="34" rx="10" fill="#FFF7F7" stroke="#F5C6CA"/>
+  <rect x="906" y="323" width="146" height="34" rx="10" fill="#FFF7F7" stroke="#F5C6CA"/>
+  <text class="chip" x="621" y="346" text-anchor="middle">Pay</text>
+  <text class="chip" x="800" y="346" text-anchor="middle">Redeem key</text>
+  <text class="chip" x="979" y="346" text-anchor="middle">Legacy renewal</text>
+
+  <rect class="card" x="550" y="402" width="500" height="92" rx="22"/>
+  <rect x="580" y="416" width="440" height="38" rx="19" fill="url(#yellow)"/>
+  <circle cx="650" cy="435" r="9" fill="none" stroke="#C29525" stroke-width="2"/>
+  <path d="M650 422V426M650 444V448M637 435H641M659 435H663" stroke="#C29525" stroke-width="2" stroke-linecap="round"/>
+  <text class="heading" x="814" y="442" text-anchor="middle">Soy applies the grant</text>
+  <text class="body" x="800" y="481" text-anchor="middle">One idempotent expiry rule</text>
+
+  <rect class="card" x="575" y="524" width="450" height="92" rx="22"/>
+  <rect x="603" y="538" width="394" height="38" rx="19" fill="url(#purple)"/>
+  <ellipse cx="657" cy="551" rx="10" ry="4" fill="none" stroke="#6B52C7" stroke-width="2"/>
+  <path d="M647 551V564C647 570 667 570 667 564V551M647 558C647 564 667 564 667 558" fill="none" stroke="#6B52C7" stroke-width="2"/>
+  <text class="heading" x="813" y="564" text-anchor="middle">Gold membership</text>
+  <text class="body" x="800" y="603" text-anchor="middle">Single source of truth</text>
+
+  <rect class="card" x="330" y="674" width="320" height="76" rx="20"/>
+  <rect x="350" y="688" width="280" height="38" rx="19" fill="url(#blue)"/>
+  <path d="M382 714L391 698L400 714ZM397 714L406 702L415 714Z" fill="none" stroke="#3E80DD" stroke-width="2" stroke-linejoin="round"/>
+  <text class="branch-heading" x="502" y="714" text-anchor="middle">Huemul sync</text>
+
+  <rect class="card" x="355" y="782" width="270" height="58" rx="17"/>
+  <text class="body" x="490" y="818" text-anchor="middle">Slack Gold access</text>
+
+  <rect class="card" x="950" y="674" width="320" height="76" rx="20"/>
+  <rect x="970" y="688" width="280" height="38" rx="19" fill="url(#green)"/>
+  <path d="M1003 702H1019L1022 715H1000ZM1007 702V698C1007 691 1017 691 1017 698V702" fill="none" stroke="#70A844" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <text class="branch-heading" x="1132" y="714" text-anchor="middle">Tienda checks status</text>
+
+  <rect class="card" x="975" y="782" width="270" height="58" rx="17"/>
+  <text class="body" x="1110" y="818" text-anchor="middle">Gold discount</text>
+</svg>
