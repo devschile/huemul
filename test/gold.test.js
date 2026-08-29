@@ -768,6 +768,40 @@ test.serial('gold status no confía en el label literal para consultar otra iden
   t.false(hubotMessages(room).some(text => text.includes('victima es gold')))
 })
 
+test.serial('gold status no falla si el brain no puede materializar el usuario', async t => {
+  blockAutoRefresh()
+  const room = createRoom(t)
+  room.robot.auth = { isAdmin: () => true, hasRole: () => false }
+  room.robot.brain.set('gold_projection', projectionOf([
+    { slackId: 'UALICE', handle: 'alice', paidThrough: '2027-03-15T12:00:00.000Z' }
+  ]))
+  mockUserInfo('UALICE', 'alice-actual')
+  room.robot.brain.userForId = () => null
+
+  room.user.say('user', 'hubot gold status <@UALICE>')
+  await waitUntil(() => hubotMessages(room).some(text => text.includes('alice-actual es gold')))
+
+  t.true(hubotMessages(room).some(text => text.includes('alice-actual es gold')))
+})
+
+test.serial('gold sync rechaza una proyección parcial y conserva la última válida', async t => {
+  mockProjection([{ slackId: 'UALICE', handle: 'alice', paidThrough: '2027-03-15T12:00:00.000Z' }])
+  const room = createRoom(t, { httpd: true })
+  await waitUntil(() => room.robot.server && room.robot.server.listening)
+  await waitUntil(() => room.robot.golden.isGold({ id: 'UALICE', name: 'alice' }))
+  const port = room.robot.server.address().port
+
+  mockProjection([{ handle: 'alice', paidThrough: '2027-03-15T12:00:00.000Z' }])
+  const response = await fetch(`http://127.0.0.1:${port}/gold/sync`, {
+    method: 'POST',
+    headers: { authorization: 'Bearer sync-secret' }
+  })
+
+  t.is(response.status, 502)
+  t.true(room.robot.golden.isGold({ id: 'UALICE', name: 'alice' }))
+  t.is(room.robot.brain.get('gold_projection').members[0].slackId, 'UALICE')
+})
+
 test.serial('/gold/webhook legado responde 410', async t => {
   absorbAutoRefresh()
   const room = createRoom(t, { httpd: true })
