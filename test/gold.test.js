@@ -65,6 +65,19 @@ const mockSlack = () =>
 
 const hubotMessages = room => room.messages.filter(message => message[0] === 'hubot').map(message => message[1])
 
+const mockUserInfo = (id, name) =>
+  nock('https://slack.com')
+    .post('/api/users.info')
+    .reply(200, { ok: true, user: { id, name } })
+
+const slackAdapterCommand = (room, text, rawText, id = `${Date.now()}.000100`) => {
+  const user = new Hubot.User('user', { room: room.name })
+  const message = new Hubot.TextMessage(user, text, id)
+  message.rawText = rawText
+  message.rawMessage = { text: rawText, ts: id }
+  return message
+}
+
 test.beforeEach(t => {
   process.env.PORT = '0'
   process.env.GOLD_API_URL = 'http://gold.test'
@@ -317,21 +330,49 @@ test.serial('POST /gold/sync comparte un refresh en curso entre pushes simultán
   t.true(scope.isDone())
 })
 
-test.serial('gold add por mención resuelve el handle desde el perfil si falta el nombre legado', async t => {
+test.serial('gold add usa la id cruda del adaptador y el username normalizado si Slack omite user.name', async t => {
   absorbAutoRefresh()
   mockSlack()
   const room = createRoom(t)
   room.robot.auth = { isAdmin: () => true, hasRole: () => false }
   nock('https://slack.com')
     .post('/api/users.info')
-    .reply(200, { ok: true, user: { id: 'U999', profile: { display_normalized_name: 'dave' } } })
+    .reply(200, { ok: true, user: { id: 'U999', profile: { display_name_normalized: 'Dave Human' } } })
   const grantScope = nock('http://gold.test')
-    .post('/api/grants', body => body.slack && body.slack.id === 'U999' && body.slack.handle === 'dave')
+    .post('/api/grants', body =>
+      body.slack &&
+      body.slack.id === 'U999' &&
+      body.slack.handle === 'dave-current' &&
+      body.slack.handleSource === undefined)
     .reply(200, { paidThrough: iso(7 * DAY) })
 
-  room.user.say('user', 'hubot gold add <@U999>')
-  await waitUntil(() => hubotMessages(room).some(text => text.includes('*dave* se suscribió a :huemul:')))
+  room.user.say('user', slackAdapterCommand(
+    room,
+    'hubot gold add @dave-current',
+    '<@UBOT> gold add <@U999>'
+  ))
+  await waitUntil(() => hubotMessages(room).some(text => text.includes('*dave-current* se suscribió a :huemul:')))
   t.true(grantScope.isDone())
+})
+
+test.serial('gold add no crea una identidad sin username', async t => {
+  absorbAutoRefresh()
+  const room = createRoom(t)
+  room.robot.auth = { isAdmin: () => true, hasRole: () => false }
+  nock('https://slack.com')
+    .post('/api/users.info')
+    .reply(200, { ok: true, user: { id: 'U404', profile: { display_name_normalized: 'Solo Display' } } })
+  const unexpectedGrant = nock('http://gold.test')
+    .post('/api/grants')
+    .reply(200, {})
+
+  room.user.say('user', slackAdapterCommand(
+    room,
+    'hubot gold add @U404',
+    '<@UBOT> gold add <@U404>'
+  ))
+  await waitUntil(() => hubotMessages(room).some(text => text.includes('No pude obtener el username actual de Slack')))
+  t.false(unexpectedGrant.isDone())
 })
 
 test.serial('gold add rechaza días inválidos y gold remove argumentos extra', async t => {
@@ -406,9 +447,7 @@ test.serial('gold add acepta username plano y mención <@U123>', async t => {
   await waitUntil(() => hubotMessages(room).some(text => text.includes('*bob* se suscribió a :huemul:')))
   t.true(bareScope.isDone())
 
-  nock('https://slack.com')
-    .post('/api/users.info')
-    .reply(200, { ok: true, user: { id: 'U123', name: 'carol' } })
+  mockUserInfo('U123', 'carol')
   const mentionScope = nock('http://gold.test')
     .post('/api/grants', body =>
       body.slack &&
@@ -478,11 +517,13 @@ test.serial('gold remove acepta username plano y mención <@U123>', async t => {
   await waitUntil(() => hubotMessages(room).some(text => text.includes('alice ya no es miembro gold :monea:')))
   t.true(bareScope.isDone())
 
-  nock('https://slack.com')
-    .post('/api/users.info')
-    .reply(200, { ok: true, user: { id: 'U123', name: 'carol' } })
+  mockUserInfo('U123', 'carol')
   const mentionScope = nock('http://gold.test')
-    .post('/api/grants/revoke', body => body.slack && body.slack.id === 'U123' && body.slack.handle === 'carol')
+    .post('/api/grants/revoke', body =>
+      body.slack &&
+      body.slack.id === 'U123' &&
+      body.slack.handle === 'carol' &&
+      body.slack.handleSource === undefined)
     .reply(200, {})
 
   room.user.say('user', 'hubot gold remove <@U123>')
@@ -553,17 +594,21 @@ test.serial('gold status y gold list son lecturas puras de la proyección local'
   t.deepEqual(hubotMessages(emptyRoom)[0], 'No hay usuarios gold :monea:')
 })
 
-test.serial('gold status deja consultarse a uno mismo, pero no el padrón ajeno', async t => {
+test.serial('gold status usa la id del adaptador y respeta permisos', async t => {
   blockAutoRefresh()
   const room = createRoom(t)
   room.robot.auth = { isAdmin: () => false, hasRole: () => false }
   room.robot.brain.set('gold_projection', projectionOf([
-    { slackId: 'user', handle: 'user', paidThrough: '2027-03-15T12:00:00.000Z' },
-    { slackId: 'UALICE', handle: 'alice', paidThrough: '2027-03-15T12:00:00.000Z' }
+    { slackId: 'UALICE', handle: 'username-actual', paidThrough: '2020-01-01T03:00:00.000Z' },
+    { slackId: 'user', handle: 'username-antiguo', paidThrough: '2027-03-15T12:00:00.000Z' }
   ]))
 
-  room.user.say('user', 'hubot gold status user')
-  await waitUntil(() => hubotMessages(room).some(text => text.includes('user es gold')))
+  room.user.say('user', slackAdapterCommand(
+    room,
+    'hubot gold status @username-actual',
+    '<@UBOT> gold status <@user>'
+  ))
+  await waitUntil(() => hubotMessages(room).some(text => text.includes('username-actual es gold')))
 
   room.user.say('user', 'hubot gold status alice')
   await waitUntil(() => hubotMessages(room).some(text => text.includes('Necesitas ser admin')))
@@ -571,6 +616,19 @@ test.serial('gold status deja consultarse a uno mismo, pero no el padrón ajeno'
   await waitUntil(() => hubotMessages(room).filter(text => text.includes('Necesitas ser admin')).length === 2)
 
   t.false(hubotMessages(room).some(text => text.includes('alice es gold')))
+})
+
+test.serial('gold status no confía en el label literal para consultar otra identidad', async t => {
+  blockAutoRefresh()
+  const room = createRoom(t)
+  room.robot.auth = { isAdmin: () => false, hasRole: () => false }
+  room.robot.brain.set('gold_projection', projectionOf([
+    { slackId: 'UVICTIMA', handle: 'victima', paidThrough: '2027-03-15T12:00:00.000Z' }
+  ]))
+
+  room.user.say('user', 'hubot gold status <@user|victima>')
+  await waitUntil(() => hubotMessages(room).some(text => text.includes('user no es gold')))
+  t.false(hubotMessages(room).some(text => text.includes('victima es gold')))
 })
 
 test.serial('/gold/webhook legado responde 410', async t => {
