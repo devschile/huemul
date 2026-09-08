@@ -10,6 +10,8 @@
 // Commands:
 //   hubot como apoyar - Muestra las instrucciones de cómo apoyar
 //   hubot cómo apoyar - Muestra las instrucciones de cómo apoyar
+//   hubot como donar - Explica que ya no se reciben donaciones, solo suscripciones
+//   hubot cómo donar - Explica que ya no se reciben donaciones, solo suscripciones
 //
 // Authors:
 //   @jorgeepunan @hectorpalmatellez
@@ -30,7 +32,34 @@ const PAYMENT_METHODS = new Map([
   ]
 ])
 
+const DONATION_TEXT =
+  'Por motivos legales y tributarios ya no recibimos donaciones: el apoyo a la comunidad se realiza exclusivamente mediante suscripción. Escribe `huemul cómo apoyar` para conocer las opciones disponibles.'
+const DONATION_FOOTER =
+  'Gracias :pray: por el interés en aportar :gold: a que siga creciendo la comunidad devsChile.'
+
 module.exports = robot => {
+  robot.respond(/c(o|ó)mo donar/i, msg => {
+    if (['SlackBot', 'Room'].includes(robot.adapter.constructor.name)) {
+      const options = {
+        as_user: true,
+        link_names: 1,
+        unfurl_links: false,
+        attachments: [
+          {
+            fallback: DONATION_TEXT,
+            text: DONATION_TEXT,
+            title: 'Cómo donar',
+            title_link: 'https://devschile.cl/',
+            footer: DONATION_FOOTER
+          }
+        ]
+      }
+      robot.adapter.client.web.chat.postMessage(msg.message.room, null, options)
+    } else {
+      msg.send(DONATION_TEXT)
+    }
+  })
+
   robot.respond(/c(o|ó)mo apoyar/i, msg => {
     const text =
       `Para mantener el servidor donde se aloja el :robot_face: :huemul: y otros proyectos que creamos desde y para la comunidad, se reciben aportes desde ${SUPPORT_AMOUNT} por diferentes medios`
