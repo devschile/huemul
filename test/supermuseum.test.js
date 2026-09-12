@@ -70,8 +70,21 @@ test.cb.serial('Texto lista todos los juegos coincidentes', t => {
   t.context.room.user.say('user', 'hubot supermuseum zelda')
   setTimeout(() => {
     const reply = t.context.room.messages[1][1]
-    t.true(/A Link to the Past/.test(reply))
-    t.true(/arcade/.test(reply))
+    t.is(typeof reply, 'object')
+    t.true(/A Link to the Past/.test(reply.text))
+    t.true(/arcade/.test(reply.text))
+    t.is(reply.unfurl_links, false)
+    t.is(reply.unfurl_media, false)
+    t.end()
+  }, 800)
+})
+
+test.cb.serial('Texto con un solo resultado es texto plano', t => {
+  t.context.room.user.say('user', 'hubot supermuseum mario')
+  setTimeout(() => {
+    const reply = t.context.room.messages[1][1]
+    t.true(/Super Mario World/.test(reply))
+    t.false(/```/.test(reply))
     t.end()
   }, 800)
 })
@@ -99,10 +112,13 @@ test.cb.serial('Lista larga se corta en 10 con coletilla', t => {
   t.context.room.user.say('user', 'hubot supermuseum zelda test')
   setTimeout(() => {
     const reply = t.context.room.messages[1][1]
-    t.true(/Zelda Test 1/.test(reply))
-    t.true(/Zelda Test 10/.test(reply))
-    t.false(/Zelda Test 11/.test(reply))
-    t.true(/…y 2 más/.test(reply))
+    t.is(typeof reply, 'object')
+    t.true(/Zelda Test 1/.test(reply.text))
+    t.true(/Zelda Test 10/.test(reply.text))
+    t.false(/Zelda Test 11/.test(reply.text))
+    t.true(/…y 2 más/.test(reply.text))
+    t.is(reply.unfurl_links, false)
+    t.is(reply.unfurl_media, false)
     t.end()
   }, 800)
 })

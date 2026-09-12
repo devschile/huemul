@@ -106,6 +106,12 @@ module.exports = function (robot) {
       if (matches.length === 0) return msg.reply(`no encontré juegos para "${query}" en el SuperMuseum`)
       const shown = matches.slice(0, MAX_RESULTS).map(formatGame).join('\n\n')
       const extra = matches.length > MAX_RESULTS ? `\n\n…y ${matches.length - MAX_RESULTS} más` : ''
+      // Varios links: sin unfurl, manteniendo el texto normal. hubot-slack
+      // acepta message objects y los postea por la Web API con esas
+      // opciones (hubot-slack/src/client.coffee: send() no-string).
+      if (matches.length > 1) {
+        return msg.send({ text: shown + extra, unfurl_links: false, unfurl_media: false })
+      }
       return msg.send(shown + extra)
     })
   })
