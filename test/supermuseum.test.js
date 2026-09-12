@@ -72,6 +72,18 @@ test.cb.serial('Texto lista todos los juegos coincidentes', t => {
     const reply = t.context.room.messages[1][1]
     t.true(/A Link to the Past/.test(reply))
     t.true(/arcade/.test(reply))
+    t.true(reply.startsWith('```'))
+    t.true(reply.endsWith('```'))
+    t.end()
+  }, 800)
+})
+
+test.cb.serial('Texto con un solo resultado no usa bloque de código', t => {
+  t.context.room.user.say('user', 'hubot supermuseum mario')
+  setTimeout(() => {
+    const reply = t.context.room.messages[1][1]
+    t.true(/Super Mario World/.test(reply))
+    t.false(/```/.test(reply))
     t.end()
   }, 800)
 })
@@ -103,6 +115,8 @@ test.cb.serial('Lista larga se corta en 10 con coletilla', t => {
     t.true(/Zelda Test 10/.test(reply))
     t.false(/Zelda Test 11/.test(reply))
     t.true(/…y 2 más/.test(reply))
+    t.true(reply.startsWith('```'))
+    t.true(reply.endsWith('```'))
     t.end()
   }, 800)
 })

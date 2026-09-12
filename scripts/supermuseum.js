@@ -106,6 +106,8 @@ module.exports = function (robot) {
       if (matches.length === 0) return msg.reply(`no encontré juegos para "${query}" en el SuperMuseum`)
       const shown = matches.slice(0, MAX_RESULTS).map(formatGame).join('\n\n')
       const extra = matches.length > MAX_RESULTS ? `\n\n…y ${matches.length - MAX_RESULTS} más` : ''
+      // Más de un link: bloque de código para que Slack no despliegue rich links
+      if (matches.length > 1) return msg.send('```' + shown + extra + '```')
       return msg.send(shown + extra)
     })
   })
