@@ -57,17 +57,26 @@ const mockGeo = (nombre, respuesta) =>
 const mockForecast = respuesta =>
   nock(FORECAST).get('/v1/forecast').query(true).reply(200, respuesta)
 
+// Ancho en columnas: los emoji ocupan 2 y el selector de variación 0
+const anchoVisible = texto => Array.from(texto).reduce((total, ch) => {
+  const codigo = ch.codePointAt(0)
+  if (codigo === 0xfe0f) return total
+  if (codigo >= 0x1f300 || (codigo >= 0x2600 && codigo <= 0x27bf)) return total + 2
+  return total + 1
+}, 0)
+
 test.beforeEach(t => {
   t.context.room = helper.createRoom({ httpd: false })
 })
 
 test.afterEach(t => {
+  delete process.env.HUBOT_CLIMA_TIMEOUT_MS
   nock.cleanAll()
   return t.context.room.destroy()
 })
 
-test.serial('Clima de Santiago por defecto', async t => {
-  mockGeo('Santiago, Chile', santiago)
+test.serial('Clima de Santiago por defecto (sin llamar al geocoding)', async t => {
+  const geoSinUsar = mockGeo('Santiago, Chile', santiago)
   mockForecast(climaSantiago)
 
   t.context.room.user.say('user', 'hubot clima')
@@ -79,15 +88,17 @@ test.serial('Clima de Santiago por defecto', async t => {
   t.is(hubot[0], 'hubot')
   t.is(hubot[1], [
     '```',
-    '      \\   /     Santiago de Chile',
-    '       .-.      Despejado',
-    '    ― (   ) ―   Ahora 21°C (ST 20°C)',
-    "       `-'      Mín 11°C / Máx 28°C",
-    '      /   \\     Viento 5 km/h S',
-    '                Humedad 51%',
-    '                Lluvia 7%',
+    '      \\   /    Santiago de Chile',
+    '       .-.     ☀️ Despejado',
+    '    ― (   ) ―  Ahora 21°C (ST 20°C)',
+    "       `-'     Mín 11°C / Máx 28°C",
+    '      /   \\    Viento 5 km/h S',
+    '               Humedad 51%',
+    '               Lluvia 7%',
+    'datos: open-meteo.com',
     '```'
   ].join('\n'))
+  t.false(geoSinUsar.isDone())
 })
 
 test.serial('Clima de otra ciudad con país', async t => {
@@ -103,46 +114,74 @@ test.serial('Clima de otra ciudad con país', async t => {
   const hubot = t.context.room.messages[1]
 
   t.true(hubot[1].includes('Paris, France'))
-  t.true(hubot[1].includes('Lluvia débil'))
+  t.true(hubot[1].includes('🌦️ Lluvia débil'))
   t.true(hubot[1].includes('Ahora 31°C'))
   t.true(hubot[1].includes('Viento 5 km/h E'))
 })
 
 test.serial('Clima con "santiago" en minúsculas usa la ciudad por defecto', async t => {
-  mockGeo('Santiago, Chile', santiago)
+  const geoSinUsar = mockGeo('Santiago, Chile', santiago)
   mockForecast(climaSantiago)
 
   t.context.room.user.say('user', 'hubot tiempo santiago')
   await sleep(500)
 
   t.true(t.context.room.messages[1][1].includes('Santiago de Chile'))
-  t.true(nock.isDone())
+  t.false(geoSinUsar.isDone())
 })
 
-test.serial('Clima de noche usa el dibujo de luna', async t => {
-  mockGeo('Santiago, Chile', santiago)
+test.serial('Clima de noche usa luna y emoji de luna', async t => {
+  mockGeo('Temuco, Chile', { results: [{ name: 'Temuco', latitude: -38.73, longitude: -72.59, country: 'Chile' }] })
   mockForecast({ ...climaSantiago, current: { ...climaSantiago.current, is_day: 0 } })
 
-  t.context.room.user.say('user', 'hubot clima')
+  t.context.room.user.say('user', 'hubot clima Temuco, Chile')
   await sleep(500)
 
   const hubot = t.context.room.messages[1][1]
 
+  t.true(hubot.includes('🌙 Despejado'))
   t.true(hubot.includes('*  .-.'))
   t.false(hubot.includes('\\   /'))
 })
 
 test.serial('Condición desconocida no rompe el reporte', async t => {
-  mockGeo('Santiago, Chile', santiago)
+  mockGeo('Temuco, Chile', { results: [{ name: 'Temuco', latitude: -38.73, longitude: -72.59, country: 'Chile' }] })
   mockForecast({ ...climaSantiago, current: { ...climaSantiago.current, weather_code: 42 } })
 
-  t.context.room.user.say('user', 'hubot clima')
+  t.context.room.user.say('user', 'hubot clima Temuco, Chile')
   await sleep(500)
 
   const hubot = t.context.room.messages[1][1]
 
-  t.true(hubot.includes('Sin datos'))
+  t.true(hubot.includes('❓ Sin datos'))
   t.true(hubot.includes('Ahora 21°C'))
+})
+
+test.serial('El bloque cabe en pantallas angostas', async t => {
+  const largo = { results: [{ name: 'San Fernando del Valle de Catamarca', latitude: -28.46, longitude: -65.78, country: 'Argentina' }] }
+  mockGeo('San Fernando del Valle de Catamarca, Argentina', largo)
+  mockForecast({ ...climaSantiago, current: { ...climaSantiago.current, weather_code: 99, wind_direction_10m: 350 } })
+
+  t.context.room.user.say('user', 'hubot clima San Fernando del Valle de Catamarca, Argentina')
+  await sleep(500)
+
+  const mensaje = t.context.room.messages[1][1]
+  const anchos = mensaje.split('\n').map(anchoVisible)
+  const maximo = Math.max(...anchos)
+
+  t.true(maximo <= 41, `ancho máximo ${maximo} columnas`)
+  t.true(mensaje.includes('⛈️ Tormenta con granizo'))
+  t.true(mensaje.includes('…'))
+})
+
+test.serial('Timeout de la API deja una respuesta al usuario', async t => {
+  process.env.HUBOT_CLIMA_TIMEOUT_MS = '200'
+  nock(FORECAST).get('/v1/forecast').query(true).delayConnection(1500).reply(200, climaSantiago)
+
+  t.context.room.user.say('user', 'hubot clima')
+  await sleep(900)
+
+  t.deepEqual(t.context.room.messages[1], ['hubot', '@user ocurrió un error con la búsqueda'])
 })
 
 test.serial('Ciudad sin resultados', async t => {
@@ -177,7 +216,7 @@ test.serial('Error de red en la búsqueda de la ciudad', async t => {
   nock(GEO).get('/v1/search').query(true).replyWithError('se cayó la red')
   mockForecast(climaSantiago)
 
-  t.context.room.user.say('user', 'hubot clima')
+  t.context.room.user.say('user', 'hubot clima temuco')
   await sleep(500)
 
   t.deepEqual(t.context.room.messages[1], ['hubot', '@user ocurrió un error con la búsqueda'])
@@ -187,7 +226,7 @@ test.serial('Error 500 de la búsqueda de la ciudad', async t => {
   nock(GEO).get('/v1/search').query(true).reply(500)
   mockForecast(climaSantiago)
 
-  t.context.room.user.say('user', 'hubot clima')
+  t.context.room.user.say('user', 'hubot clima temuco')
   await sleep(500)
 
   t.deepEqual(t.context.room.messages[1], ['hubot', '@user ocurrió un error con la búsqueda'])
@@ -197,14 +236,13 @@ test.serial('JSON inválido de la búsqueda de la ciudad', async t => {
   nock(GEO).get('/v1/search').query(true).reply(200, '<html>502 Bad Gateway</html>')
   mockForecast(climaSantiago)
 
-  t.context.room.user.say('user', 'hubot clima')
+  t.context.room.user.say('user', 'hubot clima temuco')
   await sleep(500)
 
   t.deepEqual(t.context.room.messages[1], ['hubot', '@user ocurrió un error con la búsqueda'])
 })
 
 test.serial('Error 500 del pronóstico', async t => {
-  mockGeo('Santiago, Chile', santiago)
   nock(FORECAST).get('/v1/forecast').query(true).reply(500)
 
   t.context.room.user.say('user', 'hubot clima')
@@ -214,7 +252,6 @@ test.serial('Error 500 del pronóstico', async t => {
 })
 
 test.serial('JSON inválido del pronóstico', async t => {
-  mockGeo('Santiago, Chile', santiago)
   nock(FORECAST).get('/v1/forecast').query(true).reply(200, '{"current": ')
 
   t.context.room.user.say('user', 'hubot clima')
@@ -224,7 +261,6 @@ test.serial('JSON inválido del pronóstico', async t => {
 })
 
 test.serial('Pronóstico con respuesta vacía', async t => {
-  mockGeo('Santiago, Chile', santiago)
   nock(FORECAST).get('/v1/forecast').query(true).reply(200, '')
 
   t.context.room.user.say('user', 'hubot clima')
@@ -234,7 +270,6 @@ test.serial('Pronóstico con respuesta vacía', async t => {
 })
 
 test.serial('Pronóstico sin los datos esperados', async t => {
-  mockGeo('Santiago, Chile', santiago)
   mockForecast({ current: {}, daily: {} })
 
   t.context.room.user.say('user', 'hubot clima')
