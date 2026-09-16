@@ -1,6 +1,7 @@
 // Description:
 //   Muestra el tiempo de hoy con un dibujo ASCII: condición, tº actual y sensación térmica,
-//   mín/máx, viento, humedad y probabilidad de lluvia. No requiere API key.
+//   mín/máx, viento, humedad y probabilidad de lluvia, más una frase final (nerd/sarcástica)
+//   sobre qué haría un programador con ese clima. No requiere API key.
 //   Fuente: Open-Meteo (geocoding + forecast), se consulta con "ciudad, país".
 //
 // Dependencies:
@@ -25,8 +26,8 @@ const DEFAULT_PLACE = { name: 'Santiago de Chile', country: 'Chile', latitude: -
 // Corte de la request: si la API no responde a tiempo, se avisa igual
 const REQUEST_TIMEOUT_MS = 8000
 
-// Open-Meteo publica los datos con licencia CC-BY 4.0: hay que dar el crédito
-const CREDITO = 'datos: open-meteo.com'
+// Ancho máximo del bloque completo en columnas (los code block de Slack no envuelven: scrollean)
+const ANCHO_MAX = 41
 
 // Ancho de la columna del dibujo: los datos se alinean a su derecha
 const ART_WIDTH = 15
@@ -137,6 +138,69 @@ const CONDICIONES = {
   otro: { texto: 'Sin datos', dibujo: 'nublado', emoji: '❓' }
 }
 
+// Frase del final: qué haría un programador con ese clima (se elige al azar)
+const FRASES = {
+  despejado: [
+    'Sol pleno: excusa perfecta para "trabajar remoto" desde el balcón.',
+    'Día despejado: el único bug que no se arregla hoy es el que no abriste.',
+    'Cielo limpio, como tu historial de git cuando no commiteas los viernes.',
+    'Si igual tienes que ir a la oficina, al menos que tenga ventanas.',
+    'Buen día para ese side project que llevas tres años posponiendo.'
+  ],
+  despejadoNoche: [
+    'Noche despejada: ideal para el deploy a producción sin que nadie mire.',
+    'Cielo estrellado: el único uptime que nunca falla.',
+    'Noche clara: momento perfecto para refactorizar lo que "funcionaba bien".'
+  ],
+  parcial: [
+    'Parcialmente nublado: como tu cobertura de tests, 50% y con suerte.',
+    'Ni sol ni lluvia: el clima de los que responden "depende" en la daily.',
+    'Medio nublado: el cielo tampoco tomó una decisión hoy.'
+  ],
+  parcialNoche: [
+    'Nubes de noche: nadie vio ese push a master. Nadie.',
+    'Parcialmente nublado: el cielo también arrastra deuda técnica.'
+  ],
+  nublado: [
+    'Nublado: día oficial de quedarse en pijama y cerrar issues de 2019.',
+    'Gris como tu terminal a las 3am.',
+    'Nublado: el sol no aparece, pero el sprint tampoco se detiene.',
+    'Cielo tapado: buen momento para esos tests que "después escribo".'
+  ],
+  niebla: [
+    'Niebla: no se ve nada, igual que en el roadmap del próximo trimestre.',
+    'Niebla densa: ideal para esconderse de las reuniones.',
+    'No se ve a diez metros: como el estado del proyecto cuando preguntas.'
+  ],
+  llovizna: [
+    'Llovizna: esa lluvia que no justifica paraguas, pero sí un café y dos tests.',
+    'Llovizna: el clima preferido de los que escriben tests "por si acaso".',
+    'Lloviznando: mojarse un poco es como ese bug de a uno.'
+  ],
+  lluvia: [
+    'Llueve: día perfecto para trabajar remoto y culpar a la conexión.',
+    'Lluvia: los tests unitarios pasan, la vida no.',
+    'Llueve y se acabaron los créditos de Claude: a programar a mano, valiente.',
+    'Agua por todos lados: como los logs de producción un lunes.'
+  ],
+  chubascos: [
+    'Chubascos: pasa, falla, pasa, falla. Como los tests flaky.',
+    'Llueve, para, llueve: el clima también tiene race conditions.',
+    'Sale el sol, llueve, sale el sol: así se siente cada deploy.'
+  ],
+  tormenta: [
+    'Tormenta: hoy no se hace deploy. Ni tú ni nadie.',
+    'El universo te está diciendo que no hagas push a master.',
+    'Truenos: buen momento para recordar que producción no tiene rollback automático.',
+    'Tormenta eléctrica: si el CI ya estaba rojo, al menos tienes excusa.'
+  ],
+  nieve: [
+    'Nieve: el único día en que nadie te webeará por no ir a la oficina.',
+    'Nieve: si no cae en Santiago, no cuenta.',
+    'Blanco por todos lados: como tu editor antes de abrir el proyecto.'
+  ]
+}
+
 const CARDINALES = ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO']
 
 const entero = valor => (typeof valor === 'number' && isFinite(valor) ? Math.round(valor) : null)
@@ -154,8 +218,35 @@ const dibujoDe = (condicion, deDia) => {
 
 const emojiDe = (condicion, deDia) => (!deDia && condicion.emojiNoche ? condicion.emojiNoche : condicion.emoji)
 
+// Frase al azar para el clima que corresponda (día o noche)
+const fraseDe = (condicion, deDia) => {
+  const nombre = deDia ? condicion.dibujo : `${condicion.dibujo}Noche`
+  const frases = FRASES[nombre] || FRASES[condicion.dibujo] || FRASES.nublado
+  return frases[Math.floor(Math.random() * frases.length)]
+}
+
 // Recorta textos largos (nombres de ciudad muy largos) para que el bloque no scrollee en mobile
 const recortar = (texto, max) => (String(texto).length > max ? `${String(texto).slice(0, max - 1)}…` : String(texto))
+
+// Envuelve un texto en varias líneas de a lo más `max` caracteres (por palabra)
+const envolver = (texto, max) => {
+  const lineas = []
+  let actual = ''
+
+  String(texto).split(/\s+/).forEach(palabra => {
+    const candidata = actual ? `${actual} ${palabra}` : palabra
+    if (candidata.length > max && actual) {
+      lineas.push(actual)
+      actual = palabra
+    } else {
+      actual = candidata
+    }
+  })
+
+  if (actual) lineas.push(actual)
+
+  return lineas
+}
 
 // Datos de texto que acompañan al dibujo; null si faltan los datos esenciales
 const datosDe = (lugar, datos) => {
@@ -213,7 +304,11 @@ const reporte = (lugar, datos) => {
     filas.push((izquierda + (contenido.textos[i] || '')).replace(/\s+$/, ''))
   }
 
-  return filas.join('\n')
+  // Frase final (envolvida para no pasarse del ancho del bloque)
+  const frase = fraseDe(contenido.condicion, contenido.deDia)
+  const lineasFrase = envolver(frase, ANCHO_MAX - 2).map(linea => `» ${linea}`)
+
+  return filas.concat([''], lineasFrase).join('\n')
 }
 
 const pedirJSON = (robot, url, cb) => {
@@ -257,7 +352,7 @@ const responder = (robot, msg, lugar) => {
       return msg.reply('ocurrió un error con la búsqueda')
     }
 
-    msg.send('```\n' + texto + '\n' + CREDITO + '\n```')
+    msg.send('```\n' + texto + '\n```')
   })
 }
 
@@ -288,3 +383,7 @@ module.exports = robot => {
     })
   })
 }
+
+// Expuesto para los tests (hubot sólo usa la función)
+module.exports.frases = FRASES
+module.exports.condiciones = CONDICIONES

@@ -4,6 +4,7 @@ const Helper = require('hubot-test-helper')
 const nock = require('nock')
 
 const helper = new Helper('../scripts/clima.js')
+const script = require('../scripts/clima.js')
 const sleep = m => new Promise(resolve => setTimeout(() => resolve(), m))
 
 const GEO = 'https://geocoding-api.open-meteo.com'
@@ -65,6 +66,13 @@ const anchoVisible = texto => Array.from(texto).reduce((total, ch) => {
   return total + 1
 }, 0)
 
+// Reconstruye la frase final (viene envuelta en varias líneas con prefijo »)
+const fraseDe = mensaje => mensaje
+  .split('\n')
+  .filter(linea => linea.indexOf('» ') === 0)
+  .map(linea => linea.slice(2))
+  .join(' ')
+
 test.beforeEach(t => {
   t.context.room = helper.createRoom({ httpd: false })
 })
@@ -83,10 +91,11 @@ test.serial('Clima de Santiago por defecto (sin llamar al geocoding)', async t =
   await sleep(500)
 
   const hubot = t.context.room.messages[1]
+  const lineas = hubot[1].split('\n')
 
   t.deepEqual(t.context.room.messages[0], ['user', 'hubot clima'])
   t.is(hubot[0], 'hubot')
-  t.is(hubot[1], [
+  t.deepEqual(lineas.slice(0, 8), [
     '```',
     '      \\   /    Santiago de Chile',
     '       .-.     ☀️ Despejado',
@@ -94,10 +103,12 @@ test.serial('Clima de Santiago por defecto (sin llamar al geocoding)', async t =
     "       `-'     Mín 11°C / Máx 28°C",
     '      /   \\    Viento 5 km/h S',
     '               Humedad 51%',
-    '               Lluvia 7%',
-    'datos: open-meteo.com',
-    '```'
-  ].join('\n'))
+    '               Lluvia 7%'
+  ])
+  t.is(lineas[8], '')
+  t.true(lineas[9].indexOf('» ') === 0)
+  t.is(lineas[lineas.length - 1], '```')
+  t.true(script.frases.despejado.includes(fraseDe(hubot[1])))
   t.false(geoSinUsar.isDone())
 })
 
@@ -142,6 +153,7 @@ test.serial('Clima de noche usa luna y emoji de luna', async t => {
   t.true(hubot.includes('🌙 Despejado'))
   t.true(hubot.includes('*  .-.'))
   t.false(hubot.includes('\\   /'))
+  t.true(script.frases.despejadoNoche.includes(fraseDe(hubot)))
 })
 
 test.serial('Condición desconocida no rompe el reporte', async t => {
@@ -172,6 +184,31 @@ test.serial('El bloque cabe en pantallas angostas', async t => {
   t.true(maximo <= 41, `ancho máximo ${maximo} columnas`)
   t.true(mensaje.includes('⛈️ Tormenta con granizo'))
   t.true(mensaje.includes('…'))
+  t.true(script.frases.tormenta.includes(fraseDe(mensaje)))
+})
+
+test.serial('Cada condición tiene frases y ninguna palabra se sale del ancho', t => {
+  const condiciones = script.condiciones
+  const frases = script.frases
+
+  Object.keys(condiciones).forEach(codigo => {
+    const condicion = condiciones[codigo]
+    const claves = [`${condicion.dibujo}`, `${condicion.dibujo}Noche`]
+    const existentes = claves.filter(clave => Array.isArray(frases[clave]))
+    t.true(existentes.length > 0, `sin frases para ${condicion.dibujo}`)
+  })
+
+  Object.keys(frases).forEach(clave => {
+    const lista = frases[clave]
+    t.true(lista.length >= 2, `${clave} tiene ${lista.length} frases`)
+    lista.forEach(frase => {
+      t.is(frase.trim(), frase)
+      t.true(frase.length <= 140, `frase muy larga en ${clave}: ${frase.length}`)
+      frase.split(' ').forEach(palabra => {
+        t.true(palabra.length <= 39, `palabra muy larga en ${clave}: ${palabra}`)
+      })
+    })
+  })
 })
 
 test.serial('Timeout de la API deja una respuesta al usuario', async t => {
