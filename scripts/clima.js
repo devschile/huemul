@@ -3,6 +3,8 @@
 //   mín/máx, viento, humedad y probabilidad de lluvia, más una frase final (nerd/sarcástica)
 //   sobre qué haría un programador con ese clima. No requiere API key.
 //   Fuente: Open-Meteo (geocoding + forecast), se consulta con "ciudad, país".
+//   Reintenta una vez ante errores de red y sube el presupuesto de Happy Eyeballs de Node
+//   (ver comentario más abajo: el connect al geocoding expiraba con ETIMEDOUT en el server).
 //
 // Dependencies:
 //   None
@@ -20,11 +22,25 @@
 const GEO_URL = 'https://geocoding-api.open-meteo.com/v1/search'
 const FORECAST_URL = 'https://api.open-meteo.com/v1/forecast'
 
+// Node 24 conecta con Happy Eyeballs (autoSelectFamily) y da 250 ms por intento de dirección.
+// geocoding-api.open-meteo.com publica AAAA (IPv6 que la red del server no enruta: ENETUNREACH)
+// y su IPv4 (Alemania) tarda ~250 ms el handshake desde Chile: el connect quedaba justo en el
+// límite y a veces expiraba con ETIMEDOUT aunque el host sí responde. Con 2 s de presupuesto
+// por intento el handshake alcanza a completarse.
+const net = require('net')
+if (typeof net.setDefaultAutoSelectFamilyAttemptTimeout === 'function') {
+  net.setDefaultAutoSelectFamilyAttemptTimeout(2000)
+}
+
 // Ciudad por defecto (coordenadas fijas: evita una vuelta al geocoding)
 const DEFAULT_PLACE = { name: 'Santiago de Chile', country: 'Chile', latitude: -33.45694, longitude: -70.64827 }
 
 // Corte de la request: si la API no responde a tiempo, se avisa igual
 const REQUEST_TIMEOUT_MS = 8000
+
+// Reintento corto ante errores de red (el connect a Alemania es sensible a jitter)
+const INTENTOS = 2
+const REINTENTO_MS = 250
 
 // Ancho máximo del bloque completo en columnas (los code block de Slack no envuelven: scrollean)
 const ANCHO_MAX = 41
@@ -314,22 +330,32 @@ const reporte = (lugar, datos) => {
 const pedirJSON = (robot, url, cb) => {
   const tiempoMax = Number(process.env.HUBOT_CLIMA_TIMEOUT_MS) || REQUEST_TIMEOUT_MS
 
-  robot
-    .http(url)
-    .header('Accept', 'application/json')
-    .timeout(tiempoMax)
-    .get()((err, res, body) => {
-      if (err) return cb(err)
-      if (!res || res.statusCode !== 200) return cb(new Error(`status code ${res && res.statusCode}`))
-      if (!body) return cb(new Error('respuesta vacía'))
-      let json
-      try {
-        json = JSON.parse(body)
-      } catch (e) {
-        return cb(e)
-      }
-      cb(null, json)
-    })
+  const intentar = restantes => {
+    robot
+      .http(url)
+      .header('Accept', 'application/json')
+      .timeout(tiempoMax)
+      .get()((err, res, body) => {
+        if (err) {
+          // un reintento corto sólo ante errores de red (llevan code); los de contenido no se reintentan
+          if (restantes > 1 && err.code) {
+            return setTimeout(() => intentar(restantes - 1), REINTENTO_MS)
+          }
+          return cb(err)
+        }
+        if (!res || res.statusCode !== 200) return cb(new Error(`status code ${res && res.statusCode}`))
+        if (!body) return cb(new Error('respuesta vacía'))
+        let json
+        try {
+          json = JSON.parse(body)
+        } catch (e) {
+          return cb(e)
+        }
+        cb(null, json)
+      })
+  }
+
+  intentar(INTENTOS)
 }
 
 // Pide el pronóstico del lugar ya resuelto y responde el bloque ASCII
