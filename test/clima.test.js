@@ -74,13 +74,45 @@ const fraseDe = mensaje => mensaje
   .join(' ')
 
 test.beforeEach(t => {
+  nock.disableNetConnect()
   t.context.room = helper.createRoom({ httpd: false })
 })
 
 test.afterEach(t => {
   delete process.env.HUBOT_CLIMA_TIMEOUT_MS
   nock.cleanAll()
+  nock.enableNetConnect()
   return t.context.room.destroy()
+})
+
+test.serial('Sube el presupuesto de Happy Eyeballs de Node (regresión del ETIMEDOUT en prod)', t => {
+  // Node 24 da 250 ms por intento de dirección; el connect a geocoding-api.open-meteo.com
+  // (Alemania, con AAAA que la red no enruta) quedaba justo en el límite y expiraba.
+  t.true(require('net').getDefaultAutoSelectFamilyAttemptTimeout() >= 2000)
+})
+
+test.serial('Reintenta una vez si falla la red', async t => {
+  nock(FORECAST).get('/v1/forecast').query(true).replyWithError({ code: 'ETIMEDOUT', message: 'connect ETIMEDOUT' })
+  mockForecast(climaSantiago)
+
+  t.context.room.user.say('user', 'hubot clima')
+  await sleep(1200)
+
+  const hubot = t.context.room.messages[1][1]
+
+  t.true(hubot.includes('☀️ Despejado'))
+  t.true(hubot.includes('Santiago de Chile'))
+})
+
+test.serial('No reintenta ante errores de la API (status 500)', async t => {
+  nock(FORECAST).get('/v1/forecast').query(true).reply(500)
+  const segundoIntento = mockForecast(climaSantiago)
+
+  t.context.room.user.say('user', 'hubot clima')
+  await sleep(1200)
+
+  t.deepEqual(t.context.room.messages[1], ['hubot', '@user ocurrió un error con la búsqueda'])
+  t.false(segundoIntento.isDone())
 })
 
 test.serial('Clima de Santiago por defecto (sin llamar al geocoding)', async t => {
@@ -213,10 +245,12 @@ test.serial('Cada condición tiene frases y ninguna palabra se sale del ancho', 
 
 test.serial('Timeout de la API deja una respuesta al usuario', async t => {
   process.env.HUBOT_CLIMA_TIMEOUT_MS = '200'
+  // dos mocks: el intento original y el reintento
+  nock(FORECAST).get('/v1/forecast').query(true).delayConnection(1500).reply(200, climaSantiago)
   nock(FORECAST).get('/v1/forecast').query(true).delayConnection(1500).reply(200, climaSantiago)
 
   t.context.room.user.say('user', 'hubot clima')
-  await sleep(900)
+  await sleep(1600)
 
   t.deepEqual(t.context.room.messages[1], ['hubot', '@user ocurrió un error con la búsqueda'])
 })
