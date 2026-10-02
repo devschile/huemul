@@ -109,7 +109,7 @@ test.serial('awesome add crea un PR manual con el recurso aprobado desde un hilo
   t.is(update.branch, 'huemul/awesome/frontend-cfc6c0a6df196302')
   t.is(update.sha, 'README_SHA')
   t.is(update.message, 'feat(awesome): agrega Example Dev a #frontend')
-  t.true(update.content.includes('- [Example Dev](https://example.dev/testing): Guía práctica de pruebas para equipos de desarrollo.'))
+  t.true(update.content.includes('- [Example Dev](https://example.dev/testing): ✨ Guía práctica de pruebas para equipos de desarrollo.'))
   t.true(update.content.indexOf('Example Dev') < update.content.indexOf('## #general'))
 
   const pr = github.calls.find(call => call.method === 'createPullRequest').payload
@@ -188,7 +188,7 @@ test.serial('awesome add toma el recurso del mensaje enlazado aunque sea una res
 
   t.true(room.messages.some(message => message[1].includes('/pull/123')))
   const update = github.calls.find(call => call.method === 'updateReadme').payload
-  t.true(update.content.includes('- [Testing Reply](https://example.dev/reply): Material de pruebas compartido dentro del hilo.'))
+  t.true(update.content.includes('- [Testing Reply](https://example.dev/reply): ✨ Material de pruebas compartido dentro del hilo.'))
   room.destroy()
 })
 
@@ -290,7 +290,7 @@ test.serial('awesome add reutiliza una rama existente después de que falló cre
   const github = createGithub()
   const branch = 'huemul/awesome/frontend-cfc6c0a6df196302'
   const masterReadme = '# Awesome devsChile\n\n## #frontend\n\n- [Existente](https://old.example): recurso previo\n\n## #general\n'
-  const branchReadme = '# Awesome devsChile\n\n## #frontend\n\n- [Existente](https://old.example): recurso previo\n\n- [Example Dev](https://example.dev/testing): Guía práctica de pruebas para equipos de desarrollo.\n\n## #general\n'
+  const branchReadme = '# Awesome devsChile\n\n## #frontend\n\n- [Existente](https://old.example): recurso previo\n\n- [Example Dev](https://example.dev/testing): ✨ Guía práctica de pruebas para equipos de desarrollo.\n\n## #general\n'
   github.getReadme = async ref => ({
     content: ref === branch ? branchReadme : masterReadme,
     sha: ref === branch ? 'BRANCH_README_SHA' : 'MASTER_README_SHA'

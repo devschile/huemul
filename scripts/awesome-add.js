@@ -163,7 +163,7 @@ const insertEntry = (markdown, channel, entry) => {
   if (start < 0) return null
   let end = start + 1
   while (end < lines.length && !/^##\s+/.test(lines[end])) end++
-  lines.splice(end, 0, `- [${entry.title}](${entry.url}): ${entry.description}`, '')
+  lines.splice(end, 0, `- [${entry.title}](${entry.url}): ✨ ${entry.description}`, '')
   return lines.join('\n')
 }
 
