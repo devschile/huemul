@@ -66,7 +66,8 @@ function findVal (jsonMarkdown, channel) {
 }
 
 module.exports = function (robot) {
-  robot.respond(/awesome(\s+\w+)?/i, res => {
+  // `awesome add <permalink>` lo maneja scripts/awesome-add.js; no lo trates como #add.
+  robot.respond(/awesome(?!\s+add(?:\s|$))(\s+\w+)?/i, res => {
     const send = (markdown, channel) => {
       const awesomeLink = 'https://awesome.devschile.cl/'
       const awesomeTitle = 'Awesome devsChile'
