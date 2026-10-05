@@ -562,6 +562,41 @@ test.serial('gold link vincula la cuenta', async t => {
   t.true(failingScope.isDone())
 })
 
+test.serial('gold list permite a un miembro Gold de Soy sin rol administrativo', async t => {
+  const bootProjection = mockProjection([])
+  const room = createRoom(t)
+  room.robot.auth = { isAdmin: () => false, hasRole: () => false }
+  await waitUntil(() => bootProjection.isDone())
+
+  const listProjection = mockProjection([
+    { slackId: 'user', handle: 'user', paidThrough: iso(10 * DAY) }
+  ])
+  mockUserInfo('user', 'usuario-gold')
+
+  room.user.say('user', 'hubot gold list')
+  await waitUntil(() => hubotMessages(room).some(text => text === 'usuario-gold'))
+
+  t.true(listProjection.isDone())
+  t.deepEqual(hubotMessages(room), ['usuario-gold'])
+})
+
+test.serial('gold list rechaza a un no miembro después de refrescar Soy', async t => {
+  const bootProjection = mockProjection([])
+  const room = createRoom(t)
+  room.robot.auth = { isAdmin: () => false, hasRole: () => false }
+  await waitUntil(() => bootProjection.isDone())
+
+  const listProjection = mockProjection([
+    { slackId: 'UALICE', handle: 'alice', paidThrough: iso(10 * DAY) }
+  ])
+
+  room.user.say('user', 'hubot gold list')
+  await waitUntil(() => hubotMessages(room).some(text => text.includes('Necesitas ser miembro gold')))
+
+  t.true(listProjection.isDone())
+  t.false(hubotMessages(room).some(text => text.includes('alice')))
+})
+
 test.serial('gold list se refresca desde Soy antes de listar', async t => {
   const bootProjection = mockProjection([])
   const room = createRoom(t)
@@ -809,8 +844,6 @@ test.serial('gold status usa la id del adaptador, no cae en el handle de otro y 
 
   room.user.say('user', 'hubot gold status alice')
   await waitUntil(() => hubotMessages(room).some(text => text.includes('Necesitas ser admin')))
-  room.user.say('user', 'hubot gold list')
-  await waitUntil(() => hubotMessages(room).filter(text => text.includes('Necesitas ser admin')).length === 2)
 
   t.false(hubotMessages(room).some(text => text.includes('alice es gold')))
 })
