@@ -448,6 +448,7 @@ module.exports = robot => {
   robot.respond(/gold list\s*$/i, res => {
     if (!canManageGold(res.message.user)) return res.send(NOT_ALLOWED)
     Promise.resolve()
+      .then(() => refresh())
       .then(() => {
         const projection = readProjection()
         const members = (projection && Array.isArray(projection.members)) ? projection.members : []
