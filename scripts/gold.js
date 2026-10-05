@@ -131,6 +131,7 @@ module.exports = robot => {
   robot.golden = new Golden()
 
   const NOT_ALLOWED = 'Necesitas ser admin o tener el rol `gold` :monea: para usar este comando.'
+  const NOT_ALLOWED_LIST = 'Necesitas ser miembro gold, admin o tener el rol `gold` :monea: para usar este comando.'
 
   const canManageGold = user => {
     const auth = robot.auth
@@ -446,10 +447,10 @@ module.exports = robot => {
   })
 
   robot.respond(/gold list\s*$/i, res => {
-    if (!canManageGold(res.message.user)) return res.send(NOT_ALLOWED)
     Promise.resolve()
       .then(() => refresh())
       .then(() => {
+        if (!canManageGold(res.message.user) && !robot.golden.isGold(res.message.user)) return false
         const projection = readProjection()
         const members = (projection && Array.isArray(projection.members)) ? projection.members : []
         const active = members.filter(member => isActive(member))
@@ -457,6 +458,7 @@ module.exports = robot => {
         return Promise.all(active.map(member => resolveCurrentSlackIdentity(member)))
       })
       .then(identities => {
+        if (identities === false) return res.send(NOT_ALLOWED_LIST)
         if (!identities) return res.send('No hay usuarios gold :monea:')
         persistResolvedSlackHandles(identities)
         res.send(identities.map(plainUserReference).join(', '))
