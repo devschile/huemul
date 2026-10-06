@@ -26,6 +26,8 @@ const httpStub = handlers => {
 
 const reply = body => cb => cb(null, { statusCode: 200 }, JSON.stringify(body))
 
+const blockList = payload => JSON.parse(payload.blocks)
+
 const summary = (description = 'All Systems Operational', indicator = 'none', incidents = []) => ({
   page: { url: 'https://status.example.com/', updated_at: '2026-10-05T21:00:00.000Z' },
   status: { description, indicator },
@@ -40,6 +42,28 @@ test.beforeEach(t => {
 
 test.afterEach(t => {
   t.context.room.destroy()
+})
+
+test.serial('devtools status serializa Block Kit para el cliente Slack legado', async t => {
+  const github = 'https://www.githubstatus.com/api/v2/summary.json'
+  t.context.room.robot.http = httpStub({ [github]: reply(summary()) })
+
+  t.context.room.user.say('user', 'hubot devtools status github')
+  await sleep(30)
+
+  const payload = t.context.room.messages[1][1]
+  t.is(typeof payload.blocks, 'string')
+  t.is(JSON.parse(payload.blocks)[0].type, 'header')
+})
+
+test.serial('devtools muestra ayuda con status, servicios y --resumen', async t => {
+  t.context.room.user.say('user', 'hubot devtools')
+  await sleep(30)
+
+  const response = t.context.room.messages[1][1]
+  t.true(response.includes('hubot devtools status'))
+  t.true(response.includes('hubot devtools status --resumen'))
+  t.true(response.includes('github, gitlab, bitbucket, cloudflare, claude, openai, vercel, netlify, opencode'))
 })
 
 test.serial('devtools status --resumen publica bloques con sólo los servicios degradados', async t => {
@@ -70,7 +94,7 @@ test.serial('devtools status --resumen publica bloques con sólo los servicios d
 
   t.is(t.context.room.messages.length, 2)
   const payload = t.context.room.messages[1][1]
-  const texts = payload.blocks.flatMap(block => {
+  const texts = blockList(payload).flatMap(block => {
     const out = []
     if (block.text && block.text.text) out.push(block.text.text)
     for (const element of block.elements || []) if (element.text) out.push(element.text)
@@ -112,7 +136,9 @@ test.serial('devtools status muestra incidencias y servicios operativos en bloqu
 
   t.is(t.context.room.messages.length, 2)
   const payload = t.context.room.messages[1][1]
-  const texts = payload.blocks.flatMap(block => {
+  t.is(typeof payload.blocks, 'string')
+  t.false(payload.text.includes('DevTools — uso'))
+  const texts = blockList(payload).flatMap(block => {
     const out = []
     if (block.text && block.text.text) out.push(block.text.text)
     for (const element of block.elements || []) if (element.text) out.push(element.text)
@@ -121,7 +147,7 @@ test.serial('devtools status muestra incidencias y servicios operativos en bloqu
   t.true(texts.includes('GitHub'))
   t.true(texts.includes('GitLab'))
   t.true(texts.includes('Operativos'))
-  t.true(payload.blocks.some(block => block.type === 'actions'))
+  t.true(blockList(payload).some(block => block.type === 'actions'))
 })
 
 test.serial('devtools status github consulta sólo GitHub y muestra detalle acotado', async t => {
@@ -142,7 +168,7 @@ test.serial('devtools status github consulta sólo GitHub y muestra detalle acot
 
   t.is(t.context.room.messages.length, 2)
   const payload = t.context.room.messages[1][1]
-  const texts = payload.blocks.flatMap(block => {
+  const texts = blockList(payload).flatMap(block => {
     const out = []
     if (block.text && block.text.text) out.push(block.text.text)
     for (const element of block.elements || []) if (element.text) out.push(element.text)
@@ -234,7 +260,7 @@ test.serial('devtools status opencode reporta la disponibilidad de actualizacion
 
   t.is(t.context.room.messages.length, 2)
   t.deepEqual(stub.calls, [npm])
-  const texts = t.context.room.messages[1][1].blocks.flatMap(block => block.text && block.text.text ? [block.text.text] : []).join('\n')
+  const texts = blockList(t.context.room.messages[1][1]).flatMap(block => block.text && block.text.text ? [block.text.text] : []).join('\n')
   t.true(texts.includes('NPM (OpenCode updates)'))
   t.true(texts.includes('All Systems Operational'))
 })
@@ -266,7 +292,7 @@ test.serial('devtools status --resumen conserva el resto si un proveedor no resp
   await sleep(30)
 
   const payload = t.context.room.messages[1][1]
-  const texts = payload.blocks.flatMap(block => {
+  const texts = blockList(payload).flatMap(block => {
     const out = []
     if (block.text && block.text.text) out.push(block.text.text)
     for (const element of block.elements || []) if (element.text) out.push(element.text)
@@ -311,7 +337,7 @@ test.serial('devtools status github limita detalle remoto para bloques válidos'
   await sleep(30)
 
   const payload = t.context.room.messages[1][1]
-  const sectionTexts = payload.blocks.filter(block => block.text && block.text.text).map(block => block.text.text)
+  const sectionTexts = blockList(payload).filter(block => block.text && block.text.text).map(block => block.text.text)
   t.true(sectionTexts.every(text => text.length <= 3000))
   t.true(payload.text.includes('Partial System Outage'))
 })
@@ -334,6 +360,6 @@ test.serial('devtools status usa msg.send aunque exista un cliente Slack incompa
 
   const payload = room.messages[1][1]
   t.true(payload.text.includes('Partial System Outage'))
-  t.true(Array.isArray(payload.blocks))
+  t.is(typeof payload.blocks, 'string')
   room.destroy()
 })
