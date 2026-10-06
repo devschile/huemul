@@ -195,9 +195,19 @@ const buildDetailBlocks = status => {
 }
 
 module.exports = robot => {
+  const help = [
+    '*DevTools — uso*',
+    '• `hubot devtools status` — resumen de todos los servicios.',
+    '• `hubot devtools status --resumen` — sólo servicios con incidencias.',
+    '• `hubot devtools status <servicio>` — detalle de un servicio.',
+    '*Servicios:* github, gitlab, bitbucket, cloudflare, claude, openai, vercel, netlify, opencode.',
+    '_OpenCode se reporta vía disponibilidad de NPM para instalación y actualizaciones._'
+  ].join('\n')
+
+  // hubot-slack 4.10 uses @slack/client 3.x, whose form encoder requires Block Kit as JSON text.
   const post = (msg, blocks, text) => msg.send({
     text,
-    blocks,
+    blocks: JSON.stringify(blocks),
     unfurl_links: false,
     unfurl_media: false
   })
@@ -208,6 +218,7 @@ module.exports = robot => {
     })
   }
 
+  robot.respond(/devtools$/i, msg => msg.send(help))
   robot.respond(/devtools status --resumen$/i, msg => sendStatus(msg, true))
   robot.respond(/devtools status$/i, msg => sendStatus(msg, false))
   robot.respond(/devtools status ([a-z][a-z0-9-]*)$/i, msg => {
