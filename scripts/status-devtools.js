@@ -5,6 +5,9 @@
 //   hubot devtools status - Muestra el resumen de todos los servicios.
 //   hubot devtools status --resumen - Muestra sólo los servicios con incidencias.
 //   hubot devtools status <servicio> - Muestra detalle acotado de un servicio.
+//
+// Author:
+//   @jorgeepunan
 
 const MAX_BLOCK_TEXT = 2800
 const MAX_FALLBACK_TEXT = 3500
