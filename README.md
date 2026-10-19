@@ -1,10 +1,5 @@
 # Huemul
 
-[![dependency Status](https://img.shields.io/david/devschile/huemul.svg?style=flat-square)](https://david-dm.org/devschile/huemul#info=dependencies)
-[![devDependency Status](https://img.shields.io/david/dev/devschile/huemul.svg?style=flat-square)](https://david-dm.org/devschile/huemul#info=devDependencies)
-[![Total alerts](https://img.shields.io/lgtm/alerts/g/devschile/huemul.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/devschile/huemul/alerts/)
-[![Language grade: JavaScript](https://img.shields.io/lgtm/grade/javascript/g/devschile/huemul.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/devschile/huemul/context:javascript)
-
 Este un bot basado en [Hubot](https://hubot.github.com/) para [devsChile](http://www.devschile.cl) ([canal en Slack](http://devschile.slack.com)).
 
 Posee todas las funciones básicas de Hubot y varios aportes de [esforzados desarrolladores](https://github.com/devschile/huemul/graphs/contributors) y amantes del _Open Source_.
@@ -19,11 +14,9 @@ El repositorio queda abierto para todos los miembros de [devsChile en GitHub](ht
 
 ---
 
-![huemul-bot](http://www.utalca.cl/medios/utalca2010/saladeprensa/Estudiantes/huemul_2015_utalca.jpg)
+## Swags
 
-## Stickers
-
-Nuestro bot es tan querido que tenemos _swags_ los que están disponibles en [la tienda devsChile](https://tienda.devschile.cl)
+Nuestro bot es tan querido que tenemos productos disponibles en [la tienda devsChile](https://tienda.devschile.cl)
 
 ![Swags huemul](https://i.imgur.com/aNEtsHa.jpg)
 
@@ -48,3 +41,13 @@ Nota: el `install` usa Corepack para asegurar Yarn ejecutándose sobre Node 24 d
 * `PORT=8080`
 
 Compatibilidad: también puedes usar `HUBOT_MONGODB_URL`; el comando de arranque lo mapea a `MONGODB_URL` si este no existe.
+
+### Comunidad
+
+Gracias a todo quienes contribuyen con el desarrollo constante del bot, ¡los queremos!
+
+<a href="https://github.com/devschile/huemul/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=devschile/huemul" />
+</a>
+
+Made with [contrib.rocks](https://contrib.rocks).
