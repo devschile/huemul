@@ -15,8 +15,8 @@ test.afterEach(t => t.context.room.destroy())
 test('Teleton - obtener cómputo válido', async t => {
   const cifra = '$58.540.000.000'
 
-  nock('https://axtoczxlicpz.objectstorage.sa-santiago-1.oci.customer-oci.com')
-    .get('/n/axtoczxlicpz/b/teleton-bucket/o/computo.json')
+  nock('https://computo-cdn.teleton.cl')
+    .get('/computo.json')
     .reply(200, {
       cifra
     })
@@ -33,8 +33,8 @@ test('Teleton - obtener cómputo válido', async t => {
 })
 
 test('Teleton - error HTTP 500', async t => {
-  nock('https://axtoczxlicpz.objectstorage.sa-santiago-1.oci.customer-oci.com')
-    .get('/n/axtoczxlicpz/b/teleton-bucket/o/computo.json')
+  nock('https://computo-cdn.teleton.cl')
+    .get('/computo.json')
     .reply(500)
 
   t.context.room.user.say('user', 'hubot teleton')
@@ -51,8 +51,8 @@ test('Teleton - error HTTP 500', async t => {
 })
 
 test('Teleton - error 404', async t => {
-  nock('https://axtoczxlicpz.objectstorage.sa-santiago-1.oci.customer-oci.com')
-    .get('/n/axtoczxlicpz/b/teleton-bucket/o/computo.json')
+  nock('https://computo-cdn.teleton.cl')
+    .get('/computo.json')
     .reply(404)
 
   t.context.room.user.say('user', 'hubot teleton')
@@ -69,8 +69,8 @@ test('Teleton - error 404', async t => {
 })
 
 test('Teleton - datos inválidos (sin cifra)', async t => {
-  nock('https://axtoczxlicpz.objectstorage.sa-santiago-1.oci.customer-oci.com')
-    .get('/n/axtoczxlicpz/b/teleton-bucket/o/computo.json')
+  nock('https://computo-cdn.teleton.cl')
+    .get('/computo.json')
     .reply(200, {
       invalid: 'data'
     })

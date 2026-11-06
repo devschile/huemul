@@ -16,7 +16,7 @@ const moment = require('moment')
 module.exports = robot => {
   robot.respond(/teleton/i, async msg => {
     try {
-      const url = 'https://axtoczxlicpz.objectstorage.sa-santiago-1.oci.customer-oci.com/n/axtoczxlicpz/b/teleton-bucket/o/computo.json'
+      const url = 'https://computo-cdn.teleton.cl/computo.json'
 
       const response = await fetch(url)
 
