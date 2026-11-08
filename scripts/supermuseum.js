@@ -81,7 +81,7 @@ function fetchLibraries (robot, cb) {
 function formatGame (game) {
   const label = PLATFORM_LABELS[game.platform] || game.platform
   const line = `${game.title} (${game.year}) - ${game.developer} - ${label}`
-  return `${line}\n${BASE_URL}/?play=${game.platform}:${game.serial}`
+  return `${line}\n${BASE_URL}/play/${encodeURIComponent(game.platform)}/${encodeURIComponent(game.serial)}`
 }
 
 module.exports = function (robot) {

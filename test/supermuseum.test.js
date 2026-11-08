@@ -43,7 +43,7 @@ test.cb.serial('Comando vacío retorna un juego al azar', t => {
     t.is(t.context.room.messages.length, 2)
     t.is(t.context.room.messages[1][0], 'hubot')
     t.true(/Super Nintendo|Arcade/.test(t.context.room.messages[1][1]))
-    t.true(/supermuseum\.cc\/\?play=/.test(t.context.room.messages[1][1]))
+    t.true(/supermuseum\.cc\/play\//.test(t.context.room.messages[1][1]))
     t.end()
   }, 800)
 })
