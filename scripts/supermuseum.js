@@ -1,5 +1,5 @@
 // Description:
-//   Busca y recomienda juegos del SuperMuseum (supermuseum.netlify.app).
+//   Busca y recomienda juegos del SuperMuseum (supermuseum.cc).
 //
 // Dependencies:
 //   None
@@ -15,7 +15,7 @@
 // Author:
 //   @livercake
 
-const BASE_URL = 'https://supermuseum.netlify.app'
+const BASE_URL = 'https://supermuseum.cc'
 const MAX_RESULTS = 10
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000 // 24h: supermuseum publica nuevo contenido una vez al día
 

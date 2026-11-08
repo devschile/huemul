@@ -8,7 +8,7 @@ const nock = require('nock')
 const script = require('../scripts/supermuseum.js')
 const helper = new Helper('../scripts/supermuseum.js')
 
-const BASE = 'https://supermuseum.netlify.app'
+const BASE = 'https://supermuseum.cc'
 
 const snesGames = [
   { title: 'The Legend of Zelda: A Link to the Past', platform: 'snes', developer: 'Nintendo', year: 1992, serial: 'SNS-ZL-USA' },
@@ -43,7 +43,7 @@ test.cb.serial('Comando vacío retorna un juego al azar', t => {
     t.is(t.context.room.messages.length, 2)
     t.is(t.context.room.messages[1][0], 'hubot')
     t.true(/Super Nintendo|Arcade/.test(t.context.room.messages[1][1]))
-    t.true(/supermuseum\.netlify\.app\/\?play=/.test(t.context.room.messages[1][1]))
+    t.true(/supermuseum\.cc\/\?play=/.test(t.context.room.messages[1][1]))
     t.end()
   }, 800)
 })
