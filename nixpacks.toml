@@ -1,5 +1,8 @@
 [phases.setup]
 nixPkgs = ["nodejs_24", "git"]
+cmds = [
+  "curl -fsSL --retry 2 https://nodejs.org/dist/v24.22.1/node-v24.22.1-linux-arm64.tar.xz -o /tmp/node-security.tar.xz && echo 'dbabf7a1cbf947e6059ffad2c27b80041db97dea1e553b62afdee7f13fca336e  /tmp/node-security.tar.xz' | sha256sum -c - && tar -xJf /tmp/node-security.tar.xz -C /tmp node-v24.22.1-linux-arm64/bin/node && cp /tmp/node-v24.22.1-linux-arm64/bin/node \"$(readlink -f \"$(command -v node)\")\" && rm -rf /tmp/node-security.tar.xz /tmp/node-v24.22.1-linux-arm64 && test \"$(node --version)\" = v24.22.1"
+]
 
 [phases.install]
 cmds = [
