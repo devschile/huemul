@@ -655,6 +655,110 @@ const cleanAddress = text =>
 
 const truncate = (text, max = 90) => (text.length > max ? `${text.slice(0, max - 1)}…` : text)
 
+const SHARES_KEY = 'mapShares'
+const SHARE_MAX = 500
+const SHARE_TTL_MS = 180 * 24 * 60 * 60 * 1000
+
+const escapeHtml = text =>
+  String(text).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch])
+
+const readShares = robot => {
+  const all = robot.brain.get(SHARES_KEY)
+  return all && typeof all === 'object' ? all : {}
+}
+
+const pruneShares = shares => {
+  const now = Date.now()
+  const entries = Object.entries(shares)
+    .filter(([, share]) => share && now - share.at < SHARE_TTL_MS)
+    .sort((a, b) => b[1].at - a[1].at)
+    .slice(0, SHARE_MAX)
+  return Object.fromEntries(entries)
+}
+
+const createShare = (robot, place) => {
+  const shares = pruneShares(readShares(robot))
+  const id = crypto.randomBytes(4).toString('hex')
+  shares[id] = {
+    lat: place.lat,
+    lon: place.lon,
+    zoom: place.zoom,
+    label: place.label,
+    at: Date.now()
+  }
+  robot.brain.set(SHARES_KEY, shares)
+  return id
+}
+
+const getShare = (robot, id) => {
+  if (!/^[a-f0-9]{8}$/.test(String(id))) return null
+  const share = readShares(robot)[id]
+  if (!share || Date.now() - share.at > SHARE_TTL_MS) return null
+  return share
+}
+
+const renderSharePage = (share, id) => {
+  const base = publicUrl()
+  const image = `${base}/m/${id}.png`
+  const title = escapeHtml(truncate(share.label, 120))
+  const coords = `${share.lat.toFixed(5)}, ${share.lon.toFixed(5)}`
+  const osm = osmLink(share.lat, share.lon, share.zoom)
+
+  return `<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${title} · huemul</title>
+<meta property="og:title" content="${title}">
+<meta property="og:description" content="Mapa de ${title} (${coords})">
+<meta property="og:image" content="${image}">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+  :root { color-scheme: light dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: #f5f4f0; color: #1d1d1b; }
+  main { max-width: 680px; margin: 0 auto; padding: 16px; }
+  h1 { font-size: 1.25rem; margin: 0 0 4px; }
+  p.coords { margin: 0 0 12px; color: #5f5f5a; font-size: .9rem; }
+  img { width: 100%; height: auto; border-radius: 10px; display: block; border: 1px solid #ddd9d1; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  button, a.btn { font: inherit; padding: 10px 14px; border-radius: 8px; border: 1px solid #c9c4ba; background: #fff; color: inherit; text-decoration: none; cursor: pointer; }
+  button { background: #d93025; border-color: #d93025; color: #fff; }
+  footer { margin-top: 14px; font-size: .8rem; color: #6b6b66; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #14140f; color: #f2efe6; }
+    p.coords, footer { color: #a9a49a; }
+    img { border-color: #33302a; }
+    button, a.btn { background: #23231d; border-color: #3a3a32; }
+    button { background: #d93025; border-color: #d93025; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>${title}</h1>
+  <p class="coords">${coords}</p>
+  <img src="${image}" alt="Mapa de ${title}" loading="lazy">
+  <div class="actions">
+    <button type="button" id="copy">Copiar link</button>
+    <a class="btn" href="${osm}" target="_blank" rel="noopener">Ver en OpenStreetMap</a>
+  </div>
+  <footer>Mapa de huemul · devsChile.cl</footer>
+</main>
+<script>
+  document.getElementById('copy').addEventListener('click', function () {
+    var url = location.href
+    var done = function () { this.textContent = '¡Copiado!' }
+    if (navigator.clipboard) navigator.clipboard.writeText(url).then(done.bind(this))
+    else { prompt('Copia el link:', url) }
+  })
+</script>
+</body>
+</html>`
+}
+
 module.exports = robot => {
   if (robot.router && typeof robot.router.get === 'function') {
     robot.router.get('/map/:id.png', (req, res) => {
@@ -664,6 +768,30 @@ module.exports = robot => {
       res.set('Content-Type', 'image/png')
       res.set('Cache-Control', 'public, max-age=1800')
       res.send(png)
+    })
+
+    robot.router.get('/m/:id.png', async (req, res) => {
+      const share = getShare(robot, req.params.id)
+      if (!share) return res.status(404).type('text/plain').send('not found')
+
+      try {
+        const map = await buildMapImage(share.lat, share.lon, share.zoom)
+        res.set('Content-Type', 'image/png')
+        res.set('Cache-Control', 'public, max-age=86400')
+        res.send(map.png)
+      } catch (err) {
+        robot.logger.error(`map: share image ${err.kind || 'unknown'} ${err.detail || err.message}`)
+        res.status(502).type('text/plain').send('map unavailable')
+      }
+    })
+
+    robot.router.get('/m/:id', (req, res) => {
+      const share = getShare(robot, req.params.id)
+      if (!share) return res.status(404).type('text/html').send('<!doctype html><meta charset="utf-8"><p>Mapa no encontrado.</p>')
+
+      res.set('Content-Type', 'text/html; charset=utf-8')
+      res.set('Cache-Control', 'public, max-age=300')
+      res.send(renderSharePage(share, req.params.id))
     })
   }
 
@@ -688,12 +816,14 @@ module.exports = robot => {
 
     const link = osmLink(place.lat, place.lon, place.zoom)
     const label = truncate(place.label)
+    const shareId = createShare(robot, place)
+    const shortLink = `${publicUrl()}/m/${shareId}`
     const attachment = {
-      fallback: `Mapa de ${label}: ${link}`,
+      fallback: `Mapa de ${label}: ${shortLink}`,
       color: 'good',
       title: label,
-      title_link: link,
-      text: `:world_map: <${link}|Ver en OpenStreetMap> (${place.lat.toFixed(5)}, ${place.lon.toFixed(5)})`,
+      title_link: shortLink,
+      text: `:world_map: <${shortLink}|Ver mapa> · <${link}|OpenStreetMap> (${place.lat.toFixed(5)}, ${place.lon.toFixed(5)})`,
       footer: ATTRIBUTION
     }
 
@@ -707,7 +837,7 @@ module.exports = robot => {
     }
 
     msg.send({
-      text: `Mapa de ${label}: ${link}`,
+      text: `Mapa de ${label}: ${shortLink}`,
       attachments: [attachment],
       unfurl_links: false,
       unfurl_media: false
@@ -721,3 +851,6 @@ module.exports.readImage = readImage
 module.exports.resetCaches = resetCaches
 module.exports.zoomToFit = zoomToFit
 module.exports.buildMapImage = buildMapImage
+module.exports.createShare = createShare
+module.exports.getShare = getShare
+module.exports.renderSharePage = renderSharePage

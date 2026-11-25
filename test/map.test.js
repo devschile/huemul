@@ -108,13 +108,14 @@ test.serial('map - geocodifica y devuelve mapa con pin', async t => {
   const message = reply[1]
   const [attachment] = message.attachments
 
-  t.true(message.text.includes('openstreetmap.org'))
+  t.true(/\/m\/[a-f0-9]{8}/.test(message.text))
   t.false(message.unfurl_links)
   t.false(message.unfurl_media)
   t.true(attachment.title.startsWith('La Resistencia Café'))
   t.is(attachment.footer, '© OpenStreetMap contributors')
-  t.true(attachment.title_link.includes('mlat=-33.42207'))
-  t.true(attachment.title_link.includes('#map=17/-33.42207/-70.61143'))
+  t.true(/\/m\/[a-f0-9]{8}$/.test(attachment.title_link), attachment.title_link)
+  t.true(attachment.text.includes('mlat=-33.42207'))
+  t.true(attachment.text.includes('#map=17/-33.42207/-70.61143'))
 
   const match = attachment.image_url.match(
     /^https:\/\/huemul\.devschile\.cl\/map\/([a-f0-9]{16})\.png$/
@@ -220,7 +221,7 @@ test.serial('map - si fallan todos los tiles igual entrega el link', async t => 
 
   t.is(attachment.image_url, undefined)
   t.true(attachment.text.includes('No pude generar la imagen, pero el link funciona.'))
-  t.true(attachment.title_link.includes('openstreetmap.org'))
+  t.true(attachment.text.includes('openstreetmap.org'))
 })
 
 test.serial('map - si osmfr falla usa el estilo HOT', async t => {
@@ -241,7 +242,7 @@ test.serial('map - ciudades usan menos zoom que direcciones', async t => {
 
   const message = (await run(t, 'hubot map Santiago, Chile'))[1]
 
-  t.true(message.attachments[0].title_link.includes('#map=10/-33.43770/-70.65100'))
+  t.true(message.attachments[0].text.includes('#map=10/-33.43770/-70.65100'))
 })
 
 test.serial('map - acota el zoom cuando el bbox viene gigante', async t => {
@@ -259,7 +260,7 @@ test.serial('map - acota el zoom cuando el bbox viene gigante', async t => {
 
   const message = (await run(t, 'hubot map Valparaíso, Chile'))[1]
 
-  t.true(message.attachments[0].title_link.includes('#map=10/-33.04580/-71.61970'))
+  t.true(message.attachments[0].text.includes('#map=10/-33.04580/-71.61970'))
 })
 
 test.serial('map - cachea geocoding y tiles entre consultas iguales', async t => {
@@ -304,7 +305,7 @@ test.serial('map - si Stadia falla entrega el link igual', async t => {
 
   t.falsy(attachment.image_url)
   t.true(attachment.text.includes('No pude generar la imagen'))
-  t.true(attachment.title_link.includes('openstreetmap.org'))
+  t.true(attachment.text.includes('openstreetmap.org'))
 })
 
 test.serial('map - usa Geoapify si hay key', async t => {
@@ -398,6 +399,46 @@ test.serial('map - HUBOT_MAP_WATERMARK=off no pinta nada', async t => {
   const id = message.attachments[0].image_url.match(/map\/([a-f0-9]{16})\.png/)[1]
 
   t.deepEqual(map.readImage(id), TILE)
+})
+
+test.serial('map - entrega un link corto guardado en el brain', async t => {
+  nominatimReply([addressResult])
+  tilesReply(9)
+
+  const message = (await run(t, 'hubot map Av. Providencia 2124, Santiago'))[1]
+  const [attachment] = message.attachments
+  const id = attachment.title_link.match(/\/m\/([a-f0-9]{8})$/)[1]
+
+  const share = map.getShare(t.context.room.robot, id)
+  t.truthy(share)
+  t.is(share.zoom, 17)
+  t.true(Math.abs(share.lat + 33.4220724) < 0.0001)
+  t.truthy(t.context.room.robot.brain.get('mapShares')[id])
+})
+
+test('map - la página de compartir escapa el nombre y declara og:image', t => {
+  const html = map.renderSharePage(
+    { lat: -33.4220724, lon: -70.6114271, zoom: 17, label: '<b>Plaza</b> & CIA', at: Date.now() },
+    'abcdef12'
+  )
+
+  t.true(html.includes('&lt;b&gt;Plaza&lt;/b&gt; &amp; CIA'))
+  t.false(html.includes('<b>Plaza</b>'))
+  t.true(html.includes('content="https://huemul.devschile.cl/m/abcdef12.png"'))
+  t.true(html.includes('Copiar link'))
+})
+
+test('map - getShare valida id y expiración', t => {
+  const shares = {
+    abcdef12: { lat: 1, lon: 2, zoom: 10, label: 'x', at: Date.now() },
+    deadbeef: { lat: 1, lon: 2, zoom: 10, label: 'x', at: Date.now() - 200 * 24 * 60 * 60 * 1000 }
+  }
+  const robot = { brain: { get: () => shares } }
+
+  t.truthy(map.getShare(robot, 'abcdef12'))
+  t.is(map.getShare(robot, 'deadbeef'), null)
+  t.is(map.getShare(robot, '../../etc/passwd'), null)
+  t.is(map.getShare(robot, 'ABC'), null)
 })
 
 test('map - zoom según bounding box', t => {
