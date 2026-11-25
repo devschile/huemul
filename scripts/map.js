@@ -9,6 +9,13 @@
 //   HUBOT_MAP_PUBLIC_URL - URL pública con que se sirve la imagen (default: https://huemul.devschile.cl)
 //   HUBOT_MAP_TIMEOUT_MS - Timeout de cada request en ms (default: 8000)
 //   HUBOT_MAP_PROVIDER   - Estilo de tiles: osmfr, hot, osm, osmde (default: osmfr)
+//   HUBOT_MAP_STADIA_KEY - API key de Stadia Maps. Si está definida se usa su
+//                          Static Maps API (una sola imagen) en vez de coser tiles.
+//   HUBOT_MAP_STADIA_STYLE - Estilo de Stadia: outdoors, alidade_smooth,
+//                            stamen_terrain, etc. (default: outdoors)
+//   HUBOT_MAP_GEOAPIFY_KEY - API key de Geoapify (alternativa a Stadia).
+//   HUBOT_MAP_GEOAPIFY_STYLE - Estilo de Geoapify: osm-bright, osm-carto,
+//                              positron (default: osm-bright)
 //
 // Commands:
 //   hubot map <lugar> - Devuelve un mapa según lugar entregado
@@ -31,6 +38,10 @@ const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search'
 const PHOTON_URL = 'https://photon.komoot.io/api/'
 const USER_AGENT = 'HuemulBot/2.0 (+https://devschile.cl; huemul@devschile.cl)'
 const ATTRIBUTION = '© OpenStreetMap contributors'
+const STADIA_ATTRIBUTION = '© Stadia Maps · © OpenStreetMap contributors'
+const GEOAPIFY_ATTRIBUTION = '© Geoapify · © OpenMapTiles · © OpenStreetMap contributors'
+const STADIA_STATIC_URL = 'https://tiles.stadiamaps.com/static'
+const GEOAPIFY_STATIC_URL = 'https://api.geoapify.com/v1/staticmap'
 const DEFAULT_PUBLIC_URL = 'https://huemul.devschile.cl'
 
 const TILE_SIZE = 256
@@ -259,7 +270,73 @@ const composeMap = async (provider, lat, lon, zoom) => {
   }
 }
 
+const stadiaKey = () => (process.env.HUBOT_MAP_STADIA_KEY || '').trim()
+const stadiaStyle = () => (process.env.HUBOT_MAP_STADIA_STYLE || 'outdoors').trim()
+const geoapifyKey = () => (process.env.HUBOT_MAP_GEOAPIFY_KEY || '').trim()
+const geoapifyStyle = () => (process.env.HUBOT_MAP_GEOAPIFY_STYLE || 'osm-bright').trim()
+
+const fetchImage = async url => {
+  let response
+  try {
+    response = await fetch(url, {
+      headers: { 'User-Agent': USER_AGENT },
+      timeout: timeoutMs()
+    })
+  } catch (err) {
+    if (err.type === 'request-timeout') throw new MapLookupError('timeout', err.type)
+    throw new MapLookupError('network', err.message)
+  }
+
+  if (response.status === 429) throw new MapLookupError('rate-limit', 'HTTP 429')
+  if (!response.ok) throw new MapLookupError('status', `HTTP ${response.status}`)
+
+  const type = response.headers.get('content-type') || ''
+  if (!type.startsWith('image/')) throw new MapLookupError('parse', `content-type ${type}`)
+
+  return response.buffer()
+}
+
+const buildStadiaImage = async (lat, lon, zoom) => {
+  const query = [
+    `center=${lat},${lon}`,
+    `zoom=${Math.min(zoom, MAX_ZOOM)}`,
+    `size=${MAP_WIDTH}x${MAP_HEIGHT}@2x`,
+    `markers=${lat},${lon},,red`,
+    `api_key=${encodeURIComponent(stadiaKey())}`
+  ].join('&')
+  const url = `${STADIA_STATIC_URL}/${encodeURIComponent(stadiaStyle())}.png?${query}`
+
+  return {
+    png: await fetchImage(url),
+    attribution: STADIA_ATTRIBUTION,
+    provider: `stadia:${stadiaStyle()}`
+  }
+}
+
+const buildGeoapifyImage = async (lat, lon, zoom) => {
+  const query = [
+    `style=${encodeURIComponent(geoapifyStyle())}`,
+    `width=${MAP_WIDTH}`,
+    `height=${MAP_HEIGHT}`,
+    'format=png',
+    'scaleFactor=2',
+    `center=lonlat:${lon},${lat}`,
+    `zoom=${Math.min(zoom, MAX_ZOOM)}`,
+    `marker=lonlat:${lon},${lat};color:%23d93025;size:large;type:material`,
+    `apiKey=${encodeURIComponent(geoapifyKey())}`
+  ].join('&')
+
+  return {
+    png: await fetchImage(`${GEOAPIFY_STATIC_URL}?${query}`),
+    attribution: GEOAPIFY_ATTRIBUTION,
+    provider: `geoapify:${geoapifyStyle()}`
+  }
+}
+
 const buildMapImage = async (lat, lon, zoom) => {
+  if (stadiaKey()) return buildStadiaImage(lat, lon, zoom)
+  if (geoapifyKey()) return buildGeoapifyImage(lat, lon, zoom)
+
   let failure = null
   for (const provider of providerOrder()) {
     try {
@@ -507,3 +584,4 @@ module.exports.osmLink = osmLink
 module.exports.readImage = readImage
 module.exports.resetCaches = resetCaches
 module.exports.zoomToFit = zoomToFit
+module.exports.buildMapImage = buildMapImage

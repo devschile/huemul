@@ -83,6 +83,10 @@ test.beforeEach(t => {
 test.afterEach(t => {
   t.context.room.destroy()
   nock.cleanAll()
+  delete process.env.HUBOT_MAP_STADIA_KEY
+  delete process.env.HUBOT_MAP_STADIA_STYLE
+  delete process.env.HUBOT_MAP_GEOAPIFY_KEY
+  delete process.env.HUBOT_MAP_GEOAPIFY_STYLE
 })
 
 test.after(() => nock.enableNetConnect())
@@ -261,6 +265,55 @@ test.serial('map - cachea geocoding y tiles entre consultas iguales', async t =>
   t.truthy(first.attachments[0].image_url)
   t.truthy(second.attachments[0].image_url)
   t.true(nock.isDone())
+})
+
+test.serial('map - usa Stadia si hay key y no filtra la key', async t => {
+  process.env.HUBOT_MAP_STADIA_KEY = 'clave-de-prueba'
+  nominatimReply([addressResult])
+  nock('https://tiles.stadiamaps.com')
+    .get('/static/outdoors.png')
+    .query(query => query.zoom === '17' && query.size === '600x400@2x')
+    .reply(200, TILE, { 'Content-Type': 'image/png' })
+
+  const message = (await run(t, 'hubot map Av. Providencia 2124, Santiago, Chile'))[1]
+  const [attachment] = message.attachments
+
+  t.is(attachment.footer, '© Stadia Maps · © OpenStreetMap contributors')
+  t.true(Buffer.isBuffer(map.readImage(attachment.image_url.match(/map\/([a-f0-9]{16})\.png/)[1])))
+  t.false(JSON.stringify(message).includes('clave-de-prueba'))
+  t.true(nock.isDone())
+})
+
+test.serial('map - si Stadia falla entrega el link igual', async t => {
+  process.env.HUBOT_MAP_STADIA_KEY = 'clave-de-prueba'
+  nominatimReply([addressResult])
+  nock('https://tiles.stadiamaps.com')
+    .get('/static/outdoors.png')
+    .query(true)
+    .reply(401, { error: 'invalid key' }, { 'Content-Type': 'application/json' })
+
+  const message = (await run(t, 'hubot map Av. Providencia 2124, Santiago, Chile'))[1]
+  const [attachment] = message.attachments
+
+  t.falsy(attachment.image_url)
+  t.true(attachment.text.includes('No pude generar la imagen'))
+  t.true(attachment.title_link.includes('openstreetmap.org'))
+})
+
+test.serial('map - usa Geoapify si hay key', async t => {
+  process.env.HUBOT_MAP_GEOAPIFY_KEY = 'geo-clave'
+  nominatimReply([cityResult])
+  nock('https://api.geoapify.com')
+    .get('/v1/staticmap')
+    .query(query => query.style === 'osm-bright' && query.center === 'lonlat:-70.651,-33.4377')
+    .reply(200, TILE, { 'Content-Type': 'image/png' })
+
+  const message = (await run(t, 'hubot map Santiago, Chile'))[1]
+  const [attachment] = message.attachments
+
+  t.true(attachment.footer.startsWith('© Geoapify'))
+  t.truthy(attachment.image_url)
+  t.false(JSON.stringify(message).includes('geo-clave'))
 })
 
 test('map - zoom según bounding box', t => {
