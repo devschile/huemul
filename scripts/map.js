@@ -8,12 +8,15 @@
 // Configuration:
 //   HUBOT_MAP_PUBLIC_URL - URL pública con que se sirve la imagen (default: https://huemul.devschile.cl)
 //   HUBOT_MAP_TIMEOUT_MS - Timeout de cada request en ms (default: 8000)
+//   HUBOT_MAP_PROVIDER   - Estilo de tiles: osmfr, hot, osm, osmde (default: osmfr)
 //
 // Commands:
 //   hubot map <lugar> - Devuelve un mapa según lugar entregado
 //
 // Notes:
 //   Geocoding: Nominatim, con Photon como respaldo. Tiles: OpenStreetMap.
+//   El zoom se calcula con el bounding box del resultado: una dirección queda
+//   a zoom 17 y una ciudad a zoom ~11.
 //   Atribución obligatoria: © OpenStreetMap contributors
 //
 // Author:
@@ -26,7 +29,6 @@ const UPNG = require('upng-js')
 
 const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search'
 const PHOTON_URL = 'https://photon.komoot.io/api/'
-const TILE_URL = 'https://tile.openstreetmap.org'
 const USER_AGENT = 'HuemulBot/2.0 (+https://devschile.cl; huemul@devschile.cl)'
 const ATTRIBUTION = '© OpenStreetMap contributors'
 const DEFAULT_PUBLIC_URL = 'https://huemul.devschile.cl'
@@ -35,8 +37,10 @@ const TILE_SIZE = 256
 const TILES_PER_SIDE = 3
 const MAP_WIDTH = 600
 const MAP_HEIGHT = 400
-const MARKER_RADIUS = 7
+const MARKER_RADIUS = 9
 const MAX_ADDRESS_LENGTH = 200
+const MIN_ZOOM = 3
+const MAX_ZOOM = 17
 
 const TILE_TTL_MS = 7 * 24 * 60 * 60 * 1000
 const TILE_CACHE_MAX = 600
@@ -58,6 +62,29 @@ const CITY_TYPES = new Set([
   'administrative'
 ])
 
+const TILE_PROVIDERS = [
+  {
+    id: 'osmfr',
+    url: (z, x, y) => `https://a.tile.openstreetmap.fr/osmfr/${z}/${x}/${y}.png`,
+    attribution: ATTRIBUTION
+  },
+  {
+    id: 'hot',
+    url: (z, x, y) => `https://a.tile.openstreetmap.fr/hot/${z}/${x}/${y}.png`,
+    attribution: `${ATTRIBUTION} · Humanitarian OSM Team`
+  },
+  {
+    id: 'osm',
+    url: (z, x, y) => `https://tile.openstreetmap.org/${z}/${x}/${y}.png`,
+    attribution: ATTRIBUTION
+  },
+  {
+    id: 'osmde',
+    url: (z, x, y) => `https://tile.openstreetmap.de/${z}/${x}/${y}.png`,
+    attribution: ATTRIBUTION
+  }
+]
+
 const tileCache = new Map()
 const geoCache = new Map()
 const images = new Map()
@@ -66,6 +93,12 @@ const timeoutMs = () => Number(process.env.HUBOT_MAP_TIMEOUT_MS) || 8000
 
 const publicUrl = () =>
   (process.env.HUBOT_MAP_PUBLIC_URL || DEFAULT_PUBLIC_URL).replace(/\/+$/, '')
+
+const providerOrder = () => {
+  const preferred = TILE_PROVIDERS.find(provider => provider.id === process.env.HUBOT_MAP_PROVIDER)
+  if (!preferred) return TILE_PROVIDERS
+  return [preferred, ...TILE_PROVIDERS.filter(provider => provider.id !== preferred.id)]
+}
 
 const readCache = (cache, key, ttl) => {
   const hit = cache.get(key)
@@ -112,12 +145,12 @@ const getJson = async url => {
   }
 }
 
-const getTile = async (zoom, x, y) => {
-  const key = `${zoom}/${x}/${y}`
+const getTile = async (provider, zoom, x, y) => {
+  const key = `${provider.id}/${zoom}/${x}/${y}`
   const cached = readCache(tileCache, key, TILE_TTL_MS)
   if (cached) return cached
 
-  const response = await fetch(`${TILE_URL}/${zoom}/${x}/${y}.png`, {
+  const response = await fetch(provider.url(zoom, x, y), {
     headers: { 'User-Agent': USER_AGENT },
     timeout: timeoutMs()
   })
@@ -166,7 +199,7 @@ const drawMarker = (rgba, width, height, cx, cy) => {
   }
 }
 
-const buildMapImage = async (lat, lon, zoom) => {
+const composeMap = async (provider, lat, lon, zoom) => {
   const worldX = lonToTile(lon, zoom)
   const worldY = latToTile(lat, zoom)
   const centerX = Math.floor(worldX)
@@ -184,7 +217,7 @@ const buildMapImage = async (lat, lon, zoom) => {
           const tileX = ((centerX + dx) % (maxTile + 1) + maxTile + 1) % (maxTile + 1)
           const tileY = Math.min(Math.max(centerY + dy, 0), maxTile)
           try {
-            const png = await getTile(zoom, tileX, tileY)
+            const png = await getTile(provider, zoom, tileX, tileY)
             return { dx, dy, rgba: new Uint8Array(UPNG.toRGBA8(UPNG.decode(png))[0]) }
           } catch (err) {
             if (dx === 0 && dy === 0) throw err
@@ -219,7 +252,23 @@ const buildMapImage = async (lat, lon, zoom) => {
 
   drawMarker(output, MAP_WIDTH, MAP_HEIGHT, pixelX - cropX, pixelY - cropY)
 
-  return Buffer.from(UPNG.encode([output.buffer], MAP_WIDTH, MAP_HEIGHT, 0))
+  return {
+    png: Buffer.from(UPNG.encode([output.buffer], MAP_WIDTH, MAP_HEIGHT, 0)),
+    attribution: provider.attribution,
+    provider: provider.id
+  }
+}
+
+const buildMapImage = async (lat, lon, zoom) => {
+  let failure = null
+  for (const provider of providerOrder()) {
+    try {
+      return await composeMap(provider, lat, lon, Math.min(zoom, MAX_ZOOM))
+    } catch (err) {
+      failure = failure || err
+    }
+  }
+  throw failure
 }
 
 const storeImage = png => {
@@ -238,6 +287,56 @@ const resetCaches = () => {
 
 const zoomForType = type => (CITY_TYPES.has(type) ? 12 : 16)
 
+const ZOOM_BOUNDS = {
+  country: [3, 6],
+  state: [4, 8],
+  region: [4, 8],
+  county: [7, 10],
+  municipality: [8, 11],
+  city: [10, 13],
+  town: [11, 14],
+  village: [12, 15],
+  hamlet: [13, 16],
+  suburb: [14, 16],
+  neighbourhood: [14, 16],
+  quarter: [14, 16],
+  borough: [14, 16],
+  road: [15, 17],
+  house: [16, 17],
+  building: [16, 17]
+}
+
+const boundsForType = type => ZOOM_BOUNDS[type] || [14, MAX_ZOOM]
+
+const mercatorY = lat => {
+  const rad = (lat * Math.PI) / 180
+  return (1 - Math.log(Math.tan(rad) + 1 / Math.cos(rad)) / Math.PI) / 2
+}
+
+const zoomToFit = bbox => {
+  if (!Array.isArray(bbox) || bbox.length !== 4) return null
+  const [south, north, west, east] = bbox.map(Number)
+  if (![south, north, west, east].every(Number.isFinite)) return null
+
+  const latSpan = Math.abs(mercatorY(north) - mercatorY(south))
+  const lonSpan = Math.abs((east - west) / 360)
+  if (!(latSpan > 0) || !(lonSpan > 0)) return null
+
+  const zoomLat = Math.log2(MAP_HEIGHT / TILE_SIZE / latSpan)
+  const zoomLon = Math.log2(MAP_WIDTH / TILE_SIZE / lonSpan)
+
+  return Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, Math.floor(Math.min(zoomLat, zoomLon))))
+}
+
+// El bounding box de algunos lugares viene enorme (relaciones administrativas
+// mal delimitadas), así que el zoom calculado se acota según el tipo de lugar.
+const zoomForPlace = (bbox, type) => {
+  const [min, max] = boundsForType(type)
+  const fit = zoomToFit(bbox)
+  if (fit === null) return Math.min(max, Math.max(min, zoomForType(type)))
+  return Math.min(max, Math.max(min, fit))
+}
+
 const fromNominatim = async address => {
   const query = querystring.stringify({
     q: address,
@@ -254,11 +353,13 @@ const fromNominatim = async address => {
   const lon = Number(result.lon)
   if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null
 
+  const placeType = result.addresstype || result.type
+
   return {
     lat,
     lon,
     label: result.display_name || address,
-    zoom: zoomForType(result.type)
+    zoom: zoomForPlace(result.boundingbox, placeType)
   }
 }
 
@@ -280,11 +381,16 @@ const fromPhoton = async address => {
   const label =
     [properties.name, properties.city, properties.country].filter(Boolean).join(', ') || address
 
+  const extent = properties.extent
+  const bbox = Array.isArray(extent) && extent.length === 4
+    ? [extent[3], extent[1], extent[0], extent[2]]
+    : null
+
   return {
     lat,
     lon,
     label,
-    zoom: zoomForType(properties.type)
+    zoom: zoomForPlace(bbox, properties.type)
   }
 }
 
@@ -379,8 +485,9 @@ module.exports = robot => {
     }
 
     try {
-      const png = await buildMapImage(place.lat, place.lon, place.zoom)
-      attachment.image_url = `${publicUrl()}/map/${storeImage(png)}.png`
+      const map = await buildMapImage(place.lat, place.lon, place.zoom)
+      attachment.image_url = `${publicUrl()}/map/${storeImage(map.png)}.png`
+      attachment.footer = map.attribution
     } catch (err) {
       robot.logger.error(`map: tiles ${err.kind || 'unknown'} ${err.detail || err.message}`)
       attachment.text = `${attachment.text}\nNo pude generar la imagen, pero el link funciona.`
@@ -399,3 +506,4 @@ module.exports.cleanAddress = cleanAddress
 module.exports.osmLink = osmLink
 module.exports.readImage = readImage
 module.exports.resetCaches = resetCaches
+module.exports.zoomToFit = zoomToFit

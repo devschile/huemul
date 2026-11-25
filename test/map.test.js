@@ -12,7 +12,9 @@ const helper = new Helper('../scripts/map.js')
 const TILE = fs.readFileSync(path.join(__dirname, 'fixtures', 'tile-blank.png'))
 const NOMINATIM = 'https://nominatim.openstreetmap.org'
 const PHOTON = 'https://photon.komoot.io'
-const TILES = 'https://tile.openstreetmap.org'
+const TILES_FR = 'https://a.tile.openstreetmap.fr'
+const TILES_OSM = 'https://tile.openstreetmap.org'
+const TILES_DE = 'https://tile.openstreetmap.de'
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
@@ -22,30 +24,47 @@ const photonReply = body =>
     .get('/api/')
     .query(query => !('lang' in query))
     .reply(200, body)
-const tilesReply = times =>
-  nock(TILES).get(/^\/\d+\/\d+\/\d+\.png$/).times(times).reply(200, TILE, {
-    'Content-Type': 'image/png'
-  })
+
+const tilesReply = (times, style = 'osmfr') =>
+  nock(TILES_FR)
+    .get(new RegExp(`^/${style}/\\d+/\\d+/\\d+\\.png$`))
+    .times(times)
+    .reply(200, TILE, { 'Content-Type': 'image/png' })
 
 const addressResult = {
   lat: '-33.4220724',
   lon: '-70.6114271',
   display_name: 'La Resistencia Café, 2124, Avenida Providencia, Providencia, Chile',
+  boundingbox: ['-33.4221224', '-33.4220224', '-70.6114771', '-70.6113771'],
   type: 'cafe'
+}
+
+const cityResult = {
+  lat: '-33.4377',
+  lon: '-70.6510',
+  display_name: 'Santiago, Provincia de Santiago, Región Metropolitana, Chile',
+  boundingbox: ['-33.5976995', '-33.2776995', '-70.8110671', '-70.4910671'],
+  type: 'city'
 }
 
 const photonResult = {
   features: [
     {
       geometry: { coordinates: [-70.6114271, -33.4220724] },
-      properties: { name: 'La Resistencia Café', city: 'Providencia', country: 'Chile', type: 'house' }
+      properties: {
+        name: 'La Resistencia Café',
+        city: 'Providencia',
+        country: 'Chile',
+        type: 'house',
+        extent: [-70.6117, -33.4219, -70.6111, -33.4222]
+      }
     }
   ]
 }
 
 const run = async (t, command) => {
   t.context.room.user.say('user', command)
-  await sleep(500)
+  await sleep(600)
   return t.context.room.messages[1]
 }
 
@@ -53,6 +72,7 @@ test.before(() => {
   nock.disableNetConnect()
   process.env.HUBOT_MAP_PUBLIC_URL = 'https://huemul.devschile.cl'
   process.env.HUBOT_MAP_TIMEOUT_MS = '3000'
+  delete process.env.HUBOT_MAP_PROVIDER
 })
 
 test.beforeEach(t => {
@@ -83,7 +103,7 @@ test.serial('map - geocodifica y devuelve mapa con pin', async t => {
   t.true(attachment.title.startsWith('La Resistencia Café'))
   t.is(attachment.footer, '© OpenStreetMap contributors')
   t.true(attachment.title_link.includes('mlat=-33.42207'))
-  t.true(attachment.title_link.includes('#map=16/-33.42207/-70.61143'))
+  t.true(attachment.title_link.includes('#map=17/-33.42207/-70.61143'))
 
   const match = attachment.image_url.match(
     /^https:\/\/huemul\.devschile\.cl\/map\/([a-f0-9]{16})\.png$/
@@ -177,9 +197,12 @@ test.serial('map - error de red del geocodificador', async t => {
   t.true(reply[1].includes('No pude conectar con el buscador de mapas'))
 })
 
-test.serial('map - si fallan los tiles igual entrega el link', async t => {
+test.serial('map - si fallan todos los tiles igual entrega el link', async t => {
   nominatimReply([addressResult])
-  nock(TILES).get(/^\/\d+\/\d+\/\d+\.png$/).times(9).reply(500, 'boom')
+  const failing = times => nock(TILES_FR).get(/\.png$/).times(times).reply(500, 'boom')
+  failing(18)
+  nock(TILES_OSM).get(/\.png$/).times(9).reply(500, 'boom')
+  nock(TILES_DE).get(/\.png$/).times(9).reply(500, 'boom')
 
   const message = (await run(t, 'hubot map Av. Providencia 2124, Santiago'))[1]
   const [attachment] = message.attachments
@@ -189,20 +212,43 @@ test.serial('map - si fallan los tiles igual entrega el link', async t => {
   t.true(attachment.title_link.includes('openstreetmap.org'))
 })
 
+test.serial('map - si osmfr falla usa el estilo HOT', async t => {
+  nominatimReply([addressResult])
+  nock(TILES_FR).get(/^\/osmfr\/\d+\/\d+\/\d+\.png$/).times(9).reply(500, 'boom')
+  tilesReply(9, 'hot')
+
+  const message = (await run(t, 'hubot map Av. Providencia 2124, Santiago'))[1]
+  const [attachment] = message.attachments
+
+  t.truthy(attachment.image_url)
+  t.true(attachment.footer.includes('Humanitarian OSM Team'))
+})
+
 test.serial('map - ciudades usan menos zoom que direcciones', async t => {
-  nominatimReply([
-    {
-      lat: '-33.4489',
-      lon: '-70.6693',
-      display_name: 'Santiago, Región Metropolitana, Chile',
-      type: 'city'
-    }
-  ])
+  nominatimReply([cityResult])
   tilesReply(9)
 
   const message = (await run(t, 'hubot map Santiago, Chile'))[1]
 
-  t.true(message.attachments[0].title_link.includes('#map=12/-33.44890/-70.66930'))
+  t.true(message.attachments[0].title_link.includes('#map=10/-33.43770/-70.65100'))
+})
+
+test.serial('map - acota el zoom cuando el bbox viene gigante', async t => {
+  nominatimReply([
+    {
+      lat: '-33.0458',
+      lon: '-71.6197',
+      display_name: 'Valparaíso, Provincia de Valparaíso, Región de Valparaíso, Chile',
+      boundingbox: ['-33.2129142', '-26.2733307', '-80.1215134', '-71.3830930'],
+      type: 'administrative',
+      addresstype: 'city'
+    }
+  ])
+  tilesReply(9)
+
+  const message = (await run(t, 'hubot map Valparaíso, Chile'))[1]
+
+  t.true(message.attachments[0].title_link.includes('#map=10/-33.04580/-71.61970'))
 })
 
 test.serial('map - cachea geocoding y tiles entre consultas iguales', async t => {
@@ -215,6 +261,15 @@ test.serial('map - cachea geocoding y tiles entre consultas iguales', async t =>
   t.truthy(first.attachments[0].image_url)
   t.truthy(second.attachments[0].image_url)
   t.true(nock.isDone())
+})
+
+test('map - zoom según bounding box', t => {
+  t.is(map.zoomToFit(['-33.4221224', '-33.4220224', '-70.6114771', '-70.6113771']), 17)
+  t.is(map.zoomToFit(['-33.5976995', '-33.2776995', '-70.8110671', '-70.4910671']), 10)
+  t.is(map.zoomToFit(['-17.5', '-17.4', '-70.3', '-70.2']) > 10, true)
+  t.is(map.zoomToFit(['-56.0', '-17.0', '-110.0', '-66.0']) < 7, true)
+  t.is(map.zoomToFit(null), null)
+  t.is(map.zoomToFit(['0', '0', '0', '0']), null)
 })
 
 test('map - limpia el texto del comando', t => {
