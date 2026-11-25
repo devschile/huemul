@@ -131,11 +131,18 @@ test.serial('map - geocodifica y devuelve mapa con pin', async t => {
   t.is(image.height, 400)
 
   const rgba = new Uint8Array(UPNG.toRGBA8(image)[0])
-  const center = (200 * 600 + 300) * 4
-  t.deepEqual(
-    [rgba[center], rgba[center + 1], rgba[center + 2], rgba[center + 3]],
-    [217, 48, 37, 255]
-  )
+  let tipY = -1
+  for (let y = 0; y < image.height; y++) {
+    for (let x = 292; x <= 308; x++) {
+      const offset = (y * 600 + x) * 4
+      const [r, g, b] = [rgba[offset], rgba[offset + 1], rgba[offset + 2]]
+      if (r > 150 && r > g + 60 && r > b + 60) { tipY = Math.max(tipY, y) }
+    }
+  }
+  t.true(Math.abs(tipY - 200) <= 3, `punta del pin en y=${tipY}`)
+
+  const body = ((tipY - 12) * 600 + 300) * 4
+  t.true(rgba[body] >= 200 && rgba[body + 1] < 110, 'cuerpo rojo sobre la punta')
 
   t.true(nock.isDone())
 })
@@ -398,7 +405,30 @@ test.serial('map - HUBOT_MAP_WATERMARK=off no pinta nada', async t => {
   const message = (await run(t, 'hubot map Av. Providencia 2124, Santiago'))[1]
   const id = message.attachments[0].image_url.match(/map\/([a-f0-9]{16})\.png/)[1]
 
-  t.deepEqual(map.readImage(id), TILE)
+  t.deepEqual(map.readImage(id), map.applyPin(TILE))
+})
+
+test('map - el pin tiene punta abajo y cabeza redonda', t => {
+  const width = 160
+  const height = 160
+  const rgba = new Uint8Array(width * height * 4)
+  map.drawPin(rgba, width, height, 80, 130, 2)
+
+  const pixel = (x, y) => {
+    const offset = (y * width + x) * 4
+    return [rgba[offset], rgba[offset + 1], rgba[offset + 2], rgba[offset + 3]]
+  }
+
+  const tip = pixel(80, 127)
+  t.true(tip[0] > 150 && tip[1] < 120, `punta roja: ${tip}`)
+  t.is(pixel(80, 134)[3], 0, 'debajo de la punta no hay pin')
+
+  const head = pixel(60, 75)
+  t.true(head[0] > 120, `cabeza ancha: ${head}`)
+  t.is(pixel(80, 75)[0], 255, 'hueco blanco en el centro')
+
+  const above = pixel(80, 40)
+  t.is(above[3], 0, 'arriba de la cabeza no hay pin')
 })
 
 test.serial('map - entrega un link corto guardado en el brain', async t => {
