@@ -16,6 +16,10 @@
 //   HUBOT_MAP_GEOAPIFY_KEY - API key de Geoapify (alternativa a Stadia).
 //   HUBOT_MAP_GEOAPIFY_STYLE - Estilo de Geoapify: osm-bright, osm-carto,
 //                              positron (default: osm-bright)
+//   HUBOT_MAP_CITY_PROVIDER - stadia|geoapify. Proveedor para vistas lejanas
+//                             (zoom <= HUBOT_MAP_CITY_MAX_ZOOM, default 13).
+//   HUBOT_MAP_CITY_STYLE    - Estilo para esas vistas lejanas, p. ej.
+//                             klokantech-basic o alidade_smooth.
 //
 // Commands:
 //   hubot map <lugar> - Devuelve un mapa según lugar entregado
@@ -275,6 +279,13 @@ const stadiaStyle = () => (process.env.HUBOT_MAP_STADIA_STYLE || 'outdoors').tri
 const geoapifyKey = () => (process.env.HUBOT_MAP_GEOAPIFY_KEY || '').trim()
 const geoapifyStyle = () => (process.env.HUBOT_MAP_GEOAPIFY_STYLE || 'osm-bright').trim()
 
+// Estilo distinto para vistas lejanas (ciudad/región). Ejemplo:
+// HUBOT_MAP_CITY_PROVIDER=geoapify y HUBOT_MAP_CITY_STYLE=klokantech-basic
+// usan Stadia outdoors para direcciones y Geoapify klokantech-basic para ciudad.
+const cityProvider = () => (process.env.HUBOT_MAP_CITY_PROVIDER || '').trim().toLowerCase()
+const cityStyle = () => (process.env.HUBOT_MAP_CITY_STYLE || '').trim()
+const cityMaxZoom = () => Number(process.env.HUBOT_MAP_CITY_MAX_ZOOM) || 13
+
 const fetchImage = async url => {
   let response
   try {
@@ -296,7 +307,7 @@ const fetchImage = async url => {
   return response.buffer()
 }
 
-const buildStadiaImage = async (lat, lon, zoom) => {
+const buildStadiaImage = async (lat, lon, zoom, style = stadiaStyle()) => {
   const query = [
     `center=${lat},${lon}`,
     `zoom=${Math.min(zoom, MAX_ZOOM)}`,
@@ -304,7 +315,7 @@ const buildStadiaImage = async (lat, lon, zoom) => {
     `markers=${lat},${lon},,red`,
     `api_key=${encodeURIComponent(stadiaKey())}`
   ].join('&')
-  const url = `${STADIA_STATIC_URL}/${encodeURIComponent(stadiaStyle())}.png?${query}`
+  const url = `${STADIA_STATIC_URL}/${encodeURIComponent(style)}.png?${query}`
 
   return {
     png: await fetchImage(url),
@@ -313,9 +324,9 @@ const buildStadiaImage = async (lat, lon, zoom) => {
   }
 }
 
-const buildGeoapifyImage = async (lat, lon, zoom) => {
+const buildGeoapifyImage = async (lat, lon, zoom, style = geoapifyStyle()) => {
   const query = [
-    `style=${encodeURIComponent(geoapifyStyle())}`,
+    `style=${encodeURIComponent(style)}`,
     `width=${MAP_WIDTH}`,
     `height=${MAP_HEIGHT}`,
     'format=png',
@@ -329,13 +340,24 @@ const buildGeoapifyImage = async (lat, lon, zoom) => {
   return {
     png: await fetchImage(`${GEOAPIFY_STATIC_URL}?${query}`),
     attribution: GEOAPIFY_ATTRIBUTION,
-    provider: `geoapify:${geoapifyStyle()}`
+    provider: `geoapify:${style}`
   }
 }
 
 const buildMapImage = async (lat, lon, zoom) => {
-  if (stadiaKey()) return buildStadiaImage(lat, lon, zoom)
-  if (geoapifyKey()) return buildGeoapifyImage(lat, lon, zoom)
+  const z = Math.min(zoom, MAX_ZOOM)
+  const provider = cityProvider()
+  const far = provider && z <= cityMaxZoom()
+
+  if (far && provider === 'stadia' && stadiaKey()) {
+    return buildStadiaImage(lat, lon, z, cityStyle() || stadiaStyle())
+  }
+  if (far && provider === 'geoapify' && geoapifyKey()) {
+    return buildGeoapifyImage(lat, lon, z, cityStyle() || geoapifyStyle())
+  }
+
+  if (stadiaKey()) return buildStadiaImage(lat, lon, z)
+  if (geoapifyKey()) return buildGeoapifyImage(lat, lon, z)
 
   let failure = null
   for (const provider of providerOrder()) {

@@ -65,7 +65,8 @@ const photonResult = {
 const run = async (t, command) => {
   t.context.room.user.say('user', command)
   await sleep(600)
-  return t.context.room.messages[1]
+  const messages = t.context.room.messages
+  return messages[messages.length - 1]
 }
 
 test.before(() => {
@@ -87,6 +88,9 @@ test.afterEach(t => {
   delete process.env.HUBOT_MAP_STADIA_STYLE
   delete process.env.HUBOT_MAP_GEOAPIFY_KEY
   delete process.env.HUBOT_MAP_GEOAPIFY_STYLE
+  delete process.env.HUBOT_MAP_CITY_PROVIDER
+  delete process.env.HUBOT_MAP_CITY_STYLE
+  delete process.env.HUBOT_MAP_CITY_MAX_ZOOM
 })
 
 test.after(() => nock.enableNetConnect())
@@ -314,6 +318,47 @@ test.serial('map - usa Geoapify si hay key', async t => {
   t.true(attachment.footer.startsWith('© Geoapify'))
   t.truthy(attachment.image_url)
   t.false(JSON.stringify(message).includes('geo-clave'))
+})
+
+test.serial('map - combina Stadia en direcciones y Geoapify en ciudad', async t => {
+  process.env.HUBOT_MAP_STADIA_KEY = 'stadia-test'
+  process.env.HUBOT_MAP_GEOAPIFY_KEY = 'geo-test'
+  process.env.HUBOT_MAP_CITY_PROVIDER = 'geoapify'
+  process.env.HUBOT_MAP_CITY_STYLE = 'klokantech-basic'
+
+  nominatimReply([cityResult])
+  nock('https://api.geoapify.com')
+    .get('/v1/staticmap')
+    .query(query => query.style === 'klokantech-basic')
+    .reply(200, TILE, { 'Content-Type': 'image/png' })
+
+  const city = (await run(t, 'hubot map Santiago, Chile'))[1]
+  t.true(city.attachments[0].footer.startsWith('© Geoapify'))
+
+  nominatimReply([addressResult])
+  nock('https://tiles.stadiamaps.com')
+    .get('/static/outdoors.png')
+    .query(true)
+    .reply(200, TILE, { 'Content-Type': 'image/png' })
+
+  const dir = (await run(t, 'hubot map Av. Providencia 2124, Santiago'))[1]
+  t.true(dir.attachments[0].footer.startsWith('© Stadia Maps'))
+})
+
+test.serial('map - sin key del proveedor de ciudad usa el default', async t => {
+  process.env.HUBOT_MAP_STADIA_KEY = 'stadia-test'
+  delete process.env.HUBOT_MAP_GEOAPIFY_KEY
+  process.env.HUBOT_MAP_CITY_PROVIDER = 'geoapify'
+  process.env.HUBOT_MAP_CITY_STYLE = 'klokantech-basic'
+
+  nominatimReply([cityResult])
+  nock('https://tiles.stadiamaps.com')
+    .get('/static/outdoors.png')
+    .query(true)
+    .reply(200, TILE, { 'Content-Type': 'image/png' })
+
+  const city = (await run(t, 'hubot map Santiago, Chile'))[1]
+  t.true(city.attachments[0].footer.startsWith('© Stadia Maps'))
 })
 
 test('map - zoom según bounding box', t => {
