@@ -20,6 +20,8 @@
 //                             (zoom <= HUBOT_MAP_CITY_MAX_ZOOM, default 13).
 //   HUBOT_MAP_CITY_STYLE    - Estilo para esas vistas lejanas, p. ej.
 //                             klokantech-basic o alidade_smooth.
+//   HUBOT_MAP_WATERMARK     - PNG de la marca de agua (default:
+//                             public/images/huemul-watermark.png). "off" la desactiva.
 //
 // Commands:
 //   hubot map <lugar> - Devuelve un mapa según lugar entregado
@@ -34,6 +36,8 @@
 //   @jorgeepunan
 
 const crypto = require('crypto')
+const fs = require('fs')
+const path = require('path')
 const fetch = require('node-fetch')
 const querystring = require('querystring')
 const UPNG = require('upng-js')
@@ -344,7 +348,111 @@ const buildGeoapifyImage = async (lat, lon, zoom, style = geoapifyStyle()) => {
   }
 }
 
-const buildMapImage = async (lat, lon, zoom) => {
+const WATERMARK_DEFAULT = 'public/images/huemul-watermark.png'
+const WATERMARK_HEIGHT = 64
+
+let watermarkCache = null
+
+const loadWatermark = () => {
+  if (watermarkCache !== null) return watermarkCache
+
+  const file = (process.env.HUBOT_MAP_WATERMARK || WATERMARK_DEFAULT).trim()
+  if (!file || file.toLowerCase() === 'off') {
+    watermarkCache = false
+    return watermarkCache
+  }
+
+  try {
+    const full = path.isAbsolute(file) ? file : path.join(__dirname, '..', file)
+    const img = UPNG.decode(fs.readFileSync(full))
+    const [frame] = UPNG.toRGBA8(img)
+    watermarkCache = { width: img.width, height: img.height, data: new Uint8Array(frame) }
+  } catch (err) {
+    watermarkCache = false
+  }
+
+  return watermarkCache
+}
+
+// Reduce con promedio de área: suficiente para un logo de 127 px a ~64 px.
+const resizeRgba = (src, sw, sh, dw, dh) => {
+  const out = new Uint8Array(dw * dh * 4)
+  for (let y = 0; y < dh; y++) {
+    const y0 = Math.floor((y * sh) / dh)
+    const y1 = Math.max(y0 + 1, Math.floor(((y + 1) * sh) / dh))
+    for (let x = 0; x < dw; x++) {
+      const x0 = Math.floor((x * sw) / dw)
+      const x1 = Math.max(x0 + 1, Math.floor(((x + 1) * sw) / dw))
+      const acc = [0, 0, 0, 0]
+      let n = 0
+      for (let yy = y0; yy < y1; yy++) {
+        for (let xx = x0; xx < x1; xx++) {
+          const i = (yy * sw + xx) * 4
+          acc[0] += src[i]
+          acc[1] += src[i + 1]
+          acc[2] += src[i + 2]
+          acc[3] += src[i + 3]
+          n++
+        }
+      }
+      const o = (y * dw + x) * 4
+      out[o] = Math.round(acc[0] / n)
+      out[o + 1] = Math.round(acc[1] / n)
+      out[o + 2] = Math.round(acc[2] / n)
+      out[o + 3] = Math.round(acc[3] / n)
+    }
+  }
+  return out
+}
+
+const blendPixel = (rgba, offset, r, g, b, alpha) => {
+  const a = alpha / 255
+  rgba[offset] = Math.round(r * a + rgba[offset] * (1 - a))
+  rgba[offset + 1] = Math.round(g * a + rgba[offset + 1] * (1 - a))
+  rgba[offset + 2] = Math.round(b * a + rgba[offset + 2] * (1 - a))
+  rgba[offset + 3] = 255
+}
+
+const applyWatermark = png => {
+  const logo = loadWatermark()
+  if (!logo) return png
+
+  const img = UPNG.decode(png)
+  const [frame] = UPNG.toRGBA8(img)
+  const rgba = new Uint8Array(frame)
+
+  const dh = Math.max(1, Math.min(WATERMARK_HEIGHT, Math.round(img.height / 4)))
+  const dw = Math.max(1, Math.round((logo.width * dh) / logo.height))
+  const mark = resizeRgba(logo.data, logo.width, logo.height, dw, dh)
+
+  const margin = Math.max(8, Math.round(img.width * 0.012))
+  const pad = Math.round(dh * 0.12)
+  const x0 = img.width - dw - margin
+  const y0 = margin
+
+  for (let y = y0 - pad; y < y0 + dh + pad; y++) {
+    for (let x = x0 - pad; x < x0 + dw + pad; x++) {
+      if (x < 0 || y < 0 || x >= img.width || y >= img.height) continue
+      blendPixel(rgba, (y * img.width + x) * 4, 255, 255, 255, 110)
+    }
+  }
+
+  for (let y = 0; y < dh; y++) {
+    for (let x = 0; x < dw; x++) {
+      const px = x0 + x
+      const py = y0 + y
+      if (px < 0 || py < 0 || px >= img.width || py >= img.height) continue
+      const s = (y * dw + x) * 4
+      const alpha = mark[s + 3]
+      if (!alpha) continue
+      blendPixel(rgba, (py * img.width + px) * 4, mark[s], mark[s + 1], mark[s + 2], alpha)
+    }
+  }
+
+  return Buffer.from(UPNG.encode([rgba.buffer], img.width, img.height, 0))
+}
+
+const renderMapImage = async (lat, lon, zoom) => {
   const z = Math.min(zoom, MAX_ZOOM)
   const provider = cityProvider()
   const far = provider && z <= cityMaxZoom()
@@ -370,6 +478,11 @@ const buildMapImage = async (lat, lon, zoom) => {
   throw failure
 }
 
+const buildMapImage = async (lat, lon, zoom) => {
+  const result = await renderMapImage(lat, lon, zoom)
+  return { ...result, png: applyWatermark(result.png) }
+}
+
 const storeImage = png => {
   const id = crypto.randomBytes(8).toString('hex')
   writeCache(images, id, png, IMAGE_CACHE_MAX)
@@ -382,6 +495,7 @@ const resetCaches = () => {
   tileCache.clear()
   geoCache.clear()
   images.clear()
+  watermarkCache = null
 }
 
 const zoomForType = type => (CITY_TYPES.has(type) ? 12 : 16)

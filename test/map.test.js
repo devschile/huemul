@@ -10,6 +10,7 @@ const map = require('../scripts/map.js')
 const helper = new Helper('../scripts/map.js')
 
 const TILE = fs.readFileSync(path.join(__dirname, 'fixtures', 'tile-blank.png'))
+const WATERMARK = path.join(__dirname, 'fixtures', 'watermark.png')
 const NOMINATIM = 'https://nominatim.openstreetmap.org'
 const PHOTON = 'https://photon.komoot.io'
 const TILES_FR = 'https://a.tile.openstreetmap.fr'
@@ -78,6 +79,7 @@ test.before(() => {
 
 test.beforeEach(t => {
   map.resetCaches()
+  process.env.HUBOT_MAP_WATERMARK = WATERMARK
   t.context.room = helper.createRoom({ httpd: false })
 })
 
@@ -91,6 +93,7 @@ test.afterEach(t => {
   delete process.env.HUBOT_MAP_CITY_PROVIDER
   delete process.env.HUBOT_MAP_CITY_STYLE
   delete process.env.HUBOT_MAP_CITY_MAX_ZOOM
+  delete process.env.HUBOT_MAP_WATERMARK
 })
 
 test.after(() => nock.enableNetConnect())
@@ -359,6 +362,42 @@ test.serial('map - sin key del proveedor de ciudad usa el default', async t => {
 
   const city = (await run(t, 'hubot map Santiago, Chile'))[1]
   t.true(city.attachments[0].footer.startsWith('© Stadia Maps'))
+})
+
+test.serial('map - pinta la marca de agua del huemul', async t => {
+  process.env.HUBOT_MAP_STADIA_KEY = 'stadia-test'
+  nominatimReply([addressResult])
+  nock('https://tiles.stadiamaps.com')
+    .get('/static/outdoors.png')
+    .query(true)
+    .reply(200, TILE, { 'Content-Type': 'image/png' })
+
+  const message = (await run(t, 'hubot map Av. Providencia 2124, Santiago'))[1]
+  const id = message.attachments[0].image_url.match(/map\/([a-f0-9]{16})\.png/)[1]
+  const img = UPNG.decode(map.readImage(id))
+  const rgba = new Uint8Array(UPNG.toRGBA8(img)[0])
+
+  let reddish = 0
+  for (let i = 0; i < rgba.length; i += 4) {
+    if (rgba[i] > 150 && rgba[i + 1] < 110 && rgba[i + 2] < 110) reddish++
+  }
+
+  t.true(reddish > 100, `píxeles de la marca: ${reddish}`)
+})
+
+test.serial('map - HUBOT_MAP_WATERMARK=off no pinta nada', async t => {
+  process.env.HUBOT_MAP_WATERMARK = 'off'
+  process.env.HUBOT_MAP_STADIA_KEY = 'stadia-test'
+  nominatimReply([addressResult])
+  nock('https://tiles.stadiamaps.com')
+    .get('/static/outdoors.png')
+    .query(true)
+    .reply(200, TILE, { 'Content-Type': 'image/png' })
+
+  const message = (await run(t, 'hubot map Av. Providencia 2124, Santiago'))[1]
+  const id = message.attachments[0].image_url.match(/map\/([a-f0-9]{16})\.png/)[1]
+
+  t.deepEqual(map.readImage(id), TILE)
 })
 
 test('map - zoom según bounding box', t => {
