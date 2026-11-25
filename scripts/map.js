@@ -56,7 +56,6 @@ const TILE_SIZE = 256
 const TILES_PER_SIDE = 3
 const MAP_WIDTH = 600
 const MAP_HEIGHT = 400
-const MARKER_RADIUS = 9
 const MAX_ADDRESS_LENGTH = 200
 const MIN_ZOOM = 3
 const MAX_ZOOM = 17
@@ -194,28 +193,91 @@ const osmLink = (lat, lon, zoom) =>
     mlon: lon.toFixed(5)
   })}#map=${zoom}/${lat.toFixed(5)}/${lon.toFixed(5)}`
 
-const drawMarker = (rgba, width, height, cx, cy) => {
-  for (let dy = -MARKER_RADIUS - 2; dy <= MARKER_RADIUS + 2; dy++) {
-    for (let dx = -MARKER_RADIUS - 2; dx <= MARKER_RADIUS + 2; dx++) {
-      const x = cx + dx
-      const y = cy + dy
-      if (x < 0 || y < 0 || x >= width || y >= height) continue
+const PIN_HEIGHT = 42
+const PIN_FILL = [234, 67, 53]
+const PIN_EDGE = [166, 38, 30]
+const PIN_HOLE = [255, 255, 255]
 
-      const distance = Math.sqrt(dx * dx + dy * dy)
+// Pin clásico tipo mapa: cabeza redonda, cuerpo que se afina y punta exacta
+// sobre la coordenada. Se dibuja con supersampling para que el borde no quede
+// escalonado y funciona igual a escala 1 (tiles) o 2 (imágenes @2x).
+const drawPin = (rgba, width, height, cx, cy, scale = 1) => {
+  const total = PIN_HEIGHT * scale
+  const radius = total * 0.33
+  const tipY = cy
+  const headY = cy - total + radius
+  const edge = Math.max(1, 1.6 * scale)
+  const hole = radius * 0.42
+  const samples = 3
+
+  const inside = (x, y, shrink) => {
+    const r = radius - shrink
+    if (r <= 0) return false
+    // la punta se extiende 1 px bajo la coordenada para que el vértice pinte
+    const tip = tipY + 1 - shrink
+    if (y > tip || y < headY - r) return false
+
+    const dy = y - headY
+    const half = dy <= 0
+      ? Math.sqrt(Math.max(0, r * r - dy * dy))
+      : Math.max(0.6, r * Math.pow(Math.max(0, 1 - dy / (tip - headY)), 0.85))
+
+    return Math.abs(x - cx) <= half
+  }
+
+  const coverage = (x, y, shrink) => {
+    let hits = 0
+    for (let sy = 0; sy < samples; sy++) {
+      for (let sx = 0; sx < samples; sx++) {
+        if (inside(x + (sx + 0.5) / samples, y + (sy + 0.5) / samples, shrink)) hits++
+      }
+    }
+    return hits / (samples * samples)
+  }
+
+  const holeCoverage = (x, y) => {
+    let hits = 0
+    for (let sy = 0; sy < samples; sy++) {
+      for (let sx = 0; sx < samples; sx++) {
+        const dx = x + (sx + 0.5) / samples - cx
+        const dy = y + (sy + 0.5) / samples - headY
+        if (dx * dx + dy * dy <= hole * hole) hits++
+      }
+    }
+    return hits / (samples * samples)
+  }
+
+  const top = Math.max(0, Math.floor(headY - radius - edge - 1))
+  const bottom = Math.min(height - 1, Math.ceil(tipY + 2))
+  const left = Math.max(0, Math.floor(cx - radius - edge - 1))
+  const right = Math.min(width - 1, Math.ceil(cx + radius + edge + 1))
+
+  for (let y = top; y <= bottom; y++) {
+    for (let x = left; x <= right; x++) {
+      const outer = coverage(x, y, 0)
+      if (outer <= 0.01) continue
+
       const offset = (y * width + x) * 4
-      if (distance <= MARKER_RADIUS) {
-        rgba[offset] = 217
-        rgba[offset + 1] = 48
-        rgba[offset + 2] = 37
-        rgba[offset + 3] = 255
-      } else if (distance <= MARKER_RADIUS + 2) {
-        rgba[offset] = 255
-        rgba[offset + 1] = 255
-        rgba[offset + 2] = 255
-        rgba[offset + 3] = 255
+      blendPixel(rgba, offset, PIN_EDGE[0], PIN_EDGE[1], PIN_EDGE[2], Math.round(255 * outer))
+
+      const inner = coverage(x, y, edge)
+      if (inner > 0.01) {
+        blendPixel(rgba, offset, PIN_FILL[0], PIN_FILL[1], PIN_FILL[2], Math.round(255 * inner))
+      }
+
+      const white = holeCoverage(x, y)
+      if (white > 0.01) {
+        blendPixel(rgba, offset, PIN_HOLE[0], PIN_HOLE[1], PIN_HOLE[2], Math.round(255 * white))
       }
     }
   }
+}
+
+const applyPin = png => {
+  const img = UPNG.decode(png)
+  const rgba = new Uint8Array(UPNG.toRGBA8(img)[0])
+  drawPin(rgba, img.width, img.height, img.width / 2, img.height / 2, img.width / MAP_WIDTH)
+  return Buffer.from(UPNG.encode([rgba.buffer], img.width, img.height, 0))
 }
 
 const composeMap = async (provider, lat, lon, zoom) => {
@@ -269,7 +331,7 @@ const composeMap = async (provider, lat, lon, zoom) => {
     output.set(canvas.subarray(from, from + MAP_WIDTH * 4), y * MAP_WIDTH * 4)
   }
 
-  drawMarker(output, MAP_WIDTH, MAP_HEIGHT, pixelX - cropX, pixelY - cropY)
+  drawPin(output, MAP_WIDTH, MAP_HEIGHT, pixelX - cropX, pixelY - cropY)
 
   return {
     png: Buffer.from(UPNG.encode([output.buffer], MAP_WIDTH, MAP_HEIGHT, 0)),
@@ -316,13 +378,12 @@ const buildStadiaImage = async (lat, lon, zoom, style = stadiaStyle()) => {
     `center=${lat},${lon}`,
     `zoom=${Math.min(zoom, MAX_ZOOM)}`,
     `size=${MAP_WIDTH}x${MAP_HEIGHT}@2x`,
-    `markers=${lat},${lon},,red`,
     `api_key=${encodeURIComponent(stadiaKey())}`
   ].join('&')
   const url = `${STADIA_STATIC_URL}/${encodeURIComponent(style)}.png?${query}`
 
   return {
-    png: await fetchImage(url),
+    png: applyPin(await fetchImage(url)),
     attribution: STADIA_ATTRIBUTION,
     provider: `stadia:${stadiaStyle()}`
   }
@@ -337,12 +398,11 @@ const buildGeoapifyImage = async (lat, lon, zoom, style = geoapifyStyle()) => {
     'scaleFactor=2',
     `center=lonlat:${lon},${lat}`,
     `zoom=${Math.min(zoom, MAX_ZOOM)}`,
-    `marker=lonlat:${lon},${lat};color:%23d93025;size:large;type:material`,
     `apiKey=${encodeURIComponent(geoapifyKey())}`
   ].join('&')
 
   return {
-    png: await fetchImage(`${GEOAPIFY_STATIC_URL}?${query}`),
+    png: applyPin(await fetchImage(`${GEOAPIFY_STATIC_URL}?${query}`)),
     attribution: GEOAPIFY_ATTRIBUTION,
     provider: `geoapify:${style}`
   }
@@ -851,6 +911,8 @@ module.exports.readImage = readImage
 module.exports.resetCaches = resetCaches
 module.exports.zoomToFit = zoomToFit
 module.exports.buildMapImage = buildMapImage
+module.exports.drawPin = drawPin
+module.exports.applyPin = applyPin
 module.exports.createShare = createShare
 module.exports.getShare = getShare
 module.exports.renderSharePage = renderSharePage
