@@ -4,6 +4,8 @@
 // Commands:
 //   @<username>++|@<username> ++ - adds karma to a user
 //   @<username>--|@<username> -- - removes karma from a user
+//   hubot karma top [n] - muestra el ranking de karma (10 por defecto, máximo 25)
+//   hubot karma @<username> - muestra el karma y el puesto de un usuario
 //
 
 const client = require('./helpers/client')
@@ -23,6 +25,72 @@ module.exports = robot => {
       }
       return prev
     }, 0)
+  }
+
+  function escapeKarmaName (name) {
+    return String(name || '')
+      .replace(/[`\r\n]/g, ' ')
+      .replace(/^@+/, '')
+      .trim()
+      .slice(0, 40)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/:\/\//g, ':\u200b//')
+  }
+
+  function getKarmaRanking () {
+    const karmaLog = robot.brain.get('karmaLog') || []
+    const users = new Map()
+
+    karmaLog.forEach(entry => {
+      if (!entry || !entry.targetId) return
+      const points = Number(entry.karma)
+      if (!Number.isFinite(points)) return
+
+      const current = users.get(entry.targetId) || {
+        id: entry.targetId,
+        name: entry.targetName || entry.targetId,
+        score: 0,
+        lastVote: 0
+      }
+
+      current.score += points
+      const voteDate = Number(entry.date) || 0
+      if (voteDate >= current.lastVote) {
+        current.lastVote = voteDate
+        if (entry.targetName) current.name = entry.targetName
+      }
+
+      users.set(entry.targetId, current)
+    })
+
+    const ranking = [...users.values()].sort((a, b) => {
+      return b.score - a.score || String(a.name).localeCompare(String(b.name))
+    })
+
+    let previousScore = null
+    let previousPosition = 0
+    ranking.forEach((user, index) => {
+      if (user.score !== previousScore) {
+        previousPosition = index + 1
+        previousScore = user.score
+      }
+      user.position = previousPosition
+    })
+
+    return ranking
+  }
+
+  function findKarmaUser (ranking, id, name) {
+    if (id) return ranking.find(user => user.id === id)
+    const query = String(name || '').toLowerCase()
+    return ranking.find(user => String(user.name).toLowerCase() === query)
+  }
+
+  function formatKarmaUser (user, total) {
+    const points = Math.abs(user.score) === 1 ? 'punto' : 'puntos'
+    return `*${escapeKarmaName(user.name)}* tiene *${user.score}* ${points} de karma (puesto ${user.position} de ${total}).`
   }
 
   function canUpvote (user, victim) {
@@ -87,6 +155,47 @@ module.exports = robot => {
   }
 
   const karmaRegex = /<@\w+>\s?(\+\+|--)/gm
+
+  robot.respond(/karma(?:\s+(.+))?$/i, res => {
+    const arg = (res.match[1] || '').trim()
+    const ranking = getKarmaRanking()
+    const topMatch = arg.match(/^top(?:\s+(\d+))?$/i)
+
+    if (topMatch) {
+      if (ranking.length === 0) {
+        return res.send('Todavía no hay karma registrado. Vota con `@usuario++`.')
+      }
+
+      const requested = topMatch[1] ? parseInt(topMatch[1], 10) : 10
+      const limit = Math.min(Math.max(requested, 1), 25)
+      const shown = Math.min(limit, ranking.length)
+      const rows = ranking.slice(0, shown).map(user => {
+        return `${user.position}. ${escapeKarmaName(user.name)} — ${user.score}`
+      })
+      const plural = ranking.length === 1 ? 'persona con karma' : 'personas con karma'
+
+      return res.send([`🏆 *Top ${shown} de karma*`, ...rows, '', `_${ranking.length} ${plural}._`].join('\n'))
+    }
+
+    if (!arg) {
+      return res.send('Uso: `huemul karma top [n]` para el ranking o `huemul karma @usuario` para ver a alguien.')
+    }
+
+    const mention = (res.message.mentions || []).find(item => item.type === 'user' || !item.type)
+    const query = arg.replace(/^@/, '').trim()
+    if (!mention && !/^\S+$/.test(query)) {
+      return res.send('Uso: `huemul karma top [n]` para el ranking o `huemul karma @usuario` para ver a alguien.')
+    }
+
+    const user = findKarmaUser(ranking, mention && mention.id, query)
+    if (!user) {
+      const name = mention && mention.info && mention.info.name ? mention.info.name : query
+      return res.send(`${escapeKarmaName(name)} no tiene karma todavía.`)
+    }
+
+    return res.send(formatKarmaUser(user, ranking.length))
+  })
+
   robot.hear(/.+/, res => {
     const matches = res.message.rawText.match(karmaRegex)
     if (matches) {
