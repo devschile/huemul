@@ -25,7 +25,7 @@ const send = async (room, text, wait = 250) => {
 
 const reply = room => room.messages[room.messages.length - 1][1]
 
-const mockHead = (status = 404) => nock(S3).head('/static/caja/foto.png').reply(status, '', { ETag: '"x"' })
+const mockHead = (status = 404, file = 'foto.png') => nock(S3).head(`/static/caja/${file}`).reply(status, '', { ETag: '"x"' })
 
 test.beforeEach(t => {
   nock.disableNetConnect()
@@ -53,7 +53,7 @@ test.serial('Sólo gold: deniega antes de tocar la red', async t => {
 
 test.serial('Sin argumentos muestra el uso', async t => {
   await send(t.context.room, 'hubot caja')
-  t.is(reply(t.context.room), 'Uso: hubot caja <url de imagen> · máximo 2 MB · jpg, png, gif, webp, avif, bmp, tiff, ico')
+  t.is(reply(t.context.room), 'Uso: hubot caja <url> [--name="nombre"] · máximo 2 MB · jpg, png, gif, webp, avif, bmp, tiff, ico')
 })
 
 test.serial('Rechaza IPs y hosts internos sin hacer request', async t => {
@@ -101,6 +101,56 @@ test.serial('Si el nombre ya existe, agrega sufijo con hash', async t => {
 
   t.true(put.isDone())
   t.regex(reply(t.context.room), /static\.devschile\.cl\/caja\/foto-[0-9a-f]{8}\.png/)
+})
+
+test.serial('Renombra el archivo con --name entre comillas', async t => {
+  nock('https://images.example.com').get('/fotos/foto.png').reply(200, PNG, { 'Content-Type': 'image/png' })
+  mockHead(404, 'hola.png')
+  const put = nock(S3).put('/static/caja/hola.png').reply(200, '', { ETag: '"abc"' })
+
+  await send(t.context.room, `hubot caja ${IMAGE_URL} --name="hola"`, 400)
+
+  t.true(put.isDone())
+  t.true(reply(t.context.room).includes('static.devschile.cl/caja/hola.png'))
+})
+
+test.serial('Acepta --name sin comillas', async t => {
+  nock('https://images.example.com').get('/fotos/foto.png').reply(200, PNG, { 'Content-Type': 'image/png' })
+  mockHead(404, 'hola.png')
+  const put = nock(S3).put('/static/caja/hola.png').reply(200, '', { ETag: '"abc"' })
+
+  await send(t.context.room, `hubot caja ${IMAGE_URL} --name=hola`, 400)
+
+  t.true(put.isDone())
+  t.true(reply(t.context.room).includes('static.devschile.cl/caja/hola.png'))
+})
+
+test.serial('--name con extensión distinta usa el formato real del contenido', async t => {
+  nock('https://images.example.com').get('/fotos/foto.png').reply(200, PNG, { 'Content-Type': 'image/png' })
+  mockHead(404, 'hola.png')
+  const put = nock(S3).put('/static/caja/hola.png').reply(200, '', { ETag: '"abc"' })
+
+  await send(t.context.room, `hubot caja ${IMAGE_URL} --name="hola.jpg"`, 400)
+
+  t.true(put.isDone())
+  t.true(reply(t.context.room).includes('static.devschile.cl/caja/hola.png'))
+})
+
+test.serial('Sanitiza el nombre: espacios, tildes y símbolos', async t => {
+  nock('https://images.example.com').get('/fotos/foto.png').reply(200, PNG, { 'Content-Type': 'image/png' })
+  mockHead(404, 'mi-foto-nandu.png')
+  const put = nock(S3).put('/static/caja/mi-foto-nandu.png').reply(200, '', { ETag: '"abc"' })
+
+  await send(t.context.room, `hubot caja ${IMAGE_URL} --name="Mi Foto Ñandú!!"`, 400)
+
+  t.true(put.isDone())
+  t.true(reply(t.context.room).includes('static.devschile.cl/caja/mi-foto-nandu.png'))
+})
+
+test.serial('Argumentos extra muestran el uso', async t => {
+  await send(t.context.room, `hubot caja ${IMAGE_URL} sobrante`)
+
+  t.true(reply(t.context.room).includes('Uso: hubot caja'))
 })
 
 test.serial('Rechaza imágenes de más de 2 MB', async t => {

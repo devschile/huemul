@@ -8,7 +8,7 @@
 //   CAJA_PUBLIC_URL, CAJA_PREFIX (default caja), CAJA_TIMEOUT_MS (default 10000)
 //
 // Commands:
-//   hubot caja <url> - Sube una imagen pública (máx 2 MB) a static.devschile.cl/caja (solo gold)
+//   hubot caja <url> [--name="nombre"] - Sube una imagen pública (máx 2 MB) a static.devschile.cl/caja (solo gold)
 //
 // Author:
 //   @huemul
@@ -30,7 +30,7 @@ const MAX_BYTES = 2 * 1024 * 1024
 const MAX_HOPS = 3
 const USER_AGENT = 'devschile-huemul/1.0 (+https://devschile.cl)'
 
-const USAGE = 'Uso: hubot caja <url de imagen> · máximo 2 MB · jpg, png, gif, webp, avif, bmp, tiff, ico'
+const USAGE = 'Uso: hubot caja <url> [--name="nombre"] · máximo 2 MB · jpg, png, gif, webp, avif, bmp, tiff, ico'
 
 const IMAGE_TYPES = {
   jpg: { mime: 'image/jpeg', ext: 'jpg' },
@@ -104,15 +104,36 @@ const nameFromUrl = url => {
   }
 }
 
-const buildKey = (url, type) => {
+const IMAGE_EXT = /\.(jpe?g|png|gif|webp|avif|bmp|tiff?|ico)$/i
+const NAME_FLAG = /(?:^|\s)--name(?:=|\s+)(?:"([^"]*)"|'([^']*)'|(\S+))/i
+
+const sanitizeBase = value => String(value || '')
+  .replace(IMAGE_EXT, '')
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .toLowerCase()
+  .replace(/[^a-z0-9._-]+/g, '-')
+  .replace(/^[-.]+|[-.]+$/g, '')
+  .slice(0, 60) || 'imagen'
+
+// `caja <url>` o `caja <url> --name="hola"` (también --name=hola o --name 'hola').
+// El nombre es sólo la base: la extensión siempre sale del formato real de la imagen.
+const parseCommand = raw => {
+  let rest = String(raw || '').trim()
+  let name = null
+  const flag = rest.match(NAME_FLAG)
+  if (flag) {
+    name = flag[1] !== undefined ? flag[1] : (flag[2] !== undefined ? flag[2] : flag[3])
+    rest = `${rest.slice(0, flag.index)} ${rest.slice(flag.index + flag[0].length)}`.trim()
+  }
+  const parts = rest.split(/\s+/).filter(Boolean)
+  if (parts.length !== 1) return { url: null, name }
+  return { url: parts[0], name }
+}
+
+const buildKey = (base, type) => {
   const prefix = (process.env.CAJA_PREFIX || 'caja').replace(/^\/+|\/+$/g, '')
-  const base = nameFromUrl(url)
-    .replace(/\.[^.]*$/, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9._-]+/g, '-')
-    .replace(/^[-.]+|[-.]+$/g, '')
-    .slice(0, 60) || 'imagen'
-  return `${prefix}/${base}.${type.ext}`
+  return `${prefix}/${sanitizeBase(base)}.${type.ext}`
 }
 
 const fetchOnce = (url, timeout) => {
@@ -185,7 +206,7 @@ const keyExists = async key => {
 module.exports = function (robot) {
   robot.respond(/caja$/i, msg => msg.send(USAGE))
 
-  robot.respond(/caja\s+(\S+)\s*$/i, async msg => {
+  robot.respond(/caja\s+(.+)$/i, async msg => {
     const user = msg.message && msg.message.user
     if (!robot.golden || !robot.golden.isGold(user)) return msg.send(GOLD_DENIAL)
 
@@ -195,7 +216,9 @@ module.exports = function (robot) {
       return msg.send('La caja no está configurada todavía :monea: .')
     }
 
-    const url = parseImageUrl(msg.match[1])
+    const parsed = parseCommand(msg.match[1])
+    if (!parsed.url) return msg.send(USAGE)
+    const url = parseImageUrl(parsed.url)
     if (!url) return msg.send('Mándame una URL http(s) pública de una imagen (sin IPs ni hosts internos).')
 
     const timeout = Number(process.env.CAJA_TIMEOUT_MS) || 10000
@@ -205,7 +228,7 @@ module.exports = function (robot) {
       const type = detectImage(buffer)
       if (!type) throw fail('Eso no es una imagen soportada: jpg, png, gif, webp, avif, bmp, tiff o ico.')
 
-      let key = buildKey(finalUrl, type)
+      let key = buildKey(parsed.name || nameFromUrl(finalUrl), type)
       if (await keyExists(key)) {
         const hash = crypto.createHash('sha256').update(buffer).digest('hex').slice(0, 8)
         key = key.replace(/(\.[a-z0-9]+)$/, `-${hash}$1`)
